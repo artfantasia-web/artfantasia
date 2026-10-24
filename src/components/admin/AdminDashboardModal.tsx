@@ -22,6 +22,7 @@ import {
 import { useAdminData, extractYouTubeId, compressImageFile } from '../../context/AdminDataContext';
 import { NoticeItem, InternationalLogoItem } from '../../types';
 import { getBrandLogoSvg } from '../../data/brandLogosSvg';
+import { formatNoticeContent } from '../../utils/formatNotice';
 
 interface AdminDashboardModalProps {
   isOpen: boolean;
@@ -45,7 +46,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     logoutAdmin,
   } = useAdminData();
 
-  const [activeTab, setActiveTab] = useState<'notices' | 'logos'>('notices');
+  const [activeTab, setActiveTab] = useState<'logos' | 'notices'>('logos');
 
   // Notice Form State
   const [isEditingNotice, setIsEditingNotice] = useState(false);
@@ -59,7 +60,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   });
   const [noticePinned, setNoticePinned] = useState(false);
   const [noticeContent, setNoticeContent] = useState('');
-  const [noticeContentMode, setNoticeContentMode] = useState<'write' | 'preview'>('write');
+  const [noticeContentMode, setNoticeContentMode] = useState<'text' | 'html' | 'preview'>('text');
   const [noticeImages, setNoticeImages] = useState<string[]>([]);
   const [noticeImageUrlInput, setNoticeImageUrlInput] = useState('');
   const [noticeYoutubeUrl, setNoticeYoutubeUrl] = useState('');
@@ -85,6 +86,91 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   if (!isOpen) return null;
+
+  // Text Mode Formatting Helper (mirrors HTML mode capabilities)
+  const handleFormatText = (type: 'bold' | 'gold' | 'heading' | 'paragraph' | 'br' | 'link' | 'quote' | 'divider' | 'bullet' | 'number') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = noticeContent.substring(start, end);
+
+    let prefix = '';
+    let suffix = '';
+    let defaultText = '';
+
+    switch (type) {
+      case 'bold':
+        prefix = '**';
+        suffix = '**';
+        defaultText = '굵은 텍스트';
+        break;
+      case 'gold':
+        prefix = '★';
+        suffix = '★';
+        defaultText = '골드 강조';
+        break;
+      case 'heading':
+        prefix = '\n■ ';
+        suffix = '\n';
+        defaultText = '소제목 입력';
+        break;
+      case 'paragraph':
+        prefix = '\n\n';
+        suffix = '';
+        defaultText = '';
+        break;
+      case 'br':
+        prefix = '\n';
+        suffix = '';
+        defaultText = '';
+        break;
+      case 'link':
+        if (selected) {
+          prefix = `[${selected}](https://`;
+          suffix = ')';
+          defaultText = '';
+        } else {
+          prefix = '[';
+          suffix = '](https://artfantasia.co.kr)';
+          defaultText = '링크 제목';
+        }
+        break;
+      case 'quote':
+        prefix = '\n> ';
+        suffix = '\n';
+        defaultText = '인용할 문구 입력';
+        break;
+      case 'divider':
+        prefix = '\n────────────────────────────\n';
+        suffix = '';
+        defaultText = '';
+        break;
+      case 'bullet':
+        prefix = '\n• ';
+        suffix = '';
+        defaultText = '항목 내용';
+        break;
+      case 'number':
+        prefix = '\n1. ';
+        suffix = '';
+        defaultText = '첫 번째 항목';
+        break;
+    }
+
+    const insertBody = selected || defaultText;
+    const replacement = `${prefix}${insertBody}${suffix}`;
+    const newContent = noticeContent.substring(0, start) + replacement + noticeContent.substring(end);
+    setNoticeContent(newContent);
+
+    setTimeout(() => {
+      textarea.focus();
+      const cursorStart = start + prefix.length;
+      const cursorEnd = cursorStart + insertBody.length;
+      textarea.setSelectionRange(cursorStart, cursorEnd);
+    }, 40);
+  };
 
   // Insert HTML tag helper
   const handleInsertHtmlTag = (openTag: string, closeTag: string = '') => {
@@ -117,7 +203,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     setNoticeDate(`${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`);
     setNoticePinned(false);
     setNoticeContent('');
-    setNoticeContentMode('write');
+    setNoticeContentMode('text');
     setNoticeImages([]);
     setNoticeImageUrlInput('');
     setNoticeYoutubeUrl('');
@@ -131,8 +217,11 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     setNoticeCategory(item.category === '정보' ? '정보' : '소식');
     setNoticeDate(item.date);
     setNoticePinned(!!item.pinned);
-    setNoticeContent(item.content.join('\n\n'));
-    setNoticeContentMode('write');
+    const joinedContent = item.content.join('\n\n');
+    setNoticeContent(joinedContent);
+    // Auto-detect if content contains HTML or is plain text
+    const hasHtml = /<[a-z][\s\S]*>/i.test(joinedContent);
+    setNoticeContentMode(hasHtml ? 'html' : 'text');
     setNoticeImages(item.images || []);
     setNoticeYoutubeUrl(item.youtubeUrl || (item.youtubeId ? `https://www.youtube.com/watch?v=${item.youtubeId}` : ''));
   };
@@ -150,8 +239,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       .filter((p) => p.length > 0);
 
     const parsedYtId = noticeYoutubeUrl ? extractYouTubeId(noticeYoutubeUrl) : undefined;
-    const hasHtmlTags = noticeContent.includes('<') && noticeContent.includes('>');
-    const finalContent = hasHtmlTags
+    const isHtml = noticeContentMode === 'html' || /<[a-z][\s\S]*>/i.test(noticeContent);
+    const finalContent = isHtml
       ? [noticeContent]
       : (paragraphs.length > 0 ? paragraphs : [noticeTitle]);
 
@@ -353,17 +442,6 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
         {/* Tab Navigation */}
         <div className="flex border-b border-zinc-800 bg-zinc-950 px-5 pt-3 shrink-0 gap-3">
           <button
-            onClick={() => setActiveTab('notices')}
-            className={`pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
-              activeTab === 'notices'
-                ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>소식 & 공지사항 관리 ({notices.length})</span>
-          </button>
-          <button
             onClick={() => setActiveTab('logos')}
             className={`pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
               activeTab === 'logos'
@@ -373,6 +451,17 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
           >
             <Globe className="w-4 h-4" />
             <span>무한롤링티커 로고 관리 ({logos.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('notices')}
+            className={`pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
+              activeTab === 'notices'
+                ? 'border-amber-400 text-amber-400'
+                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>소식 & 공지사항 관리 ({notices.length})</span>
           </button>
         </div>
 
@@ -525,44 +614,150 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Row 3: Content (Text & HTML Supported with Live Preview & Quick Tags) */}
+                  {/* Row 3: Content (Text Mode, HTML Mode & Live Preview) */}
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <label className="block text-xs font-semibold text-zinc-300">
-                        본문 내용 <span className="text-[11px] font-normal text-amber-400/90">(텍스트 및 HTML 코드 작성 지원)</span>
+                        본문 내용{' '}
+                        <span className="text-[11px] font-normal text-amber-400/90">
+                          {noticeContentMode === 'text'
+                            ? '(일반 텍스트 작성 중 · 줄바꿈 자동 반영)'
+                            : noticeContentMode === 'html'
+                            ? '(HTML 코드 작성 중)'
+                            : '(실시간 미리보기 화면)'}
+                        </span>
                       </label>
 
-                      {/* Write / HTML Live Preview Tab Switcher */}
+                      {/* Text / HTML / Live Preview 3-Tab Switcher */}
                       <div className="flex items-center p-0.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs">
                         <button
                           type="button"
-                          onClick={() => setNoticeContentMode('write')}
-                          className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                            noticeContentMode === 'write'
-                              ? 'bg-amber-400 text-zinc-950 shadow-xs'
+                          onClick={() => setNoticeContentMode('text')}
+                          className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            noticeContentMode === 'text'
+                              ? 'bg-amber-400 text-zinc-950 shadow-xs font-bold'
+                              : 'text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>일반 텍스트 모드</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNoticeContentMode('html')}
+                          className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            noticeContentMode === 'html'
+                              ? 'bg-amber-400 text-zinc-950 shadow-xs font-bold'
                               : 'text-zinc-400 hover:text-white'
                           }`}
                         >
                           <Code className="w-3.5 h-3.5" />
-                          <span>작성 모드 (Text / HTML)</span>
+                          <span>HTML 코드 모드</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setNoticeContentMode('preview')}
-                          className={`px-3 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                          className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                             noticeContentMode === 'preview'
-                              ? 'bg-amber-400 text-zinc-950 shadow-xs'
+                              ? 'bg-amber-400 text-zinc-950 shadow-xs font-bold'
                               : 'text-zinc-400 hover:text-white'
                           }`}
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          <span>HTML 실시간 미리보기</span>
+                          <span>실시간 미리보기</span>
                         </button>
                       </div>
                     </div>
 
-                    {/* Quick HTML Insertion Toolbar (visible in write mode) */}
-                    {noticeContentMode === 'write' && (
+                    {/* Quick Plain Text Toolbar (Identical structure to HTML mode toolbar) */}
+                    {noticeContentMode === 'text' && (
+                      <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg bg-zinc-950/80 border border-zinc-800/80 text-[11px]">
+                        <span className="text-zinc-400 font-mono text-[10px] mr-1">텍스트 빠른 서식:</span>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('bold')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold cursor-pointer"
+                          title="선택한 텍스트 굵게 (**굵은 텍스트**)"
+                        >
+                          &lt;b&gt;굵게&lt;/b&gt;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('gold')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-300 font-semibold cursor-pointer"
+                          title="선택한 텍스트 골드 강조 (★골드 강조★)"
+                        >
+                          골드강조
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('heading')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 cursor-pointer"
+                          title="소제목 삽입 (■ 소제목)"
+                        >
+                          &lt;h3&gt;소제목
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('paragraph')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 cursor-pointer"
+                          title="문단 나눔 (빈 줄 추가)"
+                        >
+                          &lt;p&gt;문단
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('br')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-mono cursor-pointer"
+                          title="줄바꿈 삽입"
+                        >
+                          &lt;br /&gt;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('link')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-400 cursor-pointer"
+                          title="하이퍼링크 삽입 [제목](URL)"
+                        >
+                          &lt;a&gt;링크
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('quote')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 cursor-pointer"
+                          title="인용구 삽입 (> 인용구)"
+                        >
+                          인용구
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('divider')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 cursor-pointer"
+                          title="구분선 삽입"
+                        >
+                          &lt;hr /&gt;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('bullet')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 cursor-pointer"
+                          title="글머리 기호 삽입 (• 항목)"
+                        >
+                          • 글머리
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFormatText('number')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 cursor-pointer"
+                          title="번호 매기기 삽입 (1. 항목)"
+                        >
+                          1. 번호
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Quick HTML Insertion Toolbar (visible in html mode) */}
+                    {noticeContentMode === 'html' && (
                       <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg bg-zinc-950/80 border border-zinc-800/80 text-[11px]">
                         <span className="text-zinc-400 font-mono text-[10px] mr-1">HTML 빠른 태그:</span>
                         <button
@@ -633,29 +828,33 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                     )}
 
                     {/* Textarea or HTML Live Preview */}
-                    {noticeContentMode === 'write' ? (
-                      <textarea
-                        ref={textareaRef}
-                        rows={7}
-                        value={noticeContent}
-                        onChange={(e) => setNoticeContent(e.target.value)}
-                        placeholder="소식 본문 내용을 입력하세요. 일반 텍스트는 물론 HTML 태그(<p>, <b>, <span>, <a>, <h3>, <hr> 등)를 자유롭게 작성할 수 있습니다."
-                        className="w-full px-3.5 py-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 font-sans leading-relaxed"
-                      />
-                    ) : (
-                      <div className="w-full min-h-[175px] max-h-[360px] overflow-y-auto p-4 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 font-sans leading-relaxed">
+                    {noticeContentMode === 'preview' ? (
+                      <div className="w-full min-h-[190px] max-h-[380px] overflow-y-auto p-4 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 font-sans leading-relaxed">
                         {noticeContent.trim() ? (
                           <div
-                            dangerouslySetInnerHTML={{ __html: noticeContent }}
-                            className="space-y-3 leading-relaxed [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1,&_h2,&_h3]:font-bold [&_h1,&_h2,&_h3]:text-white [&_strong]:text-amber-300 [&_b]:text-white [&_p]:leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: formatNoticeContent(noticeContent) }}
+                            className="space-y-3 leading-relaxed font-sans text-sm text-zinc-100 [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1,&_h2,&_h3]:font-bold [&_h1,&_h2,&_h3]:text-white [&_strong]:text-white [&_b]:text-white [&_p]:leading-relaxed"
                           />
                         ) : (
                           <div className="text-zinc-500 text-xs py-10 text-center flex flex-col items-center justify-center gap-1.5">
-                            <Code className="w-5 h-5 text-zinc-600" />
-                            <span>작성된 내용이 없습니다. '작성 모드'에서 텍스트 또는 HTML을 입력하세요.</span>
+                            <FileText className="w-5 h-5 text-zinc-600" />
+                            <span>작성된 내용이 없습니다. '일반 텍스트 모드' 또는 'HTML 코드 모드'에서 내용을 입력하세요.</span>
                           </div>
                         )}
                       </div>
+                    ) : (
+                      <textarea
+                        ref={textareaRef}
+                        rows={8}
+                        value={noticeContent}
+                        onChange={(e) => setNoticeContent(e.target.value)}
+                        placeholder={
+                          noticeContentMode === 'text'
+                            ? "소식 본문 내용을 자유롭게 입력하세요. 줄바꿈과 띄어쓰기가 작성하신 그대로 자연스럽게 반영됩니다."
+                            : "HTML 태그(<p>, <b>, <span>, <a>, <h3>, <hr> 등)를 포함하여 자유롭게 작성할 수 있습니다."
+                        }
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 font-sans leading-relaxed"
+                      />
                     )}
                   </div>
 

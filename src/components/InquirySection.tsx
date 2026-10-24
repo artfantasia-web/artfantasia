@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { COMPANY_INFO } from '../data/content';
-import { Send, CheckCircle2, Phone, Mail, ShieldCheck } from 'lucide-react';
+import { Send, CheckCircle2, Phone, Mail, ShieldCheck, Loader2 } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
 import { useIsTranslated } from '../hooks/useIsTranslated';
 
@@ -9,9 +9,12 @@ interface InquirySectionProps {
   onClose?: () => void;
 }
 
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xpppwede';
+
 export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false, onClose }) => {
   const isTranslated = useIsTranslated();
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [ticketNumber, setTicketNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [quickForm, setQuickForm] = useState({
@@ -24,16 +27,54 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
     details: '',
   });
 
-  const handleQuickSubmit = (e: React.FormEvent) => {
+  const handleQuickSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quickForm.name || !quickForm.phone || !quickForm.email) {
       setErrorMessage('담당자명, 연락처, 이메일을 모두 입력해 주세요.');
       return;
     }
+    
+    setIsSubmitting(true);
     setErrorMessage('');
     const randomTicket = `AF-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    setTicketNumber(randomTicket);
-    setFormSubmitted(true);
+
+    try {
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          접수번호_ticketNumber: randomTicket,
+          담당자명_name: quickForm.name,
+          기업명_company: quickForm.company,
+          연락처_phone: quickForm.phone,
+          이메일_email: quickForm.email,
+          프로젝트유형_category: quickForm.category,
+          예상예산_budget: quickForm.budget,
+          요청사항_details: quickForm.details,
+          신청일시_submittedAt: new Date().toLocaleString('ko-KR'),
+          _subject: `[아트판타지아 문의] ${quickForm.name} (${quickForm.company || '미입력'}) - ${quickForm.category} (${randomTicket})`,
+        }),
+      });
+
+      if (response.ok) {
+        setTicketNumber(randomTicket);
+        setFormSubmitted(true);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        const msg =
+          errorData?.errors?.map((err: any) => err.message).join(', ') ||
+          '서버 전송 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주시거나 전화(1661-5680)로 문의해 주세요.';
+        setErrorMessage(msg);
+      }
+    } catch (err) {
+      console.error('Formspree submit error:', err);
+      setErrorMessage('네트워크 연결 상태를 확인 후 다시 시도해 주시거나 전화(1661-5680)로 문의해 주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -197,6 +238,15 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
                 <button
                   onClick={() => {
                     setFormSubmitted(false);
+                    setQuickForm({
+                      name: '',
+                      company: '',
+                      phone: '',
+                      email: '',
+                      category: '영상제작',
+                      budget: 'B클래스 1억원 ~ 5천만원',
+                      details: '',
+                    });
                     if (onClose) onClose();
                   }}
                   className="px-8 py-3.5 bg-amber-400 hover:bg-amber-300 text-black text-base font-extrabold rounded-lg shadow-md cursor-pointer font-apple transition-colors"
@@ -275,8 +325,8 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
                   <label className="block text-base sm:text-lg font-bold text-white mb-2.5 font-apple">
                     프로젝트 유형 선택
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    {['영상제작', '음악·라디오', '마케팅', '협업 문의'].map((type) => {
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                    {['AI영상제작', '영상제작', '음악·라디오', '마케팅', '협업 문의'].map((type) => {
                       const isSelected = quickForm.category === type;
                       return (
                         <button
@@ -391,10 +441,20 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
                 <div className="flex justify-end pt-2">
                   <button
                     type="submit"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-9 py-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-base sm:text-lg shadow-lg transition-transform hover:scale-[1.01] cursor-pointer font-apple"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-9 py-4 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:bg-zinc-700 disabled:text-zinc-400 disabled:cursor-not-allowed text-black font-extrabold text-base sm:text-lg shadow-lg transition-transform hover:scale-[1.01] cursor-pointer font-apple"
                   >
-                    <Send className="w-5 h-5" />
-                    <span>신청</span>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin text-zinc-900" />
+                        <span>접수 중...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-5 h-5" />
+                        <span>신청</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

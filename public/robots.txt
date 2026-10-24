@@ -1,0 +1,19 @@
+# Robots.txt for ART FANTASIA (artfantasia.co.kr)
+# Optimized for Google Search Console and Naver Search Advisor (Yeti)
+
+User-agent: *
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Daumoa
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://artfantasia.co.kr/sitemap.xml

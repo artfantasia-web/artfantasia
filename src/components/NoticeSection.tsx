@@ -3,6 +3,7 @@ import { useAdminData } from '../context/AdminDataContext';
 import { NoticeItem } from '../types';
 import { Pin, Search, Eye, Calendar, Share2, Check, ArrowLeft, Youtube, Image as ImageIcon } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
+import { formatNoticeContent } from '../utils/formatNotice';
 
 interface NoticeSectionProps {
   onOpenAdmin?: () => void;
@@ -136,20 +137,13 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({ onOpenAdmin: _onOp
 
               {/* Main Content Paragraphs (Supports Text & HTML) */}
               <div className="py-4 space-y-4 text-sm sm:text-base text-zinc-200 leading-relaxed font-sans">
-                {activeNotice.content.map((paragraph, idx) => {
-                  const hasHtml = /<[a-z][\s\S]*>/i.test(paragraph);
-                  return hasHtml ? (
-                    <div
-                      key={idx}
-                      dangerouslySetInnerHTML={{ __html: paragraph }}
-                      className="space-y-3 leading-relaxed font-['Pretendard','Noto_Sans_KR',sans-serif] [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1,&_h2,&_h3]:font-bold [&_h1,&_h2,&_h3]:text-white [&_strong]:text-amber-300 [&_b]:text-white [&_p]:leading-relaxed"
-                    />
-                  ) : (
-                    <p key={idx} className="whitespace-pre-line leading-relaxed font-['Pretendard','Noto_Sans_KR',sans-serif]">
-                      {paragraph}
-                    </p>
-                  );
-                })}
+                {activeNotice.content.map((paragraph, idx) => (
+                  <div
+                    key={idx}
+                    dangerouslySetInnerHTML={{ __html: formatNoticeContent(paragraph) }}
+                    className="space-y-3 leading-relaxed font-['Pretendard','Noto_Sans_KR',sans-serif] [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1,&_h2,&_h3]:font-bold [&_h1,&_h2,&_h3]:text-white [&_strong]:text-white [&_b]:text-white [&_p]:leading-relaxed"
+                  />
+                ))}
               </div>
 
               {/* Bottom Actions */}

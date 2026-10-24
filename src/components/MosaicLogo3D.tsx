@@ -103,6 +103,8 @@ export const MosaicLogo3D: React.FC<MosaicLogo3DProps> = ({ className = '', size
           alt="Art Fantasia Official Logo"
           width={876}
           height={895}
+          loading="eager"
+          decoding="async"
           className="w-full h-full object-contain drop-shadow-[0_16px_36px_rgba(244,63,94,0.45)] transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {
             // Fallback to GitHub raw stream URL

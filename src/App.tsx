@@ -4,7 +4,7 @@ import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { Footer } from './components/Footer';
 import { AdminDataProvider, useAdminData } from './context/AdminDataContext';
-import { X, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 // Code-split heavy page views and modals for ultra-fast initial bundle & performance
 const AboutSection = lazy(() => import('./components/AboutSection').then((m) => ({ default: m.AboutSection })));
@@ -30,7 +30,6 @@ const PageLoadingFallback = () => (
 
 function AppContent() {
   const [activeSection, setActiveSection] = useState<NavCategory>('home');
-  const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
   const [adminLoginOpen, setAdminLoginOpen] = useState(false);
   const [adminDashboardOpen, setAdminDashboardOpen] = useState(false);
 
@@ -113,35 +112,6 @@ function AppContent() {
           )}
         </Suspense>
       </main>
-
-      {/* Global Project Inquiry Modal */}
-      {inquiryModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative text-zinc-900 border-0">
-            <div className="sticky top-0 z-20 flex items-center justify-between p-4 sm:p-6 border-b border-zinc-100 bg-white/95 backdrop-blur-md">
-              <div>
-                <span className="text-xs font-mono text-amber-700 font-bold uppercase">
-                  PROJECT INQUIRY // ART FANTASIA
-                </span>
-                <h3 className="text-lg font-bold text-zinc-900 mt-0.5">
-                  프로젝트 제작 및 견적 문의
-                </h3>
-              </div>
-              <button
-                onClick={() => setInquiryModalOpen(false)}
-                className="p-1.5 text-zinc-400 hover:text-zinc-900 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer"
-                aria-label="닫기"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <Suspense fallback={<PageLoadingFallback />}>
-              <InquirySection isModal onClose={() => setInquiryModalOpen(false)} />
-            </Suspense>
-          </div>
-        </div>
-      )}
 
       {/* Admin Login Modal */}
       {adminLoginOpen && (

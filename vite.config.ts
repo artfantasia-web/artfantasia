@@ -12,7 +12,10 @@ export default defineConfig(() => {
       },
     },
     build: {
-      chunkSizeWarningLimit: 800,
+      target: 'es2022',
+      minify: true,
+      cssMinify: true,
+      chunkSizeWarningLimit: 900,
       rollupOptions: {
         output: {
           manualChunks(id: string) {
@@ -21,6 +24,9 @@ export default defineConfig(() => {
             }
             if (id.includes('node_modules/lucide-react/')) {
               return 'icons';
+            }
+            if (id.includes('/src/data/content')) {
+              return 'portfolio-data';
             }
           },
         },

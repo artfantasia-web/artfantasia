@@ -17,18 +17,7 @@
   }
 }
 
-@font-face {
-  font-family: 'GmarketSansBold';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
 
-.font-gmarket-bold {
-  font-family: 'GmarketSansBold', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 700;
-}
 
 .font-google {
   font-family: 'Noto Sans KR', 'Google Sans', 'Noto Sans', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;

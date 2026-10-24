@@ -111,8 +111,9 @@ export const GoldenParticleCanvas: React.FC<GoldenParticleCanvasProps> = ({
     // IntersectionObserver to pause rendering when off-screen
     const intersectionObserver = new IntersectionObserver(
       ([entry]) => {
+        const wasVisible = isVisible;
         isVisible = entry.isIntersecting;
-        if (isVisible && !animationFrameId) {
+        if (isVisible && !wasVisible && !animationFrameId) {
           loop();
         }
       },
@@ -121,7 +122,10 @@ export const GoldenParticleCanvas: React.FC<GoldenParticleCanvasProps> = ({
     intersectionObserver.observe(container);
 
     const loop = () => {
-      if (!isVisible) return;
+      if (!isVisible) {
+        animationFrameId = 0;
+        return;
+      }
 
       ctx.clearRect(0, 0, width, height);
 
@@ -155,11 +159,11 @@ export const GoldenParticleCanvas: React.FC<GoldenParticleCanvasProps> = ({
         const finalAlpha = Math.max(0, Math.min(1, p.alpha * fadeFactor));
 
         if (finalAlpha > 0.01) {
-          ctx.save();
-
-          // 1. Soft wide golden halo glow
-          ctx.shadowColor = `rgba(${p.colorRgb}, ${finalAlpha * 0.9})`;
-          ctx.shadowBlur = p.radius * 3.2;
+          // 1. Ultra-fast soft outer golden halo glow (no CPU-heavy shadowBlur)
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius * 2.4, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${p.colorRgb}, ${finalAlpha * 0.18})`;
+          ctx.fill();
 
           // 2. Main golden orb body
           ctx.beginPath();
@@ -169,7 +173,6 @@ export const GoldenParticleCanvas: React.FC<GoldenParticleCanvasProps> = ({
 
           // 3. Bright luminous core inside larger particles
           if (p.radius > 1.7) {
-            ctx.shadowBlur = 0;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.radius * 0.44, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(255, 255, 245, ${Math.min(1, finalAlpha * 1.25)})`;
@@ -192,8 +195,6 @@ export const GoldenParticleCanvas: React.FC<GoldenParticleCanvasProps> = ({
             ctx.lineTo(p.x, p.y + glintLength);
             ctx.stroke();
           }
-
-          ctx.restore();
         }
 
         // Respawn when floated off top or sides
@@ -211,7 +212,7 @@ export const GoldenParticleCanvas: React.FC<GoldenParticleCanvasProps> = ({
     loop();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
     };

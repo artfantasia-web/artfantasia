@@ -15,12 +15,19 @@ const HOST = '0.0.0.0';
 const distPath = path.join(__dirname, 'dist');
 app.use(
   express.static(distPath, {
-    maxAge: '1y',
-    immutable: true,
     setHeaders: (res, filePath) => {
-      // Do not cache index.html so updates are instantly reflected
-      if (filePath.endsWith('index.html')) {
+      if (filePath.endsWith('rss.xml')) {
+        res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+      } else if (filePath.endsWith('sitemap.xml')) {
+        res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+      } else if (filePath.endsWith('index.html') || filePath.endsWith('site.webmanifest')) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      } else if (filePath.includes(path.sep + 'assets' + path.sep)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
       }
     },
   })
@@ -36,8 +43,6 @@ app.get('*', (_req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(distPath, 'index.html'));
 });
-
-const defaultPort = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 const startServer = (port: number) => {
   const server = app.listen(port, HOST, () => {
@@ -63,4 +68,4 @@ const startServer = (port: number) => {
   process.on('SIGINT', shutdown);
 };
 
-startServer(defaultPort);
+startServer(PORT);

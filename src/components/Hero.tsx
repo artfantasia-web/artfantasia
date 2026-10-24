@@ -62,23 +62,34 @@ export const Hero: React.FC<HeroProps> = ({
     }
   }, []);
 
-  // Ensure hero background video is cleanly connected and plays seamlessly
+  // Ensure hero background video is cleanly connected and pauses when scrolled offscreen
   useEffect(() => {
     const bgVid = bgVideoRef.current;
-    if (bgVid) {
-      bgVid.defaultMuted = true;
-      bgVid.muted = true;
-      const playBg = () => {
-        bgVid.play().catch(() => {});
-      };
-      playBg();
-      bgVid.addEventListener('loadeddata', playBg);
-      bgVid.addEventListener('canplay', playBg);
-      return () => {
-        bgVid.removeEventListener('loadeddata', playBg);
-        bgVid.removeEventListener('canplay', playBg);
-      };
-    }
+    if (!bgVid) return;
+
+    bgVid.defaultMuted = true;
+    bgVid.muted = true;
+
+    const playBg = () => {
+      bgVid.play().catch(() => {});
+    };
+    playBg();
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          bgVid.play().catch(() => {});
+        } else {
+          bgVid.pause();
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(bgVid);
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   // Translation detection for '아트판타지아가 걸어온 길.' -> 'PORTFOLIO'
@@ -282,7 +293,7 @@ export const Hero: React.FC<HeroProps> = ({
               loop
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               className="w-full h-full object-cover scale-[1.04] opacity-30"
             >
               <source

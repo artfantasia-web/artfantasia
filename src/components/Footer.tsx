@@ -61,11 +61,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry, onOpe
                 >
                   Copyright
                 </span>{' '}
-                (C) 2025 아트판타지아 (ArtFantasia). ALL RIGHTS RESERVED.
+                (C) 아트판타지아 (ART FANTASIA). ALL RIGHTS RESERVED.
               </div>
             </div>
 
-            <div className="pt-1">
+            <div className="pt-1 flex items-center gap-3">
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-sm font-apple font-medium text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-md transition-all cursor-pointer shadow-sm group"
