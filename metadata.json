@@ -1,0 +1,6 @@
+{
+  "name": "아트판타지아 | ART FANTASIA",
+  "description": "크리에이티브 미디어 프로덕션 & 종합 마케팅 에이전시 아트판타지아(artfantasia.co.kr). 감각적인 영상제작, 오리지널 음악·라디오제작, 데이터 기반 디지털 마케팅 솔루션을 제공합니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,877 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: "Pretendard", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  }
+  
+  .font-mono {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .font-apple {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Apple SD Gothic Neo", "SF Pro", "Pretendard", "Helvetica Neue", sans-serif;
+    letter-spacing: -0.015em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@font-face {
+  font-family: 'GmarketSansBold';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-gmarket-bold {
+  font-family: 'GmarketSansBold', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+}
+
+.font-google {
+  font-family: 'Noto Sans KR', 'Google Sans', 'Noto Sans', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes energyFlow {
+  0% {
+    stroke-dashoffset: 48;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-energy-flow {
+  animation: energyFlow 1.8s linear infinite;
+}
+
+@keyframes globeDrift {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes globePulse {
+  0%, 100% {
+    opacity: 0.18;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.02);
+  }
+}
+
+.animate-globe-orbit {
+  animation: globeDrift 120s linear infinite;
+}
+
+.animate-globe-pulse {
+  animation: globePulse 10s ease-in-out infinite;
+}
+
+/* Custom subtle architectural grid background */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.bg-dot-pattern {
+  background-size: 24px 24px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+}
+
+/* Visible Architectural Grid Pattern (GPU-optimized static pattern) */
+.hero-animated-grid {
+  background-size: 36px 36px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  will-change: opacity;
+}
+
+/* Deep Cinematic Vignette */
+.hero-vignette {
+  background: radial-gradient(ellipse at center, rgba(15, 15, 20, 0.05) 15%, rgba(9, 9, 11, 0.6) 60%, rgba(9, 9, 11, 0.95) 100%);
+  box-shadow: inset 0 0 80px 25px rgba(0, 0, 0, 0.85);
+}
+
+/* Animated Scanline Shimmer */
+@keyframes gridScanbeam {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  30%, 70% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: translateY(220%);
+    opacity: 0;
+  }
+}
+
+.animate-scanbeam {
+  animation: gridScanbeam 5s ease-in-out infinite;
+}
+
+/* Digital Scan & Holographic Pulse Animation */
+@keyframes digitalScan {
+  0% {
+    top: -10%;
+    opacity: 0;
+  }
+  15%, 85% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 110%;
+    opacity: 0;
+  }
+}
+
+.animate-digital-scan {
+  animation: digitalScan 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes digitalPulse {
+  0%, 100% {
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 8px rgba(245, 158, 11, 0.15));
+    transform: translateY(-8%) scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 18px rgba(56, 189, 248, 0.35));
+    transform: translateY(-8%) scale(1.015);
+  }
+}
+
+.animate-digital-pulse {
+  animation: digitalPulse 5s ease-in-out infinite;
+}
+
+/* Infinite marquee animation */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Infinite marquee animation: Left to Right (3-Row Ticker) */
+@keyframes marquee-ltr {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-marquee-ltr {
+  display: flex;
+  width: max-content;
+  animation: marquee-ltr 120s linear infinite;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.animate-marquee-ltr-slow {
+  display: flex;
+  width: max-content;
+  animation: marquee-ltr 138s linear infinite;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.animate-marquee-ltr-slower {
+  display: flex;
+  width: max-content;
+  animation: marquee-ltr 126s linear infinite;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.animate-marquee-ltr-offset {
+  display: flex;
+  width: max-content;
+  animation: marquee-ltr 132s linear infinite;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.animate-marquee-ltr:hover,
+.animate-marquee-ltr-slow:hover,
+.animate-marquee-ltr-slower:hover,
+.animate-marquee-ltr-offset:hover {
+  animation-play-state: paused;
+}
+
+/* World Map Network Arc and Radar Animations */
+@keyframes radarSweep {
+  0% { transform: translateX(-100%); }
+  45% { transform: translateX(220%); }
+  100% { transform: translateX(220%); }
+}
+
+.animate-radar-sweep {
+  animation: radarSweep 16s ease-in-out infinite;
+}
+
+@keyframes flightArcFlow {
+  0% { stroke-dashoffset: 120; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.animate-flight-arc {
+  stroke-dasharray: 6 6;
+  animation: flightArcFlow 4.5s linear infinite;
+}
+
+/* Graceful Slow Fade-In Center Animation */
+@keyframes slowFadeInCenter {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.animate-slow-fade-in-center {
+  animation: slowFadeInCenter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Browser Translation Support: '아트판타지아가 걸어온 길.' -> 'PORTFOLIO' */
+html[lang="ko"] .portfolio-lang-ko {
+  display: inline-block !important;
+}
+html[lang="ko"] .portfolio-lang-en {
+  display: none !important;
+}
+html[lang="en"] .portfolio-lang-ko,
+html:not([lang="ko"]).translated-ltr .portfolio-lang-ko,
+html:not([lang="ko"]).translated-rtl .portfolio-lang-ko {
+  display: none !important;
+}
+
+html[lang="en"] .portfolio-lang-en,
+html:not([lang="ko"]).translated-ltr .portfolio-lang-en,
+html:not([lang="ko"]).translated-rtl .portfolio-lang-en {
+  display: inline-block !important;
+}
+
+/* Browser Translation Support: Display KRW instead of WON for budget ranges */
+/* Strict Korean Mode: Always show Korean budget and hide English/KRW */
+html[lang="ko"] .budget-lang-ko {
+  display: inline !important;
+}
+html[lang="ko"] .budget-lang-en,
+html[lang="ko"] .budget-lang-en-block {
+  display: none !important;
+}
+
+/* English / Translated Mode: Hide Korean budget and display English KRW */
+html[lang="en"] .budget-lang-ko,
+html:not([lang="ko"]).translated-ltr .budget-lang-ko,
+html:not([lang="ko"]).translated-rtl .budget-lang-ko {
+  display: none !important;
+}
+
+html[lang="en"] .budget-lang-en,
+html:not([lang="ko"]).translated-ltr .budget-lang-en,
+html:not([lang="ko"]).translated-rtl .budget-lang-en {
+  display: inline !important;
+}
+
+html[lang="en"] .budget-lang-en-block,
+html:not([lang="ko"]).translated-ltr .budget-lang-en-block,
+html:not([lang="ko"]).translated-rtl .budget-lang-en-block {
+  display: block !important;
+}
+
+/* Google Translate Styling Cleanups: Hide top blue banner bar & hover popups */
+.goog-te-banner-frame.skiptranslate,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+#goog-gt-tt, 
+.goog-te-balloon-frame {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+#google_translate_element {
+  display: none !important;
+}
+
+.skiptranslate:not(.goog-te-gadget) {
+  display: none !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Cinematic Hero text reveal animation */
+@keyframes heroReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.98);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+.animate-hero-reveal {
+  animation: heroReveal 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Dazzling Mosaic Entrance Animation */
+@keyframes dazzlingMosaicReveal {
+  0% {
+    opacity: 0;
+    filter: blur(16px) brightness(2) contrast(1.4);
+    transform: scale(0.6) rotate(-8deg);
+  }
+  45% {
+    opacity: 0.85;
+    filter: blur(5px) brightness(1.35) contrast(1.15);
+    transform: scale(1.08) rotate(2deg);
+  }
+  75% {
+    opacity: 0.98;
+    filter: blur(1px) brightness(1.08);
+    transform: scale(0.97) rotate(-0.5deg);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px) brightness(1);
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes mosaicTileFlyIn {
+  0% {
+    opacity: 0;
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(0) rotate(var(--rot, 0deg));
+    filter: blur(6px);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(calc(var(--tx, 0px) * 0.3), calc(var(--ty, 0px) * 0.3)) scale(1.25) rotate(calc(var(--rot, 0deg) * 0.3));
+    filter: blur(0px);
+  }
+  75% {
+    opacity: 0.85;
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes mosaicGlowBurst {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.3);
+  }
+  100% {
+    opacity: 0.45;
+    transform: scale(1.05);
+  }
+}
+
+.animate-dazzling-logo {
+  animation: dazzlingMosaicReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-mosaic-tile {
+  animation: mosaicTileFlyIn 1.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-mosaic-glow {
+  animation: mosaicGlowBurst 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Dynamic Mosaic Reveal for Logo */
+@keyframes mosaicEntrance {
+  0% {
+    opacity: 0;
+    filter: blur(14px) brightness(2.2) contrast(160%) drop-shadow(0 0 18px rgba(245, 158, 11, 0.75));
+    transform: scale(0.55) rotate(-8deg);
+  }
+  25% {
+    opacity: 0.75;
+    filter: blur(7px) brightness(1.6) contrast(135%) drop-shadow(0 0 14px rgba(244, 63, 94, 0.6));
+    transform: scale(1.12) rotate(3deg);
+  }
+  55% {
+    opacity: 0.92;
+    filter: blur(3px) brightness(1.25) contrast(115%) drop-shadow(0 0 8px rgba(217, 70, 239, 0.4));
+    transform: scale(0.96) rotate(-1.5deg);
+  }
+  80% {
+    opacity: 0.98;
+    filter: blur(0.8px) brightness(1.08) contrast(105%);
+    transform: scale(1.02) rotate(0.4deg);
+  }
+  100% {
+    opacity: 0.9;
+    filter: blur(0px) brightness(1) contrast(100%);
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-mosaic-entrance {
+  animation: mosaicEntrance 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity, filter;
+}
+
+/* 3D Spin and Mosaic Assembly Animation */
+@keyframes spin3DEnter {
+  0% {
+    opacity: 0;
+    transform: perspective(1200px) rotateY(-180deg) rotateX(28deg) scale(0.35);
+    filter: blur(12px);
+  }
+  55% {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(22deg) rotateX(-6deg) scale(1.08);
+    filter: blur(0px);
+  }
+  75% {
+    transform: perspective(1200px) rotateY(-8deg) rotateX(3deg) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(0deg) rotateX(0deg) scale(1);
+  }
+}
+
+@keyframes mosaicTriangleReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(-15deg);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    filter: blur(0px);
+  }
+}
+
+@keyframes mosaicPixelPop {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(45px) rotate(15deg);
+    filter: blur(6px);
+  }
+  60% {
+    opacity: 0.95;
+    transform: scale(1.22) translateY(-4px) rotate(-3deg);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+}
+
+.animate-3d-spin-mosaic {
+  animation: spin3DEnter 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-mosaic-triangle {
+  animation: mosaicTriangleReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-mosaic-pixel {
+  animation: mosaicPixelPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* World Map Animations */
+@keyframes mapBreathe {
+  0%, 100% {
+    transform: scale(1.0);
+    filter: brightness(0.96) contrast(1.06);
+  }
+  50% {
+    transform: scale(1.045);
+    filter: brightness(1.12) contrast(1.15);
+  }
+}
+
+.animate-map-breathe {
+  animation: mapBreathe 12s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+@keyframes mapScanline {
+  0% {
+    transform: translateX(-150%) skewX(-15deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(350%) skewX(-15deg);
+    opacity: 0;
+  }
+}
+
+.animate-map-scanline {
+  animation: mapScanline 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes cyberPulseSlow {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.02);
+  }
+}
+
+.animate-cyber-pulse {
+  animation: cyberPulseSlow 4s ease-in-out infinite;
+}
+
+/* International Portfolio Cinematic Typography Entrance */
+@keyframes letterCinematicReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.88);
+    filter: blur(10px);
+  }
+  65% {
+    opacity: 0.95;
+    filter: blur(1px);
+    transform: translateY(-2px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+.animate-letter-reveal {
+  animation: letterCinematicReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes portfolioBloomGlow {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+}
+
+.animate-portfolio-bloom {
+  animation: portfolioBloomGlow 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Radio Production Flow Pipeline Arrow Animation */
+@keyframes flowArrowGlide {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateX(5px);
+    opacity: 1;
+  }
+}
+
+.animate-flow-arrow {
+  animation: flowArrowGlide 1.6s ease-in-out infinite;
+}
+
+/* Corporate Philosophy 'A' Branching Animation */
+@keyframes aGlowPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.25), 0 0 50px rgba(245, 158, 11, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(245, 158, 11, 0.45), 0 0 80px rgba(245, 158, 11, 0.2);
+  }
+}
+
+@keyframes aRayFlow {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
+}
+
+@keyframes aCardShimmer {
+  0%, 100% {
+    border-color: rgba(63, 63, 70, 0.8);
+  }
+  50% {
+    border-color: rgba(245, 158, 11, 0.6);
+  }
+}
+
+.animate-a-glow {
+  animation: aGlowPulse 3s ease-in-out infinite;
+}
+
+.animate-a-ray {
+  stroke-dasharray: 20 10;
+  animation: aRayFlow 2.4s linear infinite;
+}
+
+/* Smooth Cinematic Dissolve Animation */
+@keyframes textDissolve {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+}
+
+.animate-text-dissolve {
+  animation: textDissolve 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Ambient Slow Cinematic Background Drift for Architectural Artwork */
+@keyframes slowBackgroundPan {
+  0% {
+    transform: scale(1) translate(0%, 0%);
+  }
+  50% {
+    transform: scale(1.08) translate(-1.5%, -1%);
+  }
+  100% {
+    transform: scale(1) translate(0%, 0%);
+  }
+}
+
+.animate-slow-pan {
+  animation: slowBackgroundPan 20s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Editorial Section Header Entrance Animation */
+@keyframes sectionHeaderReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+.animate-header-reveal {
+  animation: sectionHeaderReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
+/* ==========================================================================
+   Ultra-Realistic Brushed Metal / Machined Titanium & Aluminum Texture System
+   ========================================================================== */
+.metal-panel-brushed {
+  background-color: #c9d1d9;
+  background-image: 
+    linear-gradient(90deg, 
+      rgba(255,255,255,0) 0%, 
+      rgba(255,255,255,0.5) 14%, 
+      rgba(255,255,255,0.05) 26%, 
+      rgba(30,41,59,0.15) 38%, 
+      rgba(255,255,255,0.7) 52%, 
+      rgba(255,255,255,0.08) 68%, 
+      rgba(30,41,59,0.18) 82%, 
+      rgba(255,255,255,0.4) 100%
+    ),
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,0.18) 0px,
+      rgba(255,255,255,0.18) 1px,
+      transparent 1px,
+      transparent 3px,
+      rgba(15,23,42,0.1) 3px,
+      rgba(15,23,42,0.1) 4px,
+      transparent 4px,
+      transparent 6px
+    ),
+    linear-gradient(180deg, 
+      #f8fafc 0%, 
+      #e2e8f0 15%, 
+      #b8c2cc 42%, 
+      #8a99a8 68%, 
+      #cbd5e1 88%, 
+      #697888 100%
+    );
+  border: 1px solid #788898;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 2px 2px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 1px 0 rgba(15, 23, 42, 0.75),
+    inset 0 -2px 3px 0 rgba(0, 0, 0, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.metal-top-panel {
+  background-color: #c9d1d9;
+  background-image: 
+    linear-gradient(90deg, 
+      rgba(255,255,255,0) 0%, 
+      rgba(255,255,255,0.45) 15%, 
+      rgba(255,255,255,0.05) 28%, 
+      rgba(30,41,59,0.12) 42%, 
+      rgba(255,255,255,0.65) 55%, 
+      rgba(255,255,255,0.08) 72%, 
+      rgba(30,41,59,0.14) 85%, 
+      rgba(255,255,255,0.35) 100%
+    ),
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,0.15) 0px,
+      rgba(255,255,255,0.15) 1px,
+      transparent 1px,
+      transparent 3px,
+      rgba(15,23,42,0.08) 3px,
+      rgba(15,23,42,0.08) 4px,
+      transparent 4px,
+      transparent 6px
+    ),
+    linear-gradient(180deg, 
+      #f8fafc 0%, 
+      #e2e8f0 20%, 
+      #cbd5e1 50%, 
+      #9aa6b2 85%, 
+      #6c7b8c 100%
+    );
+  border-bottom: 1px solid #5b6b7b;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px 0 rgba(15, 23, 42, 0.65);
+}
+
+.metal-btn {
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 35%, #cbd5e1 75%, #94a3b8 100%);
+  border: 1px solid #788896;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px rgba(15, 23, 42, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.35);
+  color: #1e293b;
+  transition: all 0.15s ease;
+}
+
+.metal-btn:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 35%, #e2e8f0 75%, #cbd5e1 100%);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 2px 5px rgba(0, 0, 0, 0.4);
+  color: #0f172a;
+}
+
+.metal-btn:active {
+  background: linear-gradient(180deg, #94a3b8 0%, #cbd5e1 50%, #e2e8f0 100%);
+  box-shadow: 
+    inset 0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 1px rgba(0, 0, 0, 0.2);
+  transform: translateY(1px);
+}
+
+.metal-groove {
+  background-color: #64748b;
+  box-shadow: 
+    inset 0 1.5px 3px rgba(0, 0, 0, 0.7),
+    inset 0 -0.5px 1px rgba(0, 0, 0, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.metal-engraved-text {
+  color: #1e293b;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+}
