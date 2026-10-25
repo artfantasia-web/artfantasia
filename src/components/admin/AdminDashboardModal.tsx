@@ -21,8 +21,9 @@ import {
   Save,
   CheckCircle2,
   ShieldCheck,
+  Download,
 } from 'lucide-react';
-import { useAdminData, extractYouTubeId, compressImageFile } from '../../context/AdminDataContext';
+import { useAdminData, extractYouTubeId, compressImageFile, APP_DATA_VERSION, getNowFormatted } from '../../context/AdminDataContext';
 import { NoticeItem, InternationalLogoItem } from '../../types';
 import { getBrandLogoSvg } from '../../data/brandLogosSvg';
 import { formatNoticeContent } from '../../utils/formatNotice';
@@ -102,6 +103,31 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   const [isSavingNotices, setIsSavingNotices] = useState(false);
   const [isSavingAll, setIsSavingAll] = useState(false);
 
+  // 1-클릭 admin_data.json 다운로드 (Netlify & GitHub 영구 배포용)
+  const handleDownloadAdminData = () => {
+    try {
+      const payload = {
+        dataVersion: APP_DATA_VERSION,
+        lastSaved: getNowFormatted(),
+        notices,
+        logos,
+      };
+      const jsonStr = JSON.stringify(payload, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'admin_data.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('admin_data.json 파일이 다운로드되었습니다. 프로젝트의 public/ 폴더에 교체 후 GitHub에 커밋/푸시하시면 Netlify에 모든 방문자에게 즉시 반영됩니다.', 'success');
+    } catch {
+      showToast('다운로드 중 오류가 발생했습니다.', 'error');
+    }
+  };
+
   // 로고 최종 저장: 모든 로고 상태를 localStorage에 영구 보존 및 서버/정적 파일에 저장하여 배포 시에도 즉시 반영
   const handleFinalSaveLogos = async () => {
     setIsSavingLogos(true);
@@ -110,9 +136,9 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       const serverOk = await syncToServer(notices, logos);
       setIsSavingLogos(false);
       if (serverOk) {
-        showToast(`[서버 & 배포 파일 저장 완료] 롤링티커 로고 (${logos.length}개)가 영구 저장되었습니다. 배포 후 모든 방문자에게 즉시 적용됩니다.`, 'success');
+        showToast(`[서버 & 소스 파일 저장 완료] 롤링티커 로고 (${logos.length}개)가 저장되었습니다. GitHub 커밋 시 Netlify에 즉시 적용됩니다.`, 'success');
       } else {
-        showToast(`로고가 로컬에 저장되었습니다.`, 'success');
+        showToast(`현재 브라우저에 즉시 저장되었습니다. Netlify 모든 방문자에게 반영하려면 [GitHub 배포용 JSON 다운로드]를 받아 커밋해 주세요.`, 'info');
       }
     } catch {
       setIsSavingLogos(false);
@@ -128,9 +154,9 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       const serverOk = await syncToServer(notices, logos);
       setIsSavingNotices(false);
       if (serverOk) {
-        showToast(`[서버 & 배포 파일 저장 완료] 공지사항 (${notices.length}개)이 영구 저장되었습니다. 배포 후 모든 방문자에게 즉시 적용됩니다.`, 'success');
+        showToast(`[서버 & 소스 파일 저장 완료] 공지사항 (${notices.length}개)이 저장되었습니다. GitHub 커밋 시 Netlify에 즉시 적용됩니다.`, 'success');
       } else {
-        showToast(`공지사항이 로컬에 저장되었습니다.`, 'success');
+        showToast(`현재 브라우저에 즉시 저장되었습니다. Netlify 모든 방문자에게 반영하려면 [GitHub 배포용 JSON 다운로드]를 받아 커밋해 주세요.`, 'info');
       }
     } catch {
       setIsSavingNotices(false);
@@ -146,9 +172,9 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       const serverOk = await syncToServer(notices, logos);
       setIsSavingAll(false);
       if (serverOk) {
-        showToast(`[전체 최종 저장 완료] 로고 (${logos.length}개) 및 공지사항 (${notices.length}개) 전체가 서버 및 배포 파일에 영구 저장되었습니다. 배포 후 모든 방문자에게 즉시 반영됩니다.`, 'success');
+        showToast(`[전체 최종 저장 완료] 로고 (${logos.length}개) 및 공지사항 (${notices.length}개) 전체가 소스 코드 및 배포 파일에 저장되었습니다. GitHub 커밋 시 Netlify에 즉시 반영됩니다.`, 'success');
       } else {
-        showToast(`전체 데이터가 로컬에 저장되었습니다.`, 'success');
+        showToast(`현재 브라우저에 즉시 저장되었습니다. Netlify 모든 방문자에게 영구 반영하려면 [GitHub 배포용 JSON 다운로드]를 받아 커밋해 주세요.`, 'info');
       }
     } catch {
       setIsSavingAll(false);
@@ -495,6 +521,15 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={handleDownloadAdminData}
+              className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-amber-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer border border-amber-500/40"
+              title="Netlify 및 GitHub 배포용 admin_data.json 파일 다운로드"
+            >
+              <Download className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">GitHub 배포용 JSON 다운로드</span>
+            </button>
+            <button
+              type="button"
               onClick={() => {
                 setJsonText(exportDataAsJson());
                 setIsJsonModalOpen(true);
@@ -657,6 +692,17 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   <Save className="w-4 h-4" />
                   <span>{isSavingNotices ? '공지사항 저장 중...' : '공지사항 최종 저장'}</span>
                 </button>
+              </div>
+
+              {/* GitHub & Netlify Deployment Guide Banner */}
+              <div className="p-3.5 rounded-xl bg-sky-950/40 border border-sky-400/30 text-sky-200 text-xs leading-relaxed flex items-start gap-3">
+                <Download className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-white block mb-0.5">
+                    깃허브(GitHub) & 네트리파이(Netlify) 배포 가이드
+                  </span>
+                  네트리파이 정적 배포 사이트에서는 관리자 창에서 수정한 내용이 현재 브라우저에 즉시 반영됩니다. 모든 방문자에게 영구 반영되도록 깃허브에 배포하시려면, 상단 <strong className="text-amber-300">[GitHub 배포용 JSON 다운로드]</strong> 버튼을 눌러 받은 <code className="bg-black/50 px-1 py-0.5 rounded text-amber-200 font-mono">admin_data.json</code> 파일을 프로젝트의 <code className="bg-black/50 px-1 py-0.5 rounded text-amber-200 font-mono">public/admin_data.json</code>에 덮어쓴 후 깃허브에 커밋&푸시해 주시면 됩니다.
+                </div>
               </div>
 
               {/* Notice Form (Create or Edit) */}
@@ -1278,6 +1324,17 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   <Save className="w-4 h-4" />
                   <span>{isSavingLogos ? '로고 저장 중...' : '로고 최종 저장'}</span>
                 </button>
+              </div>
+
+              {/* GitHub & Netlify Deployment Guide Banner */}
+              <div className="p-3.5 rounded-xl bg-sky-950/40 border border-sky-400/30 text-sky-200 text-xs leading-relaxed flex items-start gap-3">
+                <Download className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-white block mb-0.5">
+                    깃허브(GitHub) & 네트리파이(Netlify) 롤링티커 배포 가이드
+                  </span>
+                  등록/수정한 롤링티커 로고는 현재 브라우저에 즉시 실시간 활성화됩니다. 네트리파이의 모든 일반 방문자에게 영구 반영되도록 깃허브에 배포하시려면, 상단 <strong className="text-amber-300">[GitHub 배포용 JSON 다운로드]</strong>를 클릭하여 받은 <code className="bg-black/50 px-1 py-0.5 rounded text-amber-200 font-mono">admin_data.json</code>을 <code className="bg-black/50 px-1 py-0.5 rounded text-amber-200 font-mono">public/admin_data.json</code>에 덮어쓴 후 깃허브에 커밋&푸시해 주시면 됩니다.
+                </div>
               </div>
 
               {/* Informational Banner */}
