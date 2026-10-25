@@ -33,8 +33,25 @@ export default defineConfig(() => {
                   const jsonStr = JSON.stringify(data, null, 2);
                   fs.writeFileSync(publicFile, jsonStr, 'utf-8');
                   fs.writeFileSync(srcFile, jsonStr, 'utf-8');
+
+                  // Also persist directly into git-tracked TypeScript files so git push to GitHub/Netlify works out-of-the-box!
+                  if (Array.isArray(data.logos) && data.logos.length > 0) {
+                    const fixedLogosFile = path.resolve(import.meta.dirname, 'src/data/fixedLogos.ts');
+                    const logosCode = `import { InternationalLogoItem } from "../types";\n\nexport const FIXED_INTERNATIONAL_LOGOS: InternationalLogoItem[] = ${JSON.stringify(data.logos, null, 2)};\n`;
+                    fs.writeFileSync(fixedLogosFile, logosCode, 'utf-8');
+                  }
+                  if (Array.isArray(data.notices) && data.notices.length > 0) {
+                    const contentFile = path.resolve(import.meta.dirname, 'src/data/content.ts');
+                    let contentTs = fs.readFileSync(contentFile, 'utf-8');
+                    contentTs = contentTs.replace(
+                      /export const NOTICES: NoticeItem\[\] = \[[\s\S]*?\];/,
+                      `export const NOTICES: NoticeItem[] = ${JSON.stringify(data.notices, null, 2)};`
+                    );
+                    fs.writeFileSync(contentFile, contentTs, 'utf-8');
+                  }
+
                   res.writeHead(200, { 'Content-Type': 'application/json' });
-                  res.end(JSON.stringify({ success: true, message: 'Saved successfully to disk' }));
+                  res.end(JSON.stringify({ success: true, message: 'Saved successfully to disk and source files' }));
                 } catch (err: any) {
                   res.writeHead(500, { 'Content-Type': 'application/json' });
                   res.end(JSON.stringify({ success: false, error: err.message }));
