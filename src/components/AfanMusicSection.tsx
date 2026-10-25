@@ -472,7 +472,20 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
     if (isShowcasePlaying) {
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
-      }, 3000);
+      }, 2500);
+    }
+  };
+
+  const handleScreenInteraction = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (isShowcasePlaying) {
+      if (!showControls) {
+        if (e) e.stopPropagation();
+        handleShowcaseMouseMove();
+      } else {
+        toggleShowcasePlay(e as React.MouseEvent);
+      }
+    } else {
+      toggleShowcasePlay(e as React.MouseEvent);
     }
   };
 
@@ -504,6 +517,9 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
           <div
             ref={showcaseContainerRef}
             onMouseMove={handleShowcaseMouseMove}
+            onMouseEnter={handleShowcaseMouseMove}
+            onTouchStart={handleShowcaseMouseMove}
+            onTouchMove={handleShowcaseMouseMove}
             onMouseLeave={() => isShowcasePlaying && setShowControls(false)}
             className="relative rounded-lg border border-zinc-700/80 bg-zinc-950 overflow-hidden shadow-2xl select-none"
           >
@@ -521,7 +537,11 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
             </div>
 
             {/* Video Player Screen */}
-            <div className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group">
+            <div
+              onTouchStart={handleShowcaseMouseMove}
+              onTouchMove={handleShowcaseMouseMove}
+              className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group"
+            >
               <video
                 ref={showcaseVideoRef}
                 src="https://res.cloudinary.com/iwcoiohr/video/upload/v1792397402/Moving_Forward_1.mp4"
@@ -529,15 +549,18 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
                 playsInline
                 muted={isShowcaseMuted}
                 preload="metadata"
-                onClick={toggleShowcasePlay}
+                onClick={handleScreenInteraction}
                 className="w-full h-full object-cover block cursor-pointer"
                 onPlay={() => {
                   setIsShowcasePlaying(true);
                   setShowControls(true);
+                  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+                  controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 2500);
                 }}
                 onPause={() => {
                   setIsShowcasePlaying(false);
                   setShowControls(true);
+                  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
                 }}
                 onTimeUpdate={handleShowcaseTimeUpdate}
                 onLoadedMetadata={() => {
@@ -548,6 +571,7 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
                 onEnded={() => {
                   setIsShowcasePlaying(false);
                   setShowControls(true);
+                  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
                 }}
               />
 
@@ -563,7 +587,7 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
               {/* Cinematic Center Overlay & Play Button */}
               {!isShowcasePlaying && (
                 <div
-                  onClick={toggleShowcasePlay}
+                  onClick={handleScreenInteraction}
                   className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center cursor-pointer z-15 bg-black/15 hover:bg-black/25 transition-colors group/overlay"
                 >
                   <span
@@ -731,7 +755,7 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
                     개인 유튜브 수익창출 허용
                   </h4>
                   <p className="text-[12.5px] sm:text-[13px] text-zinc-300 leading-relaxed font-normal font-google">
-                    소속사/기업형 채널이 아닌 개인 규모의 유튜브 채널이라면, <strong className="text-white">광고 수익이 창출되는 채널이라도 언제든 자유롭게</strong> BGM으로 사용하실 수 있습니다.
+                    소속사/기업형 채널이 아닌 개인 유튜브 채널이라면, <strong className="text-white">광고 수익이 창출되는 채널이라도 언제든 자유롭게</strong> BGM으로 사용하실 수 있습니다.
                   </p>
                 </div>
               </div>

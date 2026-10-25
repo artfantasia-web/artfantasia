@@ -58,9 +58,130 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({ onOpenAdmin: _onOp
           }
         />
 
+        {/* Category Filter Buttons & Search (Always visible at top of section) */}
+        <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5">
+          {/* Category Buttons: 전체, 소식, 정보 */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategory('all');
+                if (activeNotice) setActiveNotice(null);
+              }}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'all' && !activeNotice
+                  ? 'bg-zinc-100 text-zinc-950 shadow-sm ring-1 ring-white/60'
+                  : 'bg-zinc-900/90 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'
+              }`}
+            >
+              <span>전체</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  selectedCategory === 'all' && !activeNotice
+                    ? 'bg-zinc-300 text-zinc-950 font-extrabold'
+                    : 'bg-zinc-800 text-zinc-400'
+                }`}
+              >
+                {notices.length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategory('소식');
+                if (activeNotice) setActiveNotice(null);
+              }}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === '소식' && !activeNotice
+                  ? 'bg-amber-400 text-zinc-950 shadow-sm ring-1 ring-amber-300'
+                  : 'bg-zinc-900/90 text-zinc-400 hover:text-amber-300 hover:bg-zinc-800 border border-zinc-800'
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  selectedCategory === '소식' && !activeNotice ? 'bg-zinc-950' : 'bg-amber-400'
+                }`}
+              />
+              <span>소식</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  selectedCategory === '소식' && !activeNotice
+                    ? 'bg-amber-300 text-zinc-950 font-extrabold'
+                    : 'bg-zinc-800 text-zinc-400'
+                }`}
+              >
+                {notices.filter((n) => n.category !== '정보').length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategory('정보');
+                if (activeNotice) setActiveNotice(null);
+              }}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === '정보' && !activeNotice
+                  ? 'bg-sky-400 text-zinc-950 shadow-sm ring-1 ring-sky-300'
+                  : 'bg-zinc-900/90 text-zinc-400 hover:text-sky-300 hover:bg-zinc-800 border border-zinc-800'
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  selectedCategory === '정보' && !activeNotice ? 'bg-zinc-950' : 'bg-sky-400'
+                }`}
+              />
+              <span>정보</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  selectedCategory === '정보' && !activeNotice
+                    ? 'bg-sky-300 text-zinc-950 font-extrabold'
+                    : 'bg-zinc-800 text-zinc-400'
+                }`}
+              >
+                {notices.filter((n) => n.category === '정보').length}
+              </span>
+            </button>
+
+            {/* Quick 'Back to List' button when viewing article */}
+            {activeNotice && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveNotice(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="px-3 py-2 rounded-lg text-xs font-bold text-amber-300 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 transition-all flex items-center gap-1.5 cursor-pointer ml-1"
+                title="글 목록으로 돌아가기"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-amber-400" />
+                <span>목록 보기</span>
+              </button>
+            )}
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="소식 및 정보 검색..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (activeNotice && e.target.value.trim().length > 0) {
+                  setActiveNotice(null);
+                }
+              }}
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
+            />
+          </div>
+        </div>
+
         {activeNotice ? (
-          /* In-Page Article Detail View (Directly Below Header) */
-          <div className="mt-8 space-y-6">
+          /* In-Page Article Detail View (Directly Below Category & Search Bar) */
+          <div className="mt-6 space-y-6">
             {/* Article Content Card */}
             <article className="rounded-xl bg-zinc-950 border border-zinc-800/80 p-6 sm:p-10 shadow-2xl space-y-6">
               {/* Category & Meta Information */}
@@ -172,96 +293,6 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({ onOpenAdmin: _onOp
         ) : (
           /* Notice List View */
           <>
-            {/* Category Filter Buttons & Search */}
-            <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5">
-              {/* Category Buttons: 전체, 소식, 정보 */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategory('all')}
-                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    selectedCategory === 'all'
-                      ? 'bg-zinc-100 text-zinc-950 shadow-sm ring-1 ring-white/60'
-                      : 'bg-zinc-900/90 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800'
-                  }`}
-                >
-                  <span>전체</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                      selectedCategory === 'all'
-                        ? 'bg-zinc-300 text-zinc-950 font-extrabold'
-                        : 'bg-zinc-800 text-zinc-400'
-                    }`}
-                  >
-                    {notices.length}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategory('소식')}
-                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    selectedCategory === '소식'
-                      ? 'bg-amber-400 text-zinc-950 shadow-sm ring-1 ring-amber-300'
-                      : 'bg-zinc-900/90 text-zinc-400 hover:text-amber-300 hover:bg-zinc-800 border border-zinc-800'
-                  }`}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      selectedCategory === '소식' ? 'bg-zinc-950' : 'bg-amber-400'
-                    }`}
-                  />
-                  <span>소식</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                      selectedCategory === '소식'
-                        ? 'bg-amber-300 text-zinc-950 font-extrabold'
-                        : 'bg-zinc-800 text-zinc-400'
-                    }`}
-                  >
-                    {notices.filter((n) => n.category !== '정보').length}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategory('정보')}
-                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    selectedCategory === '정보'
-                      ? 'bg-sky-400 text-zinc-950 shadow-sm ring-1 ring-sky-300'
-                      : 'bg-zinc-900/90 text-zinc-400 hover:text-sky-300 hover:bg-zinc-800 border border-zinc-800'
-                  }`}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      selectedCategory === '정보' ? 'bg-zinc-950' : 'bg-sky-400'
-                    }`}
-                  />
-                  <span>정보</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                      selectedCategory === '정보'
-                        ? 'bg-sky-300 text-zinc-950 font-extrabold'
-                        : 'bg-zinc-800 text-zinc-400'
-                    }`}
-                  >
-                    {notices.filter((n) => n.category === '정보').length}
-                  </span>
-                </button>
-              </div>
-
-              {/* Search */}
-              <div className="relative w-full sm:max-w-xs">
-                <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="소식 및 정보 검색..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
-                />
-              </div>
-            </div>
 
             {/* Notice List Table */}
             <div className="mt-6 rounded-lg bg-zinc-950 border border-zinc-800/80 overflow-hidden">

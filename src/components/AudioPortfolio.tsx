@@ -397,7 +397,20 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
     if (isShowcasePlaying) {
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
-      }, 3000);
+      }, 2500);
+    }
+  };
+
+  const handleScreenInteraction = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (isShowcasePlaying) {
+      if (!showControls) {
+        if (e) e.stopPropagation();
+        handleShowcaseMouseMove();
+      } else {
+        toggleShowcasePlay(e as React.MouseEvent);
+      }
+    } else {
+      toggleShowcasePlay(e as React.MouseEvent);
     }
   };
 
@@ -431,6 +444,9 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
           <div
             ref={showcaseContainerRef}
             onMouseMove={handleShowcaseMouseMove}
+            onMouseEnter={handleShowcaseMouseMove}
+            onTouchStart={handleShowcaseMouseMove}
+            onTouchMove={handleShowcaseMouseMove}
             onMouseLeave={() => isShowcasePlaying && setShowControls(false)}
             className="relative rounded-lg border border-zinc-700/80 bg-zinc-950 overflow-hidden shadow-2xl select-none"
           >
@@ -448,7 +464,11 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
             </div>
 
             {/* Video Player Screen */}
-            <div className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group">
+            <div
+              onTouchStart={handleShowcaseMouseMove}
+              onTouchMove={handleShowcaseMouseMove}
+              className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group"
+            >
               <video
                 ref={showcaseVideoRef}
                 src="https://res.cloudinary.com/iwcoiohr/video/upload/v1792471213/%EB%8B%B9%EC%8B%A0%EC%9D%80_%EC%A3%BC%EC%9D%B8%EA%B3%B5_%EC%B5%9C%EA%B3%A0%EC%9D%98_%EB%B8%8C%EB%9E%9C%EB%93%9C_%EC%9E%85%EB%8B%88%EB%8B%A4.mp4"
@@ -456,7 +476,7 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
                 playsInline
                 muted={isShowcaseMuted}
                 preload="metadata"
-                onClick={toggleShowcasePlay}
+                onClick={handleScreenInteraction}
                 className="w-full h-full object-cover block cursor-pointer"
                 onPlay={() => {
                   setIsShowcasePlaying(true);
@@ -494,7 +514,7 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
               {/* Cinematic Center Overlay & Play Button */}
               {!isShowcasePlaying && (
                 <div
-                  onClick={toggleShowcasePlay}
+                  onClick={handleScreenInteraction}
                   className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center cursor-pointer z-15 bg-black/15 hover:bg-black/25 transition-colors group/overlay"
                 >
                   <span
@@ -608,7 +628,7 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
             <p className="mt-2.5 text-sm sm:text-base font-semibold text-amber-400 font-google text-center flex items-center justify-center gap-2 flex-wrap">
               <span className="text-amber-400 font-bold shrink-0">◉</span>
               <span>
-                원하시는 스타일에 맞춰 <span className="font-extrabold text-amber-300 underline decoration-amber-400/60 underline-offset-4">최적의 해답</span>을 제공해 드립니다.
+                원하시는 형태에 맞춰 <span className="font-extrabold text-amber-300 underline decoration-amber-400/60 underline-offset-4">최적의 해답</span>을 제공해 드립니다.
               </span>
             </p>
           </div>
@@ -784,7 +804,7 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
                 </div>
                 
                 <h4 className="text-base sm:text-lg lg:text-[20px] font-bold text-zinc-900 tracking-tight leading-snug">
-                  원하시는 <span className="font-extrabold text-zinc-950">제작 스타일</span>과 <span className="font-extrabold text-zinc-950">방송 송출 플랜</span>에 맞춘 최적의 라디오 사운드 솔루션
+                  원하시는 제작 스타일과 방송 송출 플랜에 맞춘 최적의 라디오 사운드 솔루션
                 </h4>
                 
                 <p className="text-xs sm:text-[13.5px] text-zinc-500 leading-relaxed font-normal">

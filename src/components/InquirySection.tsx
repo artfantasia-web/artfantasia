@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { COMPANY_INFO } from '../data/content';
 import { Send, CheckCircle2, Phone, Mail, ShieldCheck, Loader2 } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
-import { useIsTranslated } from '../hooks/useIsTranslated';
+import { useLanguage } from '../context/LanguageContext';
 
 interface InquirySectionProps {
   isModal?: boolean;
@@ -11,12 +11,54 @@ interface InquirySectionProps {
 
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xpppwede';
 
+export const BUDGET_OPTIONS = [
+  {
+    classKey: 'S',
+    title: 'S클래스 2억원 이상',
+    titleEn: 'S-Class: KRW 200M or more',
+    desc: '대규모 글로벌 캠페인 · 프리미엄 지상파 TVCF · 하이엔드 시네마틱',
+  },
+  {
+    classKey: 'A',
+    title: 'A클래스 2억원 ~ 1억원',
+    titleEn: 'A-Class: KRW 200M ~ 100M',
+    desc: '브랜드 메인 캠페인 · 메인 TVCF · 고사양 3D VFX · 대형 프로젝트',
+  },
+  {
+    classKey: 'B',
+    title: 'B클래스 1억원 ~ 5천만원',
+    titleEn: 'B-Class: KRW 100M ~ 50M',
+    desc: '기업 메인 필름 · 디지털 캠페인 · 오리지널 사운드트랙 제작',
+  },
+  {
+    classKey: 'C',
+    title: 'C클래스 5천만원 ~ 1천만원',
+    titleEn: 'C-Class: KRW 50M ~ 10M',
+    desc: '디지털 바이럴 영상 · 브랜드 필름 · 라디오 CM · 퍼포먼스 광고',
+  },
+  {
+    classKey: 'Custom',
+    title: '맞춤형 (저가형)',
+    titleEn: 'Custom: Under KRW 10M (Budget-friendly)',
+    desc: '스타트업 및 실속형 맞춤 기획 · 실무 맞춤형 가성비 패키지',
+  },
+  {
+    classKey: 'Consult',
+    title: '협의 후 책정',
+    titleEn: 'KRW Consultation & Negotiation',
+    desc: '프로젝트 규모 및 제작 범위 상담 후 상호 협의 결정',
+  },
+];
+
 export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false, onClose }) => {
-  const isTranslated = useIsTranslated();
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ticketNumber, setTicketNumber] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [selectedBudgetKey, setSelectedBudgetKey] = useState<string>('B');
   const [quickForm, setQuickForm] = useState({
     name: '',
     company: '',
@@ -30,13 +72,15 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
   const handleQuickSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quickForm.name || !quickForm.phone || !quickForm.email) {
-      setErrorMessage('담당자명, 연락처, 이메일을 모두 입력해 주세요.');
+      setErrorMessage(isEn ? 'Please enter name, phone, and email.' : '담당자명, 연락처, 이메일을 모두 입력해 주세요.');
       return;
     }
     
     setIsSubmitting(true);
     setErrorMessage('');
     const randomTicket = `AF-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const currentBudgetOption = BUDGET_OPTIONS.find((b) => b.classKey === selectedBudgetKey) || BUDGET_OPTIONS[2];
+    const budgetToSend = isEn ? currentBudgetOption.titleEn : currentBudgetOption.title;
 
     try {
       const response = await fetch(FORMSPREE_ENDPOINT, {
@@ -52,7 +96,7 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
           연락처_phone: quickForm.phone,
           이메일_email: quickForm.email,
           프로젝트유형_category: quickForm.category,
-          예상예산_budget: quickForm.budget,
+          예상예산_budget: budgetToSend,
           요청사항_details: quickForm.details,
           신청일시_submittedAt: new Date().toLocaleString('ko-KR'),
           _subject: `[아트판타지아 문의] ${quickForm.name} (${quickForm.company || '미입력'}) - ${quickForm.category} (${randomTicket})`,
@@ -238,6 +282,7 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
                 <button
                   onClick={() => {
                     setFormSubmitted(false);
+                    setSelectedBudgetKey('B');
                     setQuickForm({
                       name: '',
                       company: '',
@@ -349,53 +394,22 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
                 {/* Estimated Budget Range (High Contrast & Clear Hierarchy) */}
                 <div>
                   <label className="block text-base sm:text-lg font-bold text-white mb-2.5 font-apple">
-                    예상 예산 범위 선택
+                    {isEn ? 'Estimated Budget Range (KRW)' : '예상 예산 범위 선택'}
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {[
-                      {
-                        classKey: 'S',
-                        title: 'S클래스 2억원 이상',
-                        titleEn: 'S-Class: KRW 200M or more',
-                        desc: '대규모 글로벌 캠페인 · 프리미엄 지상파 TVCF · 하이엔드 시네마틱',
-                      },
-                      {
-                        classKey: 'A',
-                        title: 'A클래스 2억원 ~ 1억원',
-                        titleEn: 'A-Class: KRW 200M ~ 100M',
-                        desc: '브랜드 메인 캠페인 · 메인 TVCF · 고사양 3D VFX · 대형 프로젝트',
-                      },
-                      {
-                        classKey: 'B',
-                        title: 'B클래스 1억원 ~ 5천만원',
-                        titleEn: 'B-Class: KRW 100M ~ 50M',
-                        desc: '기업 메인 필름 · 디지털 캠페인 · 오리지널 사운드트랙 제작',
-                      },
-                      {
-                        classKey: 'C',
-                        title: 'C클래스 5천만원 ~ 1천만원',
-                        titleEn: 'C-Class: KRW 50M ~ 10M',
-                        desc: '디지털 바이럴 영상 · 브랜드 필름 · 라디오 CM · 퍼포먼스 광고',
-                      },
-                      {
-                        classKey: 'Custom',
-                        title: '맞춤형 (저가형)',
-                        titleEn: 'Custom (Budget-friendly)',
-                        desc: '스타트업 및 실속형 맞춤 기획 · 실무 맞춤형 가성비 패키지',
-                      },
-                      {
-                        classKey: 'Consult',
-                        title: '협의 후 책정',
-                        titleEn: 'Consultation & Negotiation',
-                        desc: '프로젝트 규모 및 제작 범위 상담 후 상호 협의 결정',
-                      },
-                    ].map((budget) => {
-                      const isSelected = quickForm.budget === budget.title;
+                  <div key={`inquiry-budgets-${language}`} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {BUDGET_OPTIONS.map((budget) => {
+                      const isSelected = selectedBudgetKey === budget.classKey;
                       return (
                         <button
                           type="button"
-                          key={budget.title}
-                          onClick={() => setQuickForm({ ...quickForm, budget: budget.title })}
+                          key={`${budget.classKey}-${language}`}
+                          onClick={() => {
+                            setSelectedBudgetKey(budget.classKey);
+                            setQuickForm((prev) => ({
+                              ...prev,
+                              budget: isEn ? budget.titleEn : budget.title,
+                            }));
+                          }}
                           className={`py-3.5 px-4 rounded-xl text-left transition-all cursor-pointer flex items-center justify-between border font-apple ${
                             isSelected
                               ? 'bg-amber-400/20 border-amber-400 shadow-md ring-1 ring-amber-400/50'
@@ -403,18 +417,12 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
                           }`}
                         >
                           <span
-                            className={`text-base sm:text-lg font-bold tracking-tight font-apple ${
+                            className={`text-base sm:text-lg font-bold tracking-tight font-apple notranslate ${
                               isSelected ? 'text-amber-300 font-extrabold' : 'text-white'
                             }`}
+                            translate="no"
                           >
-                            {isTranslated ? (
-                              <span className="notranslate" translate="no">{budget.titleEn}</span>
-                            ) : (
-                              <>
-                                <span className="budget-lang-ko">{budget.title}</span>
-                                <span className="budget-lang-en hidden notranslate" translate="no">{budget.titleEn}</span>
-                              </>
-                            )}
+                            {isEn ? budget.titleEn : budget.title}
                           </span>
                           {isSelected && (
                             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]" />

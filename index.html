@@ -41,7 +41,11 @@
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <link rel="alternate" type="application/rss+xml" title="아트판타지아 | AatFantasia" href="https://artfantasia.co.kr/rss.xml" />
+    
+    <!-- RSS & Atom Auto-Discovery (Invisible in UI, auto-detected by RSS readers, browsers, and crawlers) -->
+    <link rel="alternate" type="application/rss+xml" title="아트판타지아 RSS 2.0 피드" href="/rss.xml" />
+    <link rel="alternate" type="application/atom+xml" title="아트판타지아 Atom 피드" href="/atom.xml" />
+    <link rel="alternate" type="application/rss+xml" title="아트판타지아 Feed (feed.xml)" href="/feed.xml" />
 
     <!-- Schema.org JSON-LD Structured Data for Naver and Google Rich Results -->
     <script type="application/ld+json">
@@ -156,7 +160,7 @@
         }
       };
     </script>
-    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="text/javascript" defer src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -17,12 +17,14 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
+import { useLanguage } from '../context/LanguageContext';
 
 interface MarketingSectionProps {
   onOpenInquiry: () => void;
 }
 
 export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquiry }) => {
+  const { language } = useLanguage();
   // Cinema Showcase Video State (Matching VideoPortfolio)
   const showcaseVideoRef = useRef<HTMLVideoElement>(null);
   const showcaseContainerRef = useRef<HTMLDivElement>(null);
@@ -98,6 +100,19 @@ export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquir
     }
   };
 
+  const handleScreenInteraction = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (isShowcasePlaying) {
+      if (!showControls) {
+        if (e) e.stopPropagation();
+        handleShowcaseMouseMove();
+      } else {
+        toggleShowcasePlay();
+      }
+    } else {
+      toggleShowcasePlay();
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -148,15 +163,31 @@ export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquir
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         {/* Section Header */}
         <StandardSectionHeader
-          title="마케팅"
+          title={
+            language === 'ko' ? (
+              <span className="capitalize">마케팅</span>
+            ) : (
+              <span className="capitalize">Marketing</span>
+            )
+          }
           subtitle={
-            <>
-              최적화된{' '}
-              <span className="font-black text-amber-300 underline decoration-amber-400/60 underline-offset-4">
-                소통 전략
-              </span>
-              을 설계하겠습니다.
-            </>
+            language === 'ko' ? (
+              <>
+                최적화된{' '}
+                <span className="font-black text-amber-300 underline decoration-amber-400/60 underline-offset-4">
+                  소통 전략
+                </span>
+                을 설계하겠습니다.
+              </>
+            ) : (
+              <>
+                Designing the optimal{' '}
+                <span className="font-black text-amber-300 underline decoration-amber-400/60 underline-offset-4">
+                  communication strategy
+                </span>
+                .
+              </>
+            )
           }
         />
 
@@ -169,6 +200,9 @@ export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquir
           <div
             ref={showcaseContainerRef}
             onMouseMove={handleShowcaseMouseMove}
+            onMouseEnter={handleShowcaseMouseMove}
+            onTouchStart={handleShowcaseMouseMove}
+            onTouchMove={handleShowcaseMouseMove}
             onMouseLeave={() => isShowcasePlaying && setShowControls(false)}
             className="relative rounded-lg border border-zinc-700/80 bg-zinc-950 overflow-hidden shadow-2xl select-none"
           >
@@ -186,22 +220,29 @@ export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquir
             </div>
 
             {/* Video Player Screen */}
-            <div className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group">
+            <div
+              onTouchStart={handleShowcaseMouseMove}
+              onTouchMove={handleShowcaseMouseMove}
+              className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group"
+            >
               <video
                 ref={showcaseVideoRef}
                 src="https://res.cloudinary.com/iwcoiohr/video/upload/v1792743155/ALIN.mp4"
                 playsInline
                 muted={isShowcaseMuted}
                 preload="metadata"
-                onClick={toggleShowcasePlay}
+                onClick={handleScreenInteraction}
                 className="w-full h-full object-cover block cursor-pointer"
                 onPlay={() => {
                   setIsShowcasePlaying(true);
                   setShowControls(true);
+                  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+                  controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 2500);
                 }}
                 onPause={() => {
                   setIsShowcasePlaying(false);
                   setShowControls(true);
+                  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
                 }}
                 onTimeUpdate={handleShowcaseTimeUpdate}
                 onLoadedMetadata={() => {
@@ -212,13 +253,14 @@ export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquir
                 onEnded={() => {
                   setIsShowcasePlaying(false);
                   setShowControls(true);
+                  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
                 }}
               />
 
               {/* Cinematic Center Overlay & Play Button (Matching VideoPortfolio Standard) */}
               {!isShowcasePlaying && (
                 <div
-                  onClick={toggleShowcasePlay}
+                  onClick={handleScreenInteraction}
                   className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center cursor-pointer z-15 bg-black/25 hover:bg-black/35 transition-colors group/overlay"
                 >
                   <span
@@ -426,39 +468,39 @@ export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquir
               </div>
             </div>
 
-            {/* Strict Confidentiality Pledge Monument (절대 공개불가 & 신뢰의 원칙) - Compact Red Edition */}
-            <div className="relative rounded-2xl bg-gradient-to-br from-zinc-950 via-[#1a0a0d] to-zinc-950 border border-red-500/40 hover:border-red-500/60 px-6 py-4 sm:px-8 sm:py-5 md:px-10 md:py-6 shadow-[0_12px_45px_rgba(0,0,0,0.85)] overflow-hidden font-google my-4 transition-all duration-300">
+            {/* Strict Confidentiality Pledge Monument (절대 공개불가 & 신뢰의 원칙) */}
+            <div className="relative rounded-2xl bg-gradient-to-br from-zinc-950 via-[#1a0a0d] to-zinc-950 border border-red-500/40 hover:border-red-500/60 px-6 py-5 sm:px-8 sm:py-6 md:px-10 md:py-7 shadow-[0_12px_45px_rgba(0,0,0,0.85)] overflow-hidden font-google my-5 sm:my-6 transition-all duration-300">
               {/* Ambient Crimson/Red Glow */}
               <div className="absolute -right-12 -bottom-12 w-72 h-72 bg-red-600/[0.08] rounded-full blur-3xl pointer-events-none" />
               <div className="absolute top-4 right-6 opacity-10 pointer-events-none">
                 <Lock className="w-24 h-24 text-red-500" />
               </div>
 
-              <div className="relative z-10 max-w-4xl space-y-2.5">
+              <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-4.5">
                 <h3 className="text-base sm:text-lg md:text-xl font-extrabold text-white tracking-tight leading-snug font-google">
                   아트판타지아의 마케팅기획은<br className="sm:hidden" />
                   <span className="text-red-400 font-black"> 철저한 대외비</span>로 진행되며<br />
                   클라이언트 외에는 <span className="underline decoration-red-500/70 underline-offset-4 text-white">절대 공개불가를 원칙</span>으로 합니다.
                 </h3>
 
-                {/* Core Pledge Highlight Box - 30% reduced vertical height */}
-                <div className="px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-red-950/35 border border-red-500/40 shadow-inner">
+                {/* Core Pledge Highlight Box */}
+                <div className="px-5 py-3.5 sm:px-6 sm:py-4 rounded-xl bg-red-950/35 border border-red-500/40 shadow-inner">
                   <p className="text-sm sm:text-base md:text-[17px] font-black text-white leading-snug font-google drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                     "고객님의 광고전략 비공개는 세상이 무너져도 지켜야 할 약속이기 때문입니다."
                   </p>
                 </div>
 
-                {/* Trust Pillars Checklist - Compact vertical padding */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                  <div className="flex items-center justify-center md:justify-start gap-2 py-2 px-3 rounded-lg bg-zinc-900/70 border border-red-900/30">
+                {/* Trust Pillars Checklist */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-2 sm:pt-2.5">
+                  <div className="flex items-center justify-center md:justify-start gap-2 py-2.5 px-3 rounded-lg bg-zinc-900/70 border border-red-900/30">
                     <FileCheck className="w-4 h-4 text-red-400 shrink-0" />
                     <span className="font-apple font-normal text-[13px] sm:text-[14px] text-white tracking-tight">1:1 전담 비밀유지계약(NDA) 체결</span>
                   </div>
-                  <div className="flex items-center justify-center md:justify-start gap-2 py-2 px-3 rounded-lg bg-zinc-900/70 border border-red-900/30">
+                  <div className="flex items-center justify-center md:justify-start gap-2 py-2.5 px-3 rounded-lg bg-zinc-900/70 border border-red-900/30">
                     <Lock className="w-4 h-4 text-red-400 shrink-0" />
                     <span className="font-apple font-normal text-[13px] sm:text-[14px] text-white tracking-tight">전략 기획안 및 데이터 철저한 암호화</span>
                   </div>
-                  <div className="flex items-center justify-center md:justify-start gap-2 py-2 px-3 rounded-lg bg-zinc-900/70 border border-red-900/30">
+                  <div className="flex items-center justify-center md:justify-start gap-2 py-2.5 px-3 rounded-lg bg-zinc-900/70 border border-red-900/30">
                     <EyeOff className="w-4 h-4 text-red-400 shrink-0" />
                     <span className="font-apple font-normal text-[13px] sm:text-[14px] text-white tracking-tight">경쟁사 및 제3자 포트폴리오 노출 전면 배제</span>
                   </div>
@@ -480,7 +522,7 @@ export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquir
                 </div>
                 
                 <h4 className="text-base sm:text-lg lg:text-[20px] font-bold text-zinc-900 tracking-tight leading-snug">
-                  영상·오디오 제작과 <span className="font-extrabold text-zinc-950">디지털 퍼포먼스 마케팅</span>의 원스톱 결합 솔루션
+                  영상·오디오 제작과 디지털 퍼포먼스 마케팅의 원스톱 결합 솔루션
                 </h4>
                 
                 <p className="text-xs sm:text-[13.5px] text-zinc-500 leading-relaxed font-normal">

@@ -38,6 +38,25 @@ app.get('/healthz', (_req, res) => {
   res.status(200).send('OK');
 });
 
+// Legacy notice URLs 301 redirect to homepage (matches public/_redirects)
+const legacyNotices = ['/notice/93', '/notice/97', '/notice/95', '/notice/354', '/notice/355', '/notice/118'];
+app.get(legacyNotices, (_req, res) => {
+  res.redirect(301, '/');
+});
+
+// Explicit RSS and Feed endpoints (serves valid XML feed directly without SPA fallback)
+app.get(['/rss', '/rss.xml', '/feed', '/feed.xml'], (_req, res) => {
+  res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+  res.sendFile(path.join(distPath, 'rss.xml'));
+});
+
+app.get('/atom.xml', (_req, res) => {
+  res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+  res.sendFile(path.join(distPath, 'atom.xml'));
+});
+
 // Single Page Application (SPA) fallback to index.html
 app.get('*', (_req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

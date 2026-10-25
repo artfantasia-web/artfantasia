@@ -109,7 +109,20 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
     if (isPlaying) {
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
-      }, 3000);
+      }, 2500);
+    }
+  };
+
+  const handleScreenInteraction = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (isPlaying) {
+      if (!showControls) {
+        if (e) e.stopPropagation();
+        handleMouseMove();
+      } else {
+        handlePlayToggle(e as React.MouseEvent);
+      }
+    } else {
+      handlePlayToggle(e as React.MouseEvent);
     }
   };
 
@@ -193,6 +206,9 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
           <div
             ref={videoContainerRef}
             onMouseMove={handleMouseMove}
+            onMouseEnter={handleMouseMove}
+            onTouchStart={handleMouseMove}
+            onTouchMove={handleMouseMove}
             onMouseLeave={() => isPlaying && setShowControls(false)}
             className="relative rounded-lg border border-zinc-700/80 bg-zinc-950 overflow-hidden shadow-2xl select-none"
           >
@@ -210,7 +226,11 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
             </div>
 
             {/* Video Player Screen */}
-            <div className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group">
+            <div
+              onTouchStart={handleMouseMove}
+              onTouchMove={handleMouseMove}
+              className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group"
+            >
               <video
                 ref={videoRef}
                 src="https://res.cloudinary.com/iwcoiohr/video/upload/v1792470332/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%EC%97%90%EC%84%9C_%EC%84%B8%EC%83%81%EC%9D%84_%EC%98%81%EC%83%81%EA%B3%BC_%EC%9D%8C%EC%95%85%EC%9C%BC%EB%A1%9C_%ED%91%9C%ED%98%84%ED%95%A9%EB%8B%88%EB%8B%A4.mp4"
@@ -218,7 +238,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
                 playsInline
                 muted={isMuted}
                 preload="metadata"
-                onClick={handlePlayToggle}
+                onClick={handleScreenInteraction}
                 className="w-full h-full object-cover block cursor-pointer"
                 onPlay={() => {
                   setIsPlaying(true);
@@ -256,7 +276,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
               {/* Cinematic Center Overlay & Play Button (Matching Showreel Standard) */}
               {!isPlaying && (
                 <div
-                  onClick={handlePlayToggle}
+                  onClick={handleScreenInteraction}
                   className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center cursor-pointer z-15 bg-black/15 hover:bg-black/25 transition-colors group/overlay"
                 >
                   <span
@@ -595,54 +615,104 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
                 </p>
               </div>
 
-              {/* Official CI Logo Showcase Panel (Compact Vertical Proportion) */}
-              <div className="mb-8 sm:mb-9 rounded-2xl bg-gradient-to-b from-zinc-50/90 via-white to-zinc-50/90 border border-zinc-200/90 p-4 sm:p-6 shadow-sm relative overflow-hidden">
+              {/* Official CI Logo Showcase Panel (Professional Design Sheet Edition) */}
+              <div className="mb-8 sm:mb-9 rounded-2xl bg-gradient-to-b from-[#f8fafc] via-white to-[#f1f5f9] border border-zinc-300/80 p-4 sm:p-7 shadow-sm relative overflow-hidden">
+                {/* Professional Design Sheet Dual Grid Background */}
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-85"
+                  style={{
+                    backgroundImage: `
+                      linear-gradient(to right, rgba(203, 213, 225, 0.55) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(203, 213, 225, 0.55) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '24px 24px',
+                  }}
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-45"
+                  style={{
+                    backgroundImage: `
+                      linear-gradient(to right, rgba(148, 163, 184, 0.5) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(148, 163, 184, 0.5) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '120px 120px',
+                  }}
+                />
+
+                {/* Subtle Ambient Radial Glow */}
                 <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-[#F37023]/8 to-[#CF1A5A]/8 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="relative z-10 flex flex-col items-center justify-center text-center">
-                  {/* Logo Display Canvas with Isolation Frame (Compact Vertical Height) */}
-                  <div className="w-full max-w-2xl py-4 sm:py-6 px-6 sm:px-10 flex items-center justify-center bg-white rounded-xl border border-zinc-200/80 shadow-[0_2px_16px_rgba(0,0,0,0.03)] relative group">
+                  {/* Design Sheet Top Meta Bar */}
+                  <div className="flex items-center justify-between w-full max-w-2xl mb-2 text-[10px] sm:text-[11px] font-mono text-zinc-500 font-semibold tracking-wider">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      <span>DESIGN SHEET // CI BRAND SPECIFICATION</span>
+                    </div>
+                    <span className="hidden sm:inline text-zinc-400">GRID: 24×24px · SCALE 1:1</span>
+                  </div>
+
+                  {/* Logo Display Canvas with Isolation Frame & Construction Guide Lines */}
+                  <div className="w-full max-w-2xl py-6 sm:py-8 px-6 sm:px-10 flex items-center justify-center bg-white/95 rounded-xl border border-zinc-300 shadow-[0_4px_24px_rgba(0,0,0,0.04)] relative group overflow-hidden">
+                    {/* Inner Fine Dot Grid */}
+                    <div
+                      className="absolute inset-0 pointer-events-none opacity-25"
+                      style={{
+                        backgroundImage: `radial-gradient(circle, rgba(100, 116, 139, 0.5) 1px, transparent 1px)`,
+                        backgroundSize: '16px 16px',
+                      }}
+                    />
+
+                    {/* Construction Guide Center Axis Crosshairs */}
+                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 border-t border-dashed border-zinc-300/80 pointer-events-none" />
+                    <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 border-l border-dashed border-zinc-300/80 pointer-events-none" />
+
                     {/* Corner Guides representing Official Clear Space */}
-                    <div className="absolute top-2.5 left-2.5 w-2.5 h-2.5 border-t-2 border-l-2 border-zinc-300 pointer-events-none" />
-                    <div className="absolute top-2.5 right-2.5 w-2.5 h-2.5 border-t-2 border-r-2 border-zinc-300 pointer-events-none" />
-                    <div className="absolute bottom-2.5 left-2.5 w-2.5 h-2.5 border-b-2 border-l-2 border-zinc-300 pointer-events-none" />
-                    <div className="absolute bottom-2.5 right-2.5 w-2.5 h-2.5 border-b-2 border-r-2 border-zinc-300 pointer-events-none" />
+                    <div className="absolute top-2.5 left-2.5 w-3 h-3 border-t-2 border-l-2 border-zinc-400 pointer-events-none" />
+                    <div className="absolute top-2.5 right-2.5 w-3 h-3 border-t-2 border-r-2 border-zinc-400 pointer-events-none" />
+                    <div className="absolute bottom-2.5 left-2.5 w-3 h-3 border-b-2 border-l-2 border-zinc-400 pointer-events-none" />
+                    <div className="absolute bottom-2.5 right-2.5 w-3 h-3 border-b-2 border-r-2 border-zinc-400 pointer-events-none" />
+
+                    {/* Clear Space Indicator Tag */}
+                    <div className="absolute top-2 right-3 text-[9px] font-mono text-zinc-400 font-semibold tracking-wider pointer-events-none select-none">
+                      CLEAR SPACE 1.0X
+                    </div>
 
                     <img
-                      src="/LOGO.png"
+                      src="/assets/aistudio/_____013e3715.png"
                       alt="아트판타지아 공식 CI 로고"
                       onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = '/01lo.png';
+                        (e.currentTarget as HTMLImageElement).src = '/LOGO.png';
                       }}
-                      className="w-full max-h-16 sm:max-h-20 md:max-h-22 object-contain filter drop-shadow-[0_4px_16px_rgba(0,0,0,0.08)] select-none transition-transform duration-300 group-hover:scale-[1.01]"
+                      className="w-full max-h-16 sm:max-h-20 md:max-h-22 object-contain filter drop-shadow-[0_4px_16px_rgba(0,0,0,0.08)] select-none transition-transform duration-300 group-hover:scale-[1.01] relative z-10"
                       loading="eager"
                     />
                   </div>
 
                   {/* Color Palette Specification Matrix (Compact) */}
-                  <div className="mt-4 pt-4 border-t border-zinc-200/80 w-full flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-mono">
-                    <div className="flex items-center gap-2 bg-white px-2.5 py-1 rounded-lg border border-zinc-200 shadow-2xs">
+                  <div className="mt-4 pt-4 border-t border-zinc-200/90 w-full flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-mono">
+                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-zinc-200 shadow-2xs">
                       <span className="w-3.5 h-3.5 rounded-full bg-[#F37023] shadow-inner border border-black/10 inline-block" />
                       <div className="text-left">
                         <span className="font-bold text-zinc-900 block leading-tight text-xs">Orange</span>
                         <span className="text-[10px] text-zinc-500 font-semibold">#F37023</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 bg-white px-2.5 py-1 rounded-lg border border-zinc-200 shadow-2xs">
+                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-zinc-200 shadow-2xs">
                       <span className="w-3.5 h-3.5 rounded-full bg-[#CF1A5A] shadow-inner border border-black/10 inline-block" />
                       <div className="text-left">
                         <span className="font-bold text-zinc-900 block leading-tight text-xs">Magenta</span>
                         <span className="text-[10px] text-zinc-500 font-semibold">#CF1A5A</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 bg-white px-2.5 py-1 rounded-lg border border-zinc-200 shadow-2xs">
+                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-zinc-200 shadow-2xs">
                       <span className="w-3.5 h-3.5 rounded-full bg-[#000000] shadow-inner border border-zinc-700 inline-block" />
                       <div className="text-left">
                         <span className="font-bold text-zinc-900 block leading-tight text-xs">Black Bold</span>
                         <span className="text-[10px] text-zinc-500 font-semibold">#000000</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 bg-white px-2.5 py-1 rounded-lg border border-zinc-200 shadow-2xs">
+                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-zinc-200 shadow-2xs">
                       <span className="w-3.5 h-3.5 rounded-full bg-white shadow-inner border border-zinc-300 inline-block" />
                       <div className="text-left">
                         <span className="font-bold text-zinc-900 block leading-tight text-xs">Pixel White</span>

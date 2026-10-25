@@ -44,17 +44,17 @@ export const StandardSectionHeader: React.FC<StandardSectionHeaderProps> = ({
 
   return (
     <div
-      className={`pb-8 border-b border-zinc-800 animate-header-reveal flex flex-col sm:flex-row sm:items-end justify-between gap-4 font-sans ${className}`}
+      className={`pb-4 sm:pb-8 border-b border-zinc-800 animate-header-reveal flex flex-row items-center sm:items-end justify-between gap-3 sm:gap-4 font-sans ${className}`}
     >
-      <div className="flex-1 font-sans">
-        <HeadingTag className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-sans">
+      <div className="flex-1 min-w-0 font-sans">
+        <HeadingTag className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-sans capitalize [&_*]:capitalize [&_font]:capitalize">
           {title}
         </HeadingTag>
 
         {subtitle && (
-          <p className="mt-3 text-sm sm:text-base font-medium text-zinc-300 flex items-center gap-2 flex-wrap font-sans">
-            <span className="text-amber-400 font-bold shrink-0 text-sm sm:text-base">◉</span>
-            <span className="text-amber-400 font-semibold text-sm sm:text-base font-sans">
+          <p className="mt-1.5 sm:mt-3 text-xs sm:text-base font-medium text-zinc-300 flex items-center gap-1.5 sm:gap-2 flex-wrap font-sans">
+            <span className="text-amber-400 font-bold shrink-0 text-xs sm:text-base">◉</span>
+            <span className="text-amber-400 font-semibold text-xs sm:text-base font-sans">
               {subtitle}
             </span>
           </p>
@@ -76,13 +76,13 @@ export const StandardSectionHeader: React.FC<StandardSectionHeaderProps> = ({
           setLogoRevealed(true);
           setLogoAnimationKey((k) => k + 1);
         }}
-        className="shrink-0 flex items-center self-end sm:self-end pb-1 relative group cursor-pointer"
+        className="shrink-0 flex items-center self-center sm:self-end pb-0 sm:pb-1 relative group cursor-pointer"
       >
         {/* Ambient Mosaic Radial Glow Burst */}
         {logoRevealed && (
           <div
             key={`glow-${logoAnimationKey}`}
-            className="absolute -inset-3 rounded-full bg-gradient-to-tr from-amber-500/25 via-rose-500/20 to-fuchsia-600/25 blur-xl pointer-events-none animate-mosaic-glow"
+            className="absolute -inset-1 sm:-inset-3 rounded-full bg-gradient-to-tr from-amber-500/25 via-rose-500/20 to-fuchsia-600/25 blur-lg sm:blur-xl pointer-events-none animate-mosaic-glow"
           />
         )}
 
@@ -90,7 +90,7 @@ export const StandardSectionHeader: React.FC<StandardSectionHeaderProps> = ({
         {logoRevealed && (
           <div
             key={`tiles-${logoAnimationKey}`}
-            className="absolute inset-0 pointer-events-none overflow-visible z-10"
+            className="hidden sm:block absolute inset-0 pointer-events-none overflow-visible z-10"
           >
             {[
               { x: '-15%', y: '-10%', w: '18px', h: '12px', color: '#f97316', tx: -35, ty: -25, rot: -20, delay: 50 },
@@ -124,7 +124,7 @@ export const StandardSectionHeader: React.FC<StandardSectionHeaderProps> = ({
           key={`logo-img-${logoAnimationKey}`}
           src="/LOGO.png"
           alt="Art Fantasia"
-          className={`h-14 sm:h-16 md:h-20 w-auto object-contain transition-all duration-300 ${
+          className={`h-8 sm:h-16 md:h-20 w-auto object-contain transition-all duration-300 ${
             logoRevealed
               ? 'animate-mosaic-entrance opacity-90 hover:opacity-100 hover:scale-105'
               : 'opacity-0'

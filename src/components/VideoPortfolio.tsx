@@ -4,7 +4,6 @@ import { VideoProject, VideoCategory } from '../types';
 import { Play, Pause, Volume2, VolumeX, Maximize, X, Award, Clock, CheckCircle2, ArrowUpRight, Youtube, Lock, Sparkles, Film, Tv, Clapperboard, Bot, Share2, Check } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
 import { useLanguage } from '../context/LanguageContext';
-import { useIsTranslated } from '../hooks/useIsTranslated';
 
 interface VideoPortfolioProps {
   onOpenInquiry?: () => void;
@@ -62,6 +61,7 @@ const BUDGET_CLASSES = [
     rangeEn: 'KRW 200M or more',
     badge: 'S-CLASS',
     desc: '대규모 글로벌 캠페인 · 프리미엄 지상파 TVCF · 하이엔드 시네마틱',
+    descEn: 'Large-scale global campaigns · Premium TVCF · High-end cinematic',
     bgImage: '/assets/aistudio/s____a8ecfc54.jpg',
   },
   {
@@ -72,6 +72,7 @@ const BUDGET_CLASSES = [
     rangeEn: 'KRW 200M ~ 100M',
     badge: 'A-CLASS',
     desc: '브랜드 메인 캠페인 · 메인 TVCF · 고사양 3D VFX · 대형 프로젝트',
+    descEn: 'Brand main campaigns · Main TVCF · High-end 3D VFX · Large projects',
     bgImage: '/assets/aistudio/vfx___7d3c38ab.jpg',
   },
   {
@@ -82,6 +83,7 @@ const BUDGET_CLASSES = [
     rangeEn: 'KRW 100M ~ 50M',
     badge: 'B-CLASS',
     desc: '기업 메인 필름 · 디지털 캠페인 · 브랜드 영상',
+    descEn: 'Corporate main film · Digital campaigns · Brand videos',
     bgImage: '/assets/aistudio/_____a15e6fd6.jpg',
   },
   {
@@ -92,6 +94,7 @@ const BUDGET_CLASSES = [
     rangeEn: 'KRW 50M ~ 10M',
     badge: 'C-CLASS',
     desc: '디지털 바이럴 영상 · 브랜드 필름 · 퍼포먼스 광고',
+    descEn: 'Digital viral video · Brand film · Performance ads',
     bgImage: '/assets/aistudio/b_1381a5d3.jpg',
   },
   {
@@ -99,16 +102,17 @@ const BUDGET_CLASSES = [
     title: '맞춤형 클래스',
     titleEn: 'CUSTOM CLASS',
     range: '실속형 / 스타트업',
-    rangeEn: 'Custom / Startup Budget',
+    rangeEn: 'KRW Under 10M / Startup',
     badge: 'CUSTOM CLASS',
     desc: '스타트업 및 실속형 맞춤 기획 · 실무 맞춤형 가성비 패키지',
+    descEn: 'Startup & cost-effective package · Practical custom planning',
     bgImage: '/assets/aistudio/____be064755.jpg',
   },
 ];
 
 export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry }) => {
   const { language } = useLanguage();
-  const isTranslated = useIsTranslated();
+  const isEn = language === 'en';
   const [selectedCategory, setSelectedCategory] = useState<VideoCategory>('all');
   const [activeProject, setActiveProject] = useState<VideoProject | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -217,7 +221,20 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
     if (isShowcasePlaying) {
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
-      }, 3000);
+      }, 2500);
+    }
+  };
+
+  const handleScreenInteraction = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (isShowcasePlaying) {
+      if (!showControls) {
+        if (e) e.stopPropagation();
+        handleShowcaseMouseMove();
+      } else {
+        toggleShowcasePlay(e as React.MouseEvent);
+      }
+    } else {
+      toggleShowcasePlay(e as React.MouseEvent);
     }
   };
 
@@ -271,6 +288,9 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
           <div
             ref={showcaseContainerRef}
             onMouseMove={handleShowcaseMouseMove}
+            onMouseEnter={handleShowcaseMouseMove}
+            onTouchStart={handleShowcaseMouseMove}
+            onTouchMove={handleShowcaseMouseMove}
             onMouseLeave={() => isShowcasePlaying && setShowControls(false)}
             className="relative rounded-lg border border-zinc-700/80 bg-zinc-950 overflow-hidden shadow-2xl select-none"
           >
@@ -288,7 +308,11 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
             </div>
 
             {/* Video Player Screen */}
-            <div className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group">
+            <div
+              onTouchStart={handleShowcaseMouseMove}
+              onTouchMove={handleShowcaseMouseMove}
+              className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group"
+            >
               <video
                 ref={showcaseVideoRef}
                 src="https://res.cloudinary.com/iwcoiohr/video/upload/v1792118039/Change_the_Game.mp4"
@@ -296,15 +320,18 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
                 playsInline
                 muted={isShowcaseMuted}
                 preload="metadata"
-                onClick={toggleShowcasePlay}
+                onClick={handleScreenInteraction}
                 className="w-full h-full object-cover block cursor-pointer"
                 onPlay={() => {
                   setIsShowcasePlaying(true);
                   setShowControls(true);
+                  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+                  controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 2500);
                 }}
                 onPause={() => {
                   setIsShowcasePlaying(false);
                   setShowControls(true);
+                  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
                 }}
                 onTimeUpdate={handleShowcaseTimeUpdate}
                 onLoadedMetadata={() => {
@@ -315,6 +342,7 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
                 onEnded={() => {
                   setIsShowcasePlaying(false);
                   setShowControls(true);
+                  if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
                 }}
               />
 
@@ -330,7 +358,7 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
               {/* Cinematic Center Overlay & Play Button (Matching AboutSection Showreel Standard) */}
               {!isShowcasePlaying && (
                 <div
-                  onClick={toggleShowcasePlay}
+                  onClick={handleScreenInteraction}
                   className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center cursor-pointer z-15 bg-black/15 hover:bg-black/25 transition-colors group/overlay"
                 >
                   <span
@@ -438,12 +466,16 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
           {/* Narrative Headline */}
           <div className="mb-6 text-center flex flex-col items-center">
             <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight font-google text-center">
-              아트판타지아의 영상제작플로우는
+              {isEn ? "ArtFantasia's Video Production Flow" : "아트판타지아의 영상제작플로우는"}
             </h3>
             <p className="mt-2.5 text-sm sm:text-base font-semibold text-amber-400 font-google text-center flex items-center justify-center gap-2 flex-wrap">
               <span className="text-amber-400 font-bold shrink-0">◉</span>
               <span>
-                예산과 원하시는 스타일에 맞춰 <span className="font-extrabold text-amber-300 underline decoration-amber-400/60 underline-offset-4">최적의 해답</span>을 제공해 드립니다.
+                {isEn ? (
+                  <>We provide the <span className="font-extrabold text-amber-300 underline decoration-amber-400/60 underline-offset-4">optimal solution</span> tailored to a reasonable budget and your desired format.</>
+                ) : (
+                  <>합리적 예산과 원하시는 형태에 맞춰 <span className="font-extrabold text-amber-300 underline decoration-amber-400/60 underline-offset-4">최적의 답</span>을 제공해 드립니다.</>
+                )}
               </span>
             </p>
           </div>
@@ -453,14 +485,14 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
             <div className="flex items-center gap-2.5 mb-3.5 sm:mb-4">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.7)]" />
               <span className="text-[15px] sm:text-[17.5px] font-bold font-google text-zinc-100 tracking-normal">
-                예상 예산 범위 선택 클래스
+                {isEn ? 'Estimated Budget Range Classes (KRW)' : '예상 예산 범위 선택 클래스'}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4 relative font-google">
+            <div key={`budget-grid-${language}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4 relative font-google">
               {BUDGET_CLASSES.map((b) => (
                 <div
-                  key={b.key}
+                  key={`${b.key}-${language}`}
                   className="relative rounded-xl bg-zinc-950/85 border border-zinc-800/80 hover:border-blue-400/80 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(59,130,246,0.18)] flex flex-col justify-between group overflow-hidden"
                 >
                   <div>
@@ -480,30 +512,20 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
                     {/* Class Title with Box */}
                     <div className="mb-2">
                       <span className="inline-block px-2.5 py-1 rounded-md bg-blue-500/20 border border-blue-400/40 text-[13.5px] sm:text-[14.5px] font-bold text-blue-300 font-google tracking-normal shadow-sm group-hover:border-blue-300 group-hover:bg-blue-500/25 transition-all">
-                        {isTranslated ? (
-                          <span className="notranslate" translate="no">{b.titleEn || b.badge}</span>
-                        ) : (
-                          <>
-                            <span className="budget-lang-ko">{b.title}</span>
-                            <span className="budget-lang-en hidden notranslate" translate="no">{b.titleEn || b.badge}</span>
-                          </>
-                        )}
+                        <span className="notranslate" translate="no">
+                          {isEn ? (b.titleEn || b.badge) : b.title}
+                        </span>
                       </span>
                     </div>
 
                     {/* Price Range without Box (Displays KRW instead of WON upon English translation) */}
                     <h4 className="text-[16px] sm:text-[17.5px] font-bold text-white group-hover:text-blue-200 transition-colors tracking-tight font-google mb-2">
-                      {isTranslated ? (
-                        <span className="notranslate" translate="no">{b.rangeEn}</span>
-                      ) : (
-                        <>
-                          <span className="budget-lang-ko">{b.range}</span>
-                          <span className="budget-lang-en hidden notranslate" translate="no">{b.rangeEn}</span>
-                        </>
-                      )}
+                      <span key={`range-${b.key}-${language}`} className="notranslate" translate="no">
+                        {isEn ? b.rangeEn : b.range}
+                      </span>
                     </h4>
                     <p className="text-[12.5px] sm:text-[13px] text-zinc-300 leading-relaxed font-normal font-google">
-                      {b.desc}
+                      {isEn && b.descEn ? b.descEn : b.desc}
                     </p>
                   </div>
                 </div>
@@ -554,15 +576,23 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
               <div className="flex-1 space-y-2">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200/80">
                   <Sparkles className="w-3.5 h-3.5 text-zinc-500" />
-                  <span>예산 맞춤 & 스타일별 견적 상담</span>
+                  <span>{isEn ? 'Budget-Tailored & Style Consulting' : '예산 맞춤 & 스타일별 견적 상담'}</span>
                 </div>
                 
                 <h4 className="text-base sm:text-lg lg:text-[20px] font-bold text-zinc-900 tracking-tight leading-snug">
-                  예상하시는 <span className="font-extrabold text-zinc-950">예산 클래스</span>와 원하시는 <span className="font-extrabold text-zinc-950">제작 스타일</span>에 맞춘 최적의 영상 솔루션
+                  {isEn ? (
+                    'Optimal video solutions tailored to your Budget Class and Production Style'
+                  ) : (
+                    '예상하시는 예산 클래스와 원하시는 제작 스타일에 맞춘 최적의 영상 솔루션'
+                  )}
                 </h4>
                 
                 <p className="text-xs sm:text-[13.5px] text-zinc-500 leading-relaxed font-normal">
-                  위 5개 예산 클래스와 제작 스타일을 바탕으로, 기획부터 섭외·촬영·AI편집·사후관리(A/S)까지 <strong className="font-semibold text-zinc-800">100% 책임 진행</strong>해 드립니다.
+                  {isEn ? (
+                    <>Based on the 5 budget classes and styles, we take <strong className="font-semibold text-zinc-800">100% full responsibility</strong> from planning, casting, filming, AI editing to warranty service.</>
+                  ) : (
+                    <>위 5개 예산 클래스와 제작 스타일을 바탕으로, 기획부터 섭외·촬영·AI편집·사후관리(A/S)까지 <strong className="font-semibold text-zinc-800">100% 책임 진행</strong>해 드립니다.</>
+                  )}
                 </p>
               </div>
 
@@ -575,7 +605,7 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
                   }}
                   className="px-6 py-3.5 text-sm font-bold text-white bg-zinc-950 hover:bg-amber-500 hover:text-black rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg group-hover:scale-105 cursor-pointer font-google whitespace-nowrap"
                 >
-                  <span>영상 제작 문의 / 견적 요청</span>
+                  <span>{isEn ? 'Video Inquiry / Estimate Request' : '영상 제작 문의 / 견적 요청'}</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </button>
               </div>

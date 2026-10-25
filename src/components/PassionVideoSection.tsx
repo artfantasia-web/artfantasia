@@ -139,7 +139,20 @@ export const PassionVideoSection: React.FC = () => {
     if (isPlaying) {
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
-      }, 3000);
+      }, 2500);
+    }
+  };
+
+  const handleScreenInteraction = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (isPlaying) {
+      if (!showControls) {
+        if (e) e.stopPropagation();
+        handleMouseMove();
+      } else {
+        handlePlayToggle(e as React.MouseEvent);
+      }
+    } else {
+      handlePlayToggle(e as React.MouseEvent);
     }
   };
 
@@ -163,6 +176,9 @@ export const PassionVideoSection: React.FC = () => {
         <div
           ref={containerRef}
           onMouseMove={handleMouseMove}
+          onMouseEnter={handleMouseMove}
+          onTouchStart={handleMouseMove}
+          onTouchMove={handleMouseMove}
           onMouseLeave={() => isPlaying && setShowControls(false)}
           className="relative rounded-lg border border-zinc-700/80 bg-zinc-950 overflow-hidden shadow-2xl select-none"
         >
@@ -180,7 +196,11 @@ export const PassionVideoSection: React.FC = () => {
           </div>
 
           {/* Video Player Screen */}
-          <div className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group">
+          <div
+            onTouchStart={handleMouseMove}
+            onTouchMove={handleMouseMove}
+            className="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center group"
+          >
             <video
               ref={videoRef}
               src="https://res.cloudinary.com/iwcoiohr/video/upload/v1792117574/AMBIITION.mp4"
@@ -188,15 +208,18 @@ export const PassionVideoSection: React.FC = () => {
               playsInline
               muted={isMuted}
               preload="metadata"
-              onClick={handlePlayToggle}
+              onClick={handleScreenInteraction}
               className="w-full h-full object-cover block cursor-pointer"
               onPlay={() => {
                 setIsPlaying(true);
                 setShowControls(true);
+                if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+                controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 2500);
               }}
               onPause={() => {
                 setIsPlaying(false);
                 setShowControls(true);
+                if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
               }}
               onTimeUpdate={() => {
                 setCurrentTime(videoRef.current?.currentTime || 0);
@@ -207,6 +230,7 @@ export const PassionVideoSection: React.FC = () => {
               onEnded={() => {
                 setIsPlaying(false);
                 setShowControls(true);
+                if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
               }}
             />
 
@@ -222,7 +246,7 @@ export const PassionVideoSection: React.FC = () => {
             {/* Cinematic Center Overlay & Play Button */}
             {!isPlaying && (
               <div
-                onClick={handlePlayToggle}
+                onClick={handleScreenInteraction}
                 className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center cursor-pointer z-15 bg-black/15 hover:bg-black/25 transition-colors group/overlay"
               >
                 <span

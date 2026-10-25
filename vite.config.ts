@@ -5,7 +5,22 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'rss-feed-dev-middleware',
+        configureServer(server) {
+          server.middlewares.use((req, _res, next) => {
+            const url = req.url?.split('?')[0];
+            if (url === '/rss' || url === '/feed') {
+              req.url = '/rss.xml';
+            }
+            next();
+          });
+        },
+      },
+    ],
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

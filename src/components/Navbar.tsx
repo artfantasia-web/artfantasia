@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavCategory } from '../types';
-import { Menu, X, ArrowUpRight, Send, Globe, Shield } from 'lucide-react';
+import { Menu, X, ArrowUpRight, Send, Globe } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { useAdminData } from '../context/AdminDataContext';
 
 interface NavbarProps {
   activeSection: NavCategory;
@@ -11,11 +10,10 @@ interface NavbarProps {
   onOpenAdmin?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpenInquiry, onOpenAdmin }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpenInquiry }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { language, setLanguage } = useLanguage();
-  const { isAdminLoggedIn } = useAdminData();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,8 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
             </button>
 
             {/* Zone 2: Clean Single-Line Nav Links + 언어 번역 버튼 + 제작문의 Button */}
-            {/* Zone 2: Clean Single-Line Nav Links + 언어 번역 버튼 + 제작문의 Button */}
-            <nav className="hidden lg:flex items-center gap-4 xl:gap-6 font-apple antialiased">
+            <nav className="hidden lg:flex items-center gap-4 xl:gap-6 font-apple antialiased scale-[1.08] origin-right">
               {navItems.map((item) => {
                 const isActive = activeSection === item.id;
                 return (
@@ -106,28 +103,30 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
                 </div>
                 <button
                   type="button"
+                  translate="no"
                   onClick={() => setLanguage('ko')}
-                  title="한국어 번역"
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
+                  title="한국어"
+                  className={`notranslate px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
                     language === 'ko'
                       ? 'bg-gradient-to-r from-[#f97316] to-[#d91b5c] text-white shadow-sm font-bold scale-[1.02]'
                       : 'text-zinc-300 hover:text-white hover:bg-zinc-800'
                   }`}
                 >
-                  한국어
+                  <span className="notranslate" translate="no">한국어</span>
                 </button>
-                <span className="text-zinc-600 text-[10px] select-none">/</span>
+                <span className="text-zinc-600 text-[10px] select-none notranslate" translate="no">/</span>
                 <button
                   type="button"
+                  translate="no"
                   onClick={() => setLanguage('en')}
-                  title="Translate to English"
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
+                  title="English"
+                  className={`notranslate px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
                     language === 'en'
                       ? 'bg-gradient-to-r from-[#f97316] to-[#d91b5c] text-white shadow-sm font-bold scale-[1.02]'
                       : 'text-zinc-300 hover:text-white hover:bg-zinc-800'
                   }`}
                 >
-                  ENG
+                  <span className="notranslate" translate="no">ENG</span>
                 </button>
               </div>
 
@@ -168,25 +167,27 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
                 Navigation Menu
               </span>
               {/* Mobile Language Switcher */}
-              <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-zinc-900 border border-zinc-700 text-xs">
+              <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-zinc-900 border border-zinc-700 text-xs notranslate" translate="no">
                 <Globe className="w-3.5 h-3.5 text-zinc-400 ml-1" />
                 <button
                   type="button"
+                  translate="no"
                   onClick={() => setLanguage('ko')}
-                  className={`px-2.5 py-0.5 rounded-full font-semibold transition-colors ${
+                  className={`notranslate px-2.5 py-0.5 rounded-full font-semibold transition-colors ${
                     language === 'ko' ? 'bg-gradient-to-r from-[#f97316] to-[#d91b5c] text-white font-bold' : 'text-zinc-400'
                   }`}
                 >
-                  한국어
+                  <span className="notranslate" translate="no">한국어</span>
                 </button>
                 <button
                   type="button"
+                  translate="no"
                   onClick={() => setLanguage('en')}
-                  className={`px-2.5 py-0.5 rounded-full font-semibold transition-colors ${
+                  className={`notranslate px-2.5 py-0.5 rounded-full font-semibold transition-colors ${
                     language === 'en' ? 'bg-gradient-to-r from-[#f97316] to-[#d91b5c] text-white font-bold' : 'text-zinc-400'
                   }`}
                 >
-                  ENG
+                  <span className="notranslate" translate="no">ENG</span>
                 </button>
               </div>
             </div>
@@ -221,17 +222,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
             >
               <span>{language === 'ko' ? '프로젝트 제작 및 견적 문의하기' : 'Request Project Quotation & Inquiry'}</span>
               <ArrowUpRight className="w-4 h-4 text-zinc-950" />
-            </button>
-
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                if (onOpenAdmin) onOpenAdmin();
-              }}
-              className="w-full py-2.5 px-3 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-[#f43f5e]/50 text-xs font-semibold text-zinc-300 hover:text-[#fb7185] flex items-center justify-center gap-2 cursor-pointer transition-colors"
-            >
-              <Shield className="w-3.5 h-3.5 text-[#f43f5e]" />
-              <span>{isAdminLoggedIn ? '⚙️ 관리자 시스템 대시보드' : '🔒 아트판타지아 공식 관리자 로그인'}</span>
             </button>
 
             <div className="text-xs text-zinc-500 text-center font-mono pt-1">

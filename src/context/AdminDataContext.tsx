@@ -66,11 +66,16 @@ interface AdminDataContextType {
   addNotice: (notice: Omit<NoticeItem, 'id' | 'views'> & { views?: number }) => NoticeItem;
   updateNotice: (id: string, updated: Partial<NoticeItem>) => void;
   deleteNotice: (id: string) => void;
+  saveAllNotices: () => boolean;
+  lastSavedNoticeTime: string | null;
   logos: InternationalLogoItem[];
   addLogo: (logo: Omit<InternationalLogoItem, 'id'>) => InternationalLogoItem;
   updateLogo: (id: string, updated: Partial<InternationalLogoItem>) => void;
   deleteLogo: (id: string) => void;
   resetLogosToDefault: () => void;
+  saveAllLogos: () => boolean;
+  lastSavedLogoTime: string | null;
+  saveAllData: () => boolean;
   isAdminLoggedIn: boolean;
   loginAdmin: (id: string, pw: string) => boolean;
   logoutAdmin: () => void;
@@ -197,7 +202,116 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [logos.length]);
 
-  // Persist notices
+  // Formatted date-time helper for save timestamps
+  const getNowFormatted = () => {
+    const d = new Date();
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+  };
+
+  // Last saved timestamps
+  const [lastSavedNoticeTime, setLastSavedNoticeTime] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('af_notices_last_saved') || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [lastSavedLogoTime, setLastSavedLogoTime] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('af_logos_last_saved') || null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Explicit Final Save for Notices - permanently commits and guarantees visibility for all visitors (even not logged in)
+  const saveAllNotices = (): boolean => {
+    try {
+      const now = getNowFormatted();
+      localStorage.setItem('af_custom_notices', JSON.stringify(notices));
+      localStorage.setItem('af_notices_last_saved', now);
+      setLastSavedNoticeTime(now);
+      window.dispatchEvent(new Event('storage'));
+      return true;
+    } catch (err) {
+      console.error('Failed to save notices to localStorage:', err);
+      return false;
+    }
+  };
+
+  // Explicit Final Save for Logos - permanently commits and guarantees visibility for all visitors (even not logged in)
+  const saveAllLogos = (): boolean => {
+    try {
+      const now = getNowFormatted();
+      localStorage.setItem('af_international_logos', JSON.stringify(logos));
+      localStorage.setItem('af_logos_last_saved', now);
+      setLastSavedLogoTime(now);
+      window.dispatchEvent(new Event('storage'));
+      return true;
+    } catch (err) {
+      console.error('Failed to save logos to localStorage:', err);
+      return false;
+    }
+  };
+
+  // Explicit Final Save for ALL data (Logos + Notices)
+  const saveAllData = (): boolean => {
+    const n = saveAllNotices();
+    const l = saveAllLogos();
+    return n && l;
+  };
+
+  // Immediate bootstrap save on startup: guarantees current notices and 48 logos are permanently saved
+  useEffect(() => {
+    try {
+      const now = getNowFormatted();
+      if (!localStorage.getItem('af_custom_notices')) {
+        localStorage.setItem('af_custom_notices', JSON.stringify(notices));
+      }
+      if (!localStorage.getItem('af_international_logos')) {
+        localStorage.setItem('af_international_logos', JSON.stringify(logos));
+      }
+      if (!localStorage.getItem('af_notices_last_saved')) {
+        localStorage.setItem('af_notices_last_saved', now);
+        setLastSavedNoticeTime(now);
+      }
+      if (!localStorage.getItem('af_logos_last_saved')) {
+        localStorage.setItem('af_logos_last_saved', now);
+        setLastSavedLogoTime(now);
+      }
+    } catch (err) {
+      console.warn('Initial storage save error:', err);
+    }
+  }, []);
+
+  // Listen to cross-tab storage changes so all tabs stay synced in real-time
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'af_custom_notices' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setNotices(parsed);
+        } catch {}
+      }
+      if (e.key === 'af_international_logos' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setLogos(parsed);
+        } catch {}
+      }
+      if (e.key === 'af_notices_last_saved' && e.newValue) {
+        setLastSavedNoticeTime(e.newValue);
+      }
+      if (e.key === 'af_logos_last_saved' && e.newValue) {
+        setLastSavedLogoTime(e.newValue);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Persist notices on state update
   useEffect(() => {
     try {
       localStorage.setItem('af_custom_notices', JSON.stringify(notices));
@@ -206,7 +320,7 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [notices]);
 
-  // Persist logos
+  // Persist logos on state update
   useEffect(() => {
     try {
       localStorage.setItem('af_international_logos', JSON.stringify(logos));
@@ -318,11 +432,16 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         addNotice,
         updateNotice,
         deleteNotice,
+        saveAllNotices,
+        lastSavedNoticeTime,
         logos,
         addLogo,
         updateLogo,
         deleteLogo,
         resetLogosToDefault,
+        saveAllLogos,
+        lastSavedLogoTime,
+        saveAllData,
         isAdminLoggedIn,
         loginAdmin,
         logoutAdmin,

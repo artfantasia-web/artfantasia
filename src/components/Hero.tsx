@@ -8,7 +8,7 @@ import { SectionEditorialHeader } from './SectionEditorialHeader';
 import { GoldenParticleCanvas } from './GoldenParticleCanvas';
 import { NavCategory } from '../types';
 import { useAdminData, DEFAULT_INTERNATIONAL_LOGOS } from '../context/AdminDataContext';
-import { useIsTranslated } from '../hooks/useIsTranslated';
+import { useLanguage } from '../context/LanguageContext';
 import { getBrandLogoSvg } from '../data/brandLogosSvg';
 
 interface HeroProps {
@@ -36,7 +36,7 @@ export const Hero: React.FC<HeroProps> = ({
   const bgVideoRef = useRef<HTMLVideoElement | null>(null);
   const TOTAL_DURATION_SEC = 102; // 1분 42초
 
-  const handleMouseMove = () => {
+  const triggerControlsAutoHide = () => {
     setShowControls(true);
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
@@ -45,6 +45,19 @@ export const Hero: React.FC<HeroProps> = ({
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
       }, 2500);
+    }
+  };
+
+  const handleScreenInteraction = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (isPlaying) {
+      if (!showControls) {
+        if (e) e.stopPropagation();
+        triggerControlsAutoHide();
+      } else {
+        togglePlay(e as React.MouseEvent);
+      }
+    } else {
+      togglePlay(e as React.MouseEvent);
     }
   };
 
@@ -92,8 +105,8 @@ export const Hero: React.FC<HeroProps> = ({
     };
   }, []);
 
-  // Translation detection for '아트판타지아가 걸어온 길.' -> 'PORTFOLIO'
-  const isTranslatedToEn = useIsTranslated();
+  const { language } = useLanguage();
+  const isTranslatedToEn = language === 'en';
 
   // Video time update handler
   const handleTimeUpdate = () => {
@@ -351,8 +364,10 @@ export const Hero: React.FC<HeroProps> = ({
 
           {/* Video Player Screen */}
           <div
-            onMouseMove={handleMouseMove}
-            onMouseEnter={handleMouseMove}
+            onMouseMove={triggerControlsAutoHide}
+            onMouseEnter={triggerControlsAutoHide}
+            onTouchStart={triggerControlsAutoHide}
+            onTouchMove={triggerControlsAutoHide}
             onMouseLeave={() => {
               if (isPlaying) {
                 setShowControls(false);
@@ -369,7 +384,7 @@ export const Hero: React.FC<HeroProps> = ({
               muted={isMuted}
               playsInline
               preload="metadata"
-              onClick={togglePlay}
+              onClick={handleScreenInteraction}
               onTimeUpdate={handleTimeUpdate}
               onPlay={() => {
                 setIsPlaying(true);
@@ -395,7 +410,7 @@ export const Hero: React.FC<HeroProps> = ({
 
             {/* Cinematic Center Overlay - Title moves smoothly to the exact center when playing */}
             <div
-              onClick={togglePlay}
+              onClick={handleScreenInteraction}
               className={`absolute inset-0 flex flex-col items-center justify-center p-6 text-center cursor-pointer z-15 transition-colors duration-500 group/overlay ${
                 isPlaying ? 'bg-transparent' : 'bg-black/25 hover:bg-black/35'
               }`}

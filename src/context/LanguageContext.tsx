@@ -57,7 +57,7 @@ export const translations: Record<Language, Translations> = {
       notice: 'Notice',
       inquiry: 'Inquiry',
       languageToggle: 'Language',
-      ko: 'Korean',
+      ko: '한국어',
       en: 'English',
     },
     common: {
@@ -106,6 +106,9 @@ function applyGoogleTranslate(targetLang: Language) {
   const cookieVal = targetLang === 'en' ? '/ko/en' : '/ko/ko';
 
   if (targetLang === 'en') {
+    document.documentElement.lang = 'en';
+    document.documentElement.classList.add('translated-ltr');
+    document.documentElement.classList.remove('translated-rtl');
     document.cookie = `googtrans=${cookieVal}; path=/;`;
     document.cookie = `googtrans=${cookieVal}; path=/; domain=${hostname};`;
     if (hostname.includes('.')) {
@@ -200,6 +203,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       localStorage.setItem('artfantasia_lang', lang);
     } catch {
       // ignore
+    }
+    document.documentElement.lang = lang;
+    if (lang === 'en') {
+      document.documentElement.classList.add('translated-ltr');
+      document.documentElement.classList.remove('translated-rtl');
+    } else {
+      document.documentElement.classList.remove('translated-ltr', 'translated-rtl');
     }
     applyGoogleTranslate(lang);
   };

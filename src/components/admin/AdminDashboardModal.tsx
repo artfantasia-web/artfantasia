@@ -18,6 +18,9 @@ import {
   Code,
   Check,
   AlertCircle,
+  Save,
+  CheckCircle2,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAdminData, extractYouTubeId, compressImageFile } from '../../context/AdminDataContext';
 import { NoticeItem, InternationalLogoItem } from '../../types';
@@ -38,11 +41,16 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     addNotice,
     updateNotice,
     deleteNotice,
+    saveAllNotices,
+    lastSavedNoticeTime,
     logos,
     addLogo,
     updateLogo,
     deleteLogo,
     resetLogosToDefault,
+    saveAllLogos,
+    lastSavedLogoTime,
+    saveAllData,
     logoutAdmin,
   } = useAdminData();
 
@@ -79,6 +87,68 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     setTimeout(() => {
       setToast((prev) => (prev?.message === message ? null : prev));
     }, 3200);
+  };
+
+  // Final Save Loading States & Handlers
+  const [isSavingLogos, setIsSavingLogos] = useState(false);
+  const [isSavingNotices, setIsSavingNotices] = useState(false);
+  const [isSavingAll, setIsSavingAll] = useState(false);
+
+  // 로고 최종 저장: 모든 로고 상태를 localStorage에 영구 보존 및 비로그인 사용자 화면에도 즉시 반영
+  const handleFinalSaveLogos = () => {
+    setIsSavingLogos(true);
+    try {
+      const ok = saveAllLogos();
+      setTimeout(() => {
+        setIsSavingLogos(false);
+        if (ok) {
+          showToast(`[최종 저장 완료] 무한롤링티커 로고 (${logos.length}개)가 영구 저장되었습니다. 관리자 로그인이 되지 않아도 일반 방문자에게 즉시 표시됩니다.`, 'success');
+        } else {
+          showToast('로고 최종 저장 중 오류가 발생했습니다.', 'error');
+        }
+      }, 300);
+    } catch {
+      setIsSavingLogos(false);
+      showToast('로고 최종 저장 중 오류가 발생했습니다.', 'error');
+    }
+  };
+
+  // 공지사항 최종 저장: 모든 소식 상태를 localStorage에 영구 보존 및 비로그인 사용자 화면에도 즉시 반영
+  const handleFinalSaveNotices = () => {
+    setIsSavingNotices(true);
+    try {
+      const ok = saveAllNotices();
+      setTimeout(() => {
+        setIsSavingNotices(false);
+        if (ok) {
+          showToast(`[최종 저장 완료] 공지사항 (${notices.length}개)이 영구 저장되었습니다. 관리자 로그인이 되지 않아도 일반 방문자에게 즉시 표시됩니다.`, 'success');
+        } else {
+          showToast('공지사항 최종 저장 중 오류가 발생했습니다.', 'error');
+        }
+      }, 300);
+    } catch {
+      setIsSavingNotices(false);
+      showToast('공지사항 최종 저장 중 오류가 발생했습니다.', 'error');
+    }
+  };
+
+  // 전체 최종 저장 (로고 + 공지사항 모두 한 번에 영구 저장)
+  const handleFinalSaveAll = () => {
+    setIsSavingAll(true);
+    try {
+      const ok = saveAllData();
+      setTimeout(() => {
+        setIsSavingAll(false);
+        if (ok) {
+          showToast(`[전체 최종 저장 완료] 로고 (${logos.length}개) 및 공지사항 (${notices.length}개) 전체가 영구 저장되었습니다. 비로그인 일반 방문자에게도 즉시 반영됩니다.`, 'success');
+        } else {
+          showToast('전체 최종 저장 중 오류가 발생했습니다.', 'error');
+        }
+      }, 350);
+    } catch {
+      setIsSavingAll(false);
+      showToast('전체 최종 저장 중 오류가 발생했습니다.', 'error');
+    }
   };
 
   const noticeFileInputRef = useRef<HTMLInputElement>(null);
@@ -419,6 +489,16 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
           <div className="flex items-center gap-2">
             <button
+              type="button"
+              onClick={handleFinalSaveAll}
+              disabled={isSavingAll}
+              className="px-3 sm:px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 text-xs font-black flex items-center gap-1.5 shadow-md shadow-amber-400/20 transition-all hover:scale-[1.02] cursor-pointer"
+              title="로고 및 공지사항 전체를 즉시 영구 저장합니다 (비로그인 방문자에게도 즉시 반영)"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>{isSavingAll ? '전체 저장 중...' : '전체 최종 저장'}</span>
+            </button>
+            <button
               onClick={() => {
                 logoutAdmin();
                 onClose();
@@ -440,29 +520,57 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-zinc-800 bg-zinc-950 px-5 pt-3 shrink-0 gap-3">
-          <button
-            onClick={() => setActiveTab('logos')}
-            className={`pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
-              activeTab === 'logos'
-                ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Globe className="w-4 h-4" />
-            <span>무한롤링티커 로고 관리 ({logos.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('notices')}
-            className={`pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
-              activeTab === 'notices'
-                ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>소식 & 공지사항 관리 ({notices.length})</span>
-          </button>
+        <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-950 px-5 pt-3 shrink-0 gap-3">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setActiveTab('logos')}
+              className={`pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
+                activeTab === 'logos'
+                  ? 'border-amber-400 text-amber-400'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <Globe className="w-4 h-4" />
+              <span>무한롤링티커 로고 관리 ({logos.length})</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('notices')}
+              className={`pb-3 px-3 text-xs sm:text-sm font-bold border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
+                activeTab === 'notices'
+                  ? 'border-amber-400 text-amber-400'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              <span>소식 & 공지사항 관리 ({notices.length})</span>
+            </button>
+          </div>
+
+          <div className="pb-2 hidden sm:flex items-center gap-2">
+            {activeTab === 'logos' ? (
+              <button
+                type="button"
+                onClick={handleFinalSaveLogos}
+                disabled={isSavingLogos}
+                className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs font-black flex items-center gap-1.5 shadow-sm transition-all cursor-pointer hover:scale-[1.02]"
+                title="무한롤링티커 로고 전체를 최종 저장합니다"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{isSavingLogos ? '로고 저장 중...' : '로고 최종 저장'}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleFinalSaveNotices}
+                disabled={isSavingNotices}
+                className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs font-black flex items-center gap-1.5 shadow-sm transition-all cursor-pointer hover:scale-[1.02]"
+                title="공지사항 전체를 최종 저장합니다"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{isSavingNotices ? '공지사항 저장 중...' : '공지사항 최종 저장'}</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Scrollable Body Content */}
@@ -501,6 +609,39 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
           {/* TAB 1: NOTICES MANAGEMENT */}
           {activeTab === 'notices' && (
             <div className="space-y-6">
+              {/* Notice Final Save Control Banner */}
+              <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-zinc-900 via-zinc-900 to-amber-950/40 border border-amber-400/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                      소식 & 공지사항 관리
+                    </span>
+                    <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      비로그인 일반 방문자에게도 즉시 공개됨
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-300">
+                    현재 등록된 공지사항: <strong className="text-white">{notices.length}개</strong> | 최종 저장 버튼을 누르면 모든 내용이 영구 보존되며 방문자에게 즉시 공개됩니다.
+                  </p>
+                  {lastSavedNoticeTime && (
+                    <p className="text-[11px] font-mono text-zinc-400">
+                      마지막 최종 저장 일시: <span className="text-amber-300 font-bold">{lastSavedNoticeTime}</span>
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleFinalSaveNotices}
+                  disabled={isSavingNotices}
+                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-[1.02] cursor-pointer shrink-0"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{isSavingNotices ? '공지사항 저장 중...' : '공지사항 최종 저장'}</span>
+                </button>
+              </div>
+
               {/* Notice Form (Create or Edit) */}
               <div className="rounded-xl bg-zinc-900/60 border border-zinc-800 p-4 sm:p-6 shadow-inner">
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800">
@@ -992,6 +1133,16 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   <h4 className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider">
                     등록된 소식 목록 ({notices.length}개)
                   </h4>
+                  <button
+                    type="button"
+                    onClick={handleFinalSaveNotices}
+                    disabled={isSavingNotices}
+                    className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow cursor-pointer hover:scale-[1.02]"
+                    title="현재 공지사항 목록을 최종 저장합니다"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>{isSavingNotices ? '저장 중...' : '공지사항 최종 저장'}</span>
+                  </button>
                 </div>
 
                 <div className="rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden divide-y divide-zinc-800">
@@ -1079,6 +1230,39 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
           {/* TAB 2: INFINITE ROLLING TICKER LOGOS ONLY */}
           {activeTab === 'logos' && (
             <div className="space-y-6">
+              {/* Logo Final Save Control Banner */}
+              <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-zinc-900 via-zinc-900 to-amber-950/40 border border-amber-400/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                      무한롤링티커 로고 관리
+                    </span>
+                    <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      비로그인 일반 방문자에게도 즉시 무한롤링티커 노출됨
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-300">
+                    현재 등록된 파트너 로고: <strong className="text-white">{logos.length}개</strong> (4줄 무한 롤링) | 최종 저장 버튼을 누르면 모든 내용이 영구 보존되며 메인 화면에 즉시 노출됩니다.
+                  </p>
+                  {lastSavedLogoTime && (
+                    <p className="text-[11px] font-mono text-zinc-400">
+                      마지막 최종 저장 일시: <span className="text-amber-300 font-bold">{lastSavedLogoTime}</span>
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleFinalSaveLogos}
+                  disabled={isSavingLogos}
+                  className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-400/20 transition-all hover:scale-[1.02] cursor-pointer shrink-0"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{isSavingLogos ? '로고 저장 중...' : '로고 최종 저장'}</span>
+                </button>
+              </div>
+
               {/* Informational Banner */}
               <div className="p-4 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-200 text-xs leading-relaxed flex items-start gap-3">
                 <Globe className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
@@ -1086,7 +1270,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   <span className="font-bold block text-white text-sm mb-0.5">
                     무한롤링티커 구역 로고 관리
                   </span>
-                  이곳에서 등록하거나 수정한 로고는 메인 히어로 구역의 <strong>무한롤링티커 구역</strong>에 즉시 삽입되어 실시간으로 반영됩니다.
+                  이곳에서 등록하거나 수정한 로고는 메인 히어로 구역의 <strong>무한롤링티커 구역</strong>에 즉시 삽입되어 관리자 로그인 없이도 일반 방문자에게 실시간으로 반영됩니다.
                 </div>
               </div>
 
@@ -1237,18 +1421,30 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   <h4 className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider">
                     등록된 무한롤링티커 로고 목록 ({logos.length}개)
                   </h4>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      resetLogosToDefault();
-                      resetLogoForm();
-                      showToast('기본 로고 목록으로 복원되었습니다.', 'success');
-                    }}
-                    className="text-xs text-zinc-400 hover:text-amber-400 flex items-center gap-1 cursor-pointer"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    <span>기본 목록으로 복원</span>
-                  </button>
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={handleFinalSaveLogos}
+                      disabled={isSavingLogos}
+                      className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow cursor-pointer hover:scale-[1.02]"
+                      title="현재 무한롤링티커 로고 목록을 최종 저장합니다"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span>{isSavingLogos ? '저장 중...' : '로고 최종 저장'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetLogosToDefault();
+                        resetLogoForm();
+                        showToast('기본 로고 목록으로 복원되었습니다. [로고 최종 저장]을 누르면 영구 보존됩니다.', 'success');
+                      }}
+                      className="text-xs text-zinc-400 hover:text-amber-400 flex items-center gap-1 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>기본 목록으로 복원</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
