@@ -2285,74 +2285,43 @@ export const MARKETING_CASES: MarketingCase[] = [
 
 export const NOTICES: NoticeItem[] = [
   {
-    id: 'not-1',
-    title: '아트판타지아 100% 직접 책임 제작 원칙 및 자체 안전 서버 보관(A/S) 규정 안내',
-    category: '정보',
-    date: '2026.03.20',
-    views: 1842,
-    pinned: true,
-    author: '운영지원본부',
-    content: [
-      '안녕하세요, 아트판타지아입니다.',
-      '당사는 외주 재하청 없는 100% 직접 책임 제작 원칙을 준수하며, 15년 이상 경력의 감독진과 자체 녹음실·서버 인프라를 통해 영상과 음악의 최상위 시너지를 완성합니다.',
-      '촬영 원본, 녹음 원본, PROJECT 파일은 자체 안전 서버실 1년 보관을 원칙으로 하며, 글자 수정 1년 3회 무상(3D, CG텍스트 제외), 영상·사진 변경 3개월 이내 2회 무상, 성우 수정녹음 1회 무상, 음원 변경 1개월 내 무상 등 철저한 사후관리(A/S) 규정을 보장합니다.',
-      '신뢰를 최우선으로 최고의 결과물을 약속드립니다.'
-    ]
-  },
-  {
-    id: 'not-2',
-    title: '최신 생성형 AI 기반 영상·음악 자체제작 쇼릴 \'Change the Game\' 공개',
-    category: '소식',
-    date: '2026.03.15',
-    views: 2410,
-    pinned: true,
-    author: 'AI비주얼랩',
-    content: [
-      '영상과 음악 모두 생성형 AI 기술을 접목하여 100% 자체 제작된 아트판타지아의 혁신 브랜드 필름 "우리에게 AI녀석은 멋진 도구_Change the Game"이 공개되었습니다.',
-      '"우리에게 AI녀석은 아주 멋진 도구지!"라는 메시지와 함께 끊임없는 도전과 트렌드 창조를 감각적인 비트와 시네마틱 비주얼로 표현했습니다.',
-      '홈페이지 메인 쇼릴 및 영상 포트폴리오 섹션에서 확인하실 수 있습니다.'
-    ]
-  },
-  {
-    id: 'not-3',
-    title: '지상파 3사(MBC·SBS·KBS) 및 전국 라디오 방송광고 CM송·로고송 제작 안내',
-    category: '정보',
-    date: '2026.02.10',
-    views: 1290,
+    id: "notice-adm-1792850060420",
+    title: "SBS M&C CREAM 2026년 11월호",
+    author: "아트판타지아",
+    category: "정보",
+    date: "2026.10.24",
     pinned: false,
-    author: 'AFAN 사운드랩',
+    views: 7,
     content: [
-      '아트판타지아 사운드랩(AFAN MUSIC)은 지상파 3사(MBC, SBS, KBS) 및 전국 교통방송 온에어 라디오광고 CM송, 기업 브랜드 징글, 오리지널 사운드트랙을 원스톱으로 자체 제작합니다.',
-      '자체 녹음실(CUBASE, Logic Pro, 7.1.4 공간음향) 및 16개국 글로벌 성우진 라인업을 통해 기획부터 KOBACO 심의, 방송국 송출용 마스터링까지 하도급 없이 직접 완결합니다.',
-      '상세 제작 일정과 포트폴리오는 오디오 섹션 및 프로젝트 문의란을 통해 확인하실 수 있습니다.'
-    ]
+      "<span style=\"color: #fbbf24; font-weight: bold;\"><strong>아래의 사항을 확인하실 수 있습니다</strong></span>.<br />\n<br />\nSBS : TV,라디오 패키지 광고상품, 편성표 광고단가<br />\n<br />\n<a href=\"https://z.methodia.co.kr/portal/main/index.do#6thpage\" target=\"_blank\" style=\"color: #fbbf24; text-decoration: underline;\">바로보기</a>"
+    ],
+    images: []
   },
   {
-    id: 'not-4',
-    title: '중소벤처기업부 여성기업확인 및 직접생산확인 증명서 보유 안내',
-    category: '소식',
-    date: '2026.01.18',
-    views: 1120,
+    id: "notice-adm-1792849476593",
+    title: "한국방송광고공사 광고1번지 2026년 11월호",
+    author: "아트판타지아",
+    category: "정보",
+    date: "2026.10.24",
     pinned: false,
-    author: '경영지원실',
+    views: 7,
     content: [
-      '아트판타지아는 중소벤처기업부 여성기업확인(제 0113-2025-34993 호) 및 직접생산확인(제 2025-0495-01414 호, 비디오물제작업 신고 170-11-10974635)을 보유하고 있습니다.',
-      '공공기관 우선구매 대상 기업으로서 정부 부처, 지자체, 공기업 및 대기업의 영상제작, 오디오제작, 종합마케팅 용역 계약 시 행정적 편의와 신뢰성을 제공합니다.',
-      '증명서 발급 및 수의계약 관련 문의는 대표전화(1661-5680)로 연락 주시면 신속히 안내해 드리겠습니다.'
-    ]
+      "<span style=\"color: #fbbf24; font-weight: bold;\"><strong>아래의 사항을 확인하실 수 있습니다</strong></span>.<br />\n<br />\nMBC,KBS : TV,라디오 패키지 광고상품, 편성표 광고단가<br />\n외 라디오광고 : 편성표 및 광고단가<br />\n<br />\n<a href=\"http://aii.co.kr/hosting/company/e-book/ecatalog5.php?Dir=103\" target=\"_blank\" style=\"color: #fbbf24; text-decoration: underline;\">바로보기</a>"
+    ],
+    images: []
   },
   {
-    id: 'not-5',
-    title: '서울 본사 및 대구 콘텐츠제작센터 제작 및 견적 문의 안내 (1661-5680)',
-    category: '정보',
-    date: '2025.12.01',
-    views: 980,
+    id: "notice-adm-1792841998839",
+    title: "아트판타지아 홈페이지 리뉴얼 및 서버 증축",
+    author: "아트판타지아",
+    category: "소식",
+    date: "2026.10.24",
     pinned: false,
-    author: '프로덕션팀',
+    views: 13,
     content: [
-      '아트판타지아는 서울 본사(서울특별시 관악구 관악로 943동)와 자체 스튜디오를 갖춘 대구 콘텐츠제작센터(대구광역시 북구 학정로 132-1 아트판타지아 빌딩)를 운영하고 있습니다.',
-      '전국 어디서나 유선 상담(1661-5680), 공식 이메일(af@artfantasia.co.kr), 홈페이지 온라인 견적 폼을 통해 프로젝트 상담이 가능합니다.',
-      '클라이언트의 비즈니스 목표에 맞춘 최적의 미디어 솔루션을 제안해 드리겠습니다.'
-    ]
+      "AI시대에 맞는 현명한 대처와 발전되어가는 저희를 소개 드리고자 합니다.",
+      "앞으로도 최선을 다하겠습니다."
+    ],
+    images: []
   }
 ];

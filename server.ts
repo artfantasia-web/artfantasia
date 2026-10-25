@@ -2,17 +2,66 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import fs from 'fs';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 app.disable('x-powered-by');
+app.use(express.json({ limit: '50mb' }));
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const HOST = '0.0.0.0';
 
-// Serve static assets with high-performance caching
 const distPath = path.join(__dirname, 'dist');
+
+// Admin Data Persistence API
+app.post('/api/admin/save-data', (req, res) => {
+  try {
+    const data = req.body;
+    const jsonStr = JSON.stringify(data, null, 2);
+
+    const distFile = path.join(distPath, 'admin_data.json');
+    const publicFile = path.join(__dirname, 'public', 'admin_data.json');
+    const srcFile = path.join(__dirname, 'src', 'data', 'persisted_admin_data.json');
+
+    try {
+      if (!fs.existsSync(distPath)) fs.mkdirSync(distPath, { recursive: true });
+      fs.writeFileSync(distFile, jsonStr, 'utf-8');
+    } catch {}
+
+    try {
+      const publicDir = path.join(__dirname, 'public');
+      if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
+      fs.writeFileSync(publicFile, jsonStr, 'utf-8');
+    } catch {}
+
+    try {
+      const srcDir = path.join(__dirname, 'src', 'data');
+      if (!fs.existsSync(srcDir)) fs.mkdirSync(srcDir, { recursive: true });
+      fs.writeFileSync(srcFile, jsonStr, 'utf-8');
+    } catch {}
+
+    res.status(200).json({ success: true, message: 'Saved successfully to server' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/admin/get-data', (_req, res) => {
+  try {
+    const distFile = path.join(distPath, 'admin_data.json');
+    const publicFile = path.join(__dirname, 'public', 'admin_data.json');
+    if (fs.existsSync(distFile)) {
+      return res.status(200).sendFile(distFile);
+    }
+    if (fs.existsSync(publicFile)) {
+      return res.status(200).sendFile(publicFile);
+    }
+  } catch {}
+  res.status(404).json({ error: 'Data not found' });
+});
 app.use(
   express.static(distPath, {
     setHeaders: (res, filePath) => {

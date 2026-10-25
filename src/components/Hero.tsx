@@ -210,16 +210,8 @@ export const Hero: React.FC<HeroProps> = ({
   const { logos } = useAdminData();
   const activeLogos = logos.filter((l) => l.active !== false);
 
-  // Guarantee exact 48 partner & client items in the pool
-  const basePool = (() => {
-    if (activeLogos.length >= 48) {
-      return activeLogos;
-    }
-    const existingIds = new Set(activeLogos.map((l) => l.id));
-    const supplements = DEFAULT_INTERNATIONAL_LOGOS.filter((d) => !existingIds.has(d.id));
-    const combined = [...activeLogos, ...supplements];
-    return combined.length >= 48 ? combined.slice(0, 48) : DEFAULT_INTERNATIONAL_LOGOS.slice(0, 48);
-  })();
+  // Use the admin configured active logos pool, fallback to defaults only if pool is completely empty
+  const basePool = activeLogos.length > 0 ? activeLogos : DEFAULT_INTERNATIONAL_LOGOS;
 
   // 12 items per row (12 * 4 = exactly 48 items in 4 rows)
   const quarter = Math.max(1, Math.ceil(basePool.length / 4));

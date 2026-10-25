@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { NoticeItem, InternationalLogoItem } from '../types';
 import { NOTICES } from '../data/content';
+import defaultPersistedData from '../data/persisted_admin_data.json';
 
 // Default initial 48 partner and client logos for the Hero infinite rolling ticker & portfolio
 export const DEFAULT_INTERNATIONAL_LOGOS: InternationalLogoItem[] = [
@@ -76,6 +77,9 @@ interface AdminDataContextType {
   saveAllLogos: () => boolean;
   lastSavedLogoTime: string | null;
   saveAllData: () => boolean;
+  exportDataAsJson: () => string;
+  importDataFromJson: (jsonStr: string) => boolean;
+  syncToServer: (targetNotices?: NoticeItem[], targetLogos?: InternationalLogoItem[]) => Promise<boolean>;
   isAdminLoggedIn: boolean;
   loginAdmin: (id: string, pw: string) => boolean;
   logoutAdmin: () => void;
@@ -134,8 +138,14 @@ export function compressImageFile(file: File, maxWidth = 1200, quality = 0.92): 
   });
 }
 
+// Formatted date-time helper for save timestamps
+export const getNowFormatted = () => {
+  const d = new Date();
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+};
+
 export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Admin auth state (persisted in sessionStorage)
+  // Admin auth state (persisted in sessionStorage & localStorage)
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
     try {
       return (
@@ -147,13 +157,13 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   });
 
-  // Notices state
+  // Notices state: initialize from localStorage first, then from bundled persisted JSON, then fallback to NOTICES
   const [notices, setNotices] = useState<NoticeItem[]>(() => {
     try {
       const stored = localStorage.getItem('af_custom_notices');
       if (stored) {
         const parsed = JSON.parse(stored) as NoticeItem[];
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.map((item) => ({
             ...item,
             category: item.category === '정보' ? '정보' : '소식',
@@ -163,55 +173,35 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch (err) {
       console.warn('Failed to load stored notices:', err);
     }
+    if (defaultPersistedData && Array.isArray((defaultPersistedData as any).notices)) {
+      return (defaultPersistedData as any).notices;
+    }
     return NOTICES;
   });
 
-  // International logos state (guaranteed 48 partner logos)
+  // Logos state: initialize from localStorage first, then bundled persisted JSON, then fallback to DEFAULT_INTERNATIONAL_LOGOS
   const [logos, setLogos] = useState<InternationalLogoItem[]>(() => {
     try {
       const stored = localStorage.getItem('af_international_logos');
       if (stored) {
         const parsed = JSON.parse(stored) as InternationalLogoItem[];
-        if (Array.isArray(parsed)) {
-          if (parsed.length >= 48) {
-            return parsed;
-          }
-          // If stored has fewer than 48, preserve any custom items user added and backfill with default up to 48
-          const existingIds = new Set(parsed.map((item) => item.id));
-          const supplements = DEFAULT_INTERNATIONAL_LOGOS.filter((item) => !existingIds.has(item.id));
-          const combined = [...parsed, ...supplements];
-          if (combined.length >= 48) {
-            return combined.slice(0, 48);
-          }
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
         }
       }
     } catch (err) {
       console.warn('Failed to load stored logos:', err);
     }
+    if (defaultPersistedData && Array.isArray((defaultPersistedData as any).logos)) {
+      return (defaultPersistedData as any).logos;
+    }
     return DEFAULT_INTERNATIONAL_LOGOS;
   });
-
-  // Safeguard: Ensure logos always has at least 48 partner logos
-  useEffect(() => {
-    if (logos.length < 48) {
-      const existingIds = new Set(logos.map((item) => item.id));
-      const supplements = DEFAULT_INTERNATIONAL_LOGOS.filter((item) => !existingIds.has(item.id));
-      const combined = [...logos, ...supplements];
-      const finalized = combined.length >= 48 ? combined.slice(0, 48) : DEFAULT_INTERNATIONAL_LOGOS;
-      setLogos(finalized);
-    }
-  }, [logos.length]);
-
-  // Formatted date-time helper for save timestamps
-  const getNowFormatted = () => {
-    const d = new Date();
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
-  };
 
   // Last saved timestamps
   const [lastSavedNoticeTime, setLastSavedNoticeTime] = useState<string | null>(() => {
     try {
-      return localStorage.getItem('af_notices_last_saved') || null;
+      return localStorage.getItem('af_notices_last_saved') || (defaultPersistedData as any)?.lastSaved || null;
     } catch {
       return null;
     }
@@ -219,13 +209,34 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [lastSavedLogoTime, setLastSavedLogoTime] = useState<string | null>(() => {
     try {
-      return localStorage.getItem('af_logos_last_saved') || null;
+      return localStorage.getItem('af_logos_last_saved') || (defaultPersistedData as any)?.lastSaved || null;
     } catch {
       return null;
     }
   });
 
-  // Explicit Final Save for Notices - permanently commits and guarantees visibility for all visitors (even not logged in)
+  // Sync state to backend file system (/api/admin/save-data) so that changes survive deployments
+  const syncToServer = async (targetNotices: NoticeItem[] = notices, targetLogos: InternationalLogoItem[] = logos): Promise<boolean> => {
+    try {
+      const now = getNowFormatted();
+      const payload = {
+        lastSaved: now,
+        notices: targetNotices,
+        logos: targetLogos,
+      };
+      const res = await fetch('/api/admin/save-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      return res.ok;
+    } catch (err) {
+      console.warn('Sync to server failed:', err);
+      return false;
+    }
+  };
+
+  // Explicit Final Save for Notices - permanently commits to localStorage and writes to server files
   const saveAllNotices = (): boolean => {
     try {
       const now = getNowFormatted();
@@ -233,6 +244,7 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       localStorage.setItem('af_notices_last_saved', now);
       setLastSavedNoticeTime(now);
       window.dispatchEvent(new Event('storage'));
+      syncToServer(notices, logos);
       return true;
     } catch (err) {
       console.error('Failed to save notices to localStorage:', err);
@@ -240,7 +252,7 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  // Explicit Final Save for Logos - permanently commits and guarantees visibility for all visitors (even not logged in)
+  // Explicit Final Save for Logos - permanently commits to localStorage and writes to server files
   const saveAllLogos = (): boolean => {
     try {
       const now = getNowFormatted();
@@ -248,6 +260,7 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       localStorage.setItem('af_logos_last_saved', now);
       setLastSavedLogoTime(now);
       window.dispatchEvent(new Event('storage'));
+      syncToServer(notices, logos);
       return true;
     } catch (err) {
       console.error('Failed to save logos to localStorage:', err);
@@ -259,29 +272,94 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const saveAllData = (): boolean => {
     const n = saveAllNotices();
     const l = saveAllLogos();
+    syncToServer(notices, logos);
     return n && l;
   };
 
-  // Immediate bootstrap save on startup: guarantees current notices and 48 logos are permanently saved
-  useEffect(() => {
+  // Export data as JSON string for easy backup
+  const exportDataAsJson = (): string => {
+    return JSON.stringify(
+      {
+        lastSaved: getNowFormatted(),
+        notices,
+        logos,
+      },
+      null,
+      2
+    );
+  };
+
+  // Import data from JSON string
+  const importDataFromJson = (jsonStr: string): boolean => {
     try {
-      const now = getNowFormatted();
-      if (!localStorage.getItem('af_custom_notices')) {
-        localStorage.setItem('af_custom_notices', JSON.stringify(notices));
+      const parsed = JSON.parse(jsonStr);
+      let updated = false;
+      let nextNotices = notices;
+      let nextLogos = logos;
+
+      if (Array.isArray(parsed.notices) && parsed.notices.length > 0) {
+        nextNotices = parsed.notices;
+        setNotices(nextNotices);
+        localStorage.setItem('af_custom_notices', JSON.stringify(nextNotices));
+        updated = true;
       }
-      if (!localStorage.getItem('af_international_logos')) {
-        localStorage.setItem('af_international_logos', JSON.stringify(logos));
+      if (Array.isArray(parsed.logos) && parsed.logos.length > 0) {
+        nextLogos = parsed.logos;
+        setLogos(nextLogos);
+        localStorage.setItem('af_international_logos', JSON.stringify(nextLogos));
+        updated = true;
       }
-      if (!localStorage.getItem('af_notices_last_saved')) {
-        localStorage.setItem('af_notices_last_saved', now);
+
+      if (updated) {
+        const now = getNowFormatted();
         setLastSavedNoticeTime(now);
-      }
-      if (!localStorage.getItem('af_logos_last_saved')) {
-        localStorage.setItem('af_logos_last_saved', now);
         setLastSavedLogoTime(now);
+        localStorage.setItem('af_notices_last_saved', now);
+        localStorage.setItem('af_logos_last_saved', now);
+        window.dispatchEvent(new Event('storage'));
+        syncToServer(nextNotices, nextLogos);
+        return true;
       }
     } catch (err) {
-      console.warn('Initial storage save error:', err);
+      console.error('Failed to import JSON data:', err);
+    }
+    return false;
+  };
+
+  // Initial synchronization:
+  // If browser has localStorage, auto-sync it to the server so disk files are immediately up-to-date!
+  // If browser does NOT have localStorage, fetch /admin_data.json to get the latest server data.
+  useEffect(() => {
+    try {
+      const localNotices = localStorage.getItem('af_custom_notices');
+      const localLogos = localStorage.getItem('af_international_logos');
+      if (localNotices || localLogos) {
+        const parsedN = localNotices ? JSON.parse(localNotices) : notices;
+        const parsedL = localLogos ? JSON.parse(localLogos) : logos;
+        syncToServer(parsedN, parsedL);
+      } else {
+        fetch(`/admin_data.json?t=${Date.now()}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data) {
+              if (Array.isArray(data.notices) && data.notices.length > 0) {
+                setNotices(data.notices);
+                localStorage.setItem('af_custom_notices', JSON.stringify(data.notices));
+              }
+              if (Array.isArray(data.logos) && data.logos.length > 0) {
+                setLogos(data.logos);
+                localStorage.setItem('af_international_logos', JSON.stringify(data.logos));
+              }
+              if (data.lastSaved) {
+                setLastSavedNoticeTime(data.lastSaved);
+                setLastSavedLogoTime(data.lastSaved);
+              }
+            }
+          })
+          .catch(() => {});
+      }
+    } catch (err) {
+      console.warn('Initial storage bootstrap warning:', err);
     }
   }, []);
 
@@ -442,6 +520,9 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         saveAllLogos,
         lastSavedLogoTime,
         saveAllData,
+        exportDataAsJson,
+        importDataFromJson,
+        syncToServer,
         isAdminLoggedIn,
         loginAdmin,
         logoutAdmin,

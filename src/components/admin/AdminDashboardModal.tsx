@@ -51,10 +51,18 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     saveAllLogos,
     lastSavedLogoTime,
     saveAllData,
+    exportDataAsJson,
+    importDataFromJson,
+    syncToServer,
     logoutAdmin,
   } = useAdminData();
 
   const [activeTab, setActiveTab] = useState<'logos' | 'notices'>('logos');
+
+  // JSON Backup / Restore Modal State
+  const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
+  const [jsonText, setJsonText] = useState('');
+  const [jsonCopied, setJsonCopied] = useState(false);
 
   // Notice Form State
   const [isEditingNotice, setIsEditingNotice] = useState(false);
@@ -94,57 +102,54 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   const [isSavingNotices, setIsSavingNotices] = useState(false);
   const [isSavingAll, setIsSavingAll] = useState(false);
 
-  // 로고 최종 저장: 모든 로고 상태를 localStorage에 영구 보존 및 비로그인 사용자 화면에도 즉시 반영
-  const handleFinalSaveLogos = () => {
+  // 로고 최종 저장: 모든 로고 상태를 localStorage에 영구 보존 및 서버/정적 파일에 저장하여 배포 시에도 즉시 반영
+  const handleFinalSaveLogos = async () => {
     setIsSavingLogos(true);
     try {
-      const ok = saveAllLogos();
-      setTimeout(() => {
-        setIsSavingLogos(false);
-        if (ok) {
-          showToast(`[최종 저장 완료] 무한롤링티커 로고 (${logos.length}개)가 영구 저장되었습니다. 관리자 로그인이 되지 않아도 일반 방문자에게 즉시 표시됩니다.`, 'success');
-        } else {
-          showToast('로고 최종 저장 중 오류가 발생했습니다.', 'error');
-        }
-      }, 300);
+      saveAllLogos();
+      const serverOk = await syncToServer(notices, logos);
+      setIsSavingLogos(false);
+      if (serverOk) {
+        showToast(`[서버 & 배포 파일 저장 완료] 롤링티커 로고 (${logos.length}개)가 영구 저장되었습니다. 배포 후 모든 방문자에게 즉시 적용됩니다.`, 'success');
+      } else {
+        showToast(`로고가 로컬에 저장되었습니다.`, 'success');
+      }
     } catch {
       setIsSavingLogos(false);
       showToast('로고 최종 저장 중 오류가 발생했습니다.', 'error');
     }
   };
 
-  // 공지사항 최종 저장: 모든 소식 상태를 localStorage에 영구 보존 및 비로그인 사용자 화면에도 즉시 반영
-  const handleFinalSaveNotices = () => {
+  // 공지사항 최종 저장: 모든 소식 상태를 localStorage에 영구 보존 및 서버/정적 파일에 저장하여 배포 시에도 즉시 반영
+  const handleFinalSaveNotices = async () => {
     setIsSavingNotices(true);
     try {
-      const ok = saveAllNotices();
-      setTimeout(() => {
-        setIsSavingNotices(false);
-        if (ok) {
-          showToast(`[최종 저장 완료] 공지사항 (${notices.length}개)이 영구 저장되었습니다. 관리자 로그인이 되지 않아도 일반 방문자에게 즉시 표시됩니다.`, 'success');
-        } else {
-          showToast('공지사항 최종 저장 중 오류가 발생했습니다.', 'error');
-        }
-      }, 300);
+      saveAllNotices();
+      const serverOk = await syncToServer(notices, logos);
+      setIsSavingNotices(false);
+      if (serverOk) {
+        showToast(`[서버 & 배포 파일 저장 완료] 공지사항 (${notices.length}개)이 영구 저장되었습니다. 배포 후 모든 방문자에게 즉시 적용됩니다.`, 'success');
+      } else {
+        showToast(`공지사항이 로컬에 저장되었습니다.`, 'success');
+      }
     } catch {
       setIsSavingNotices(false);
       showToast('공지사항 최종 저장 중 오류가 발생했습니다.', 'error');
     }
   };
 
-  // 전체 최종 저장 (로고 + 공지사항 모두 한 번에 영구 저장)
-  const handleFinalSaveAll = () => {
+  // 전체 최종 저장 (로고 + 공지사항 모두 한 번에 영구 저장 및 서버 파일 동기화)
+  const handleFinalSaveAll = async () => {
     setIsSavingAll(true);
     try {
-      const ok = saveAllData();
-      setTimeout(() => {
-        setIsSavingAll(false);
-        if (ok) {
-          showToast(`[전체 최종 저장 완료] 로고 (${logos.length}개) 및 공지사항 (${notices.length}개) 전체가 영구 저장되었습니다. 비로그인 일반 방문자에게도 즉시 반영됩니다.`, 'success');
-        } else {
-          showToast('전체 최종 저장 중 오류가 발생했습니다.', 'error');
-        }
-      }, 350);
+      saveAllData();
+      const serverOk = await syncToServer(notices, logos);
+      setIsSavingAll(false);
+      if (serverOk) {
+        showToast(`[전체 최종 저장 완료] 로고 (${logos.length}개) 및 공지사항 (${notices.length}개) 전체가 서버 및 배포 파일에 영구 저장되었습니다. 배포 후 모든 방문자에게 즉시 반영됩니다.`, 'success');
+      } else {
+        showToast(`전체 데이터가 로컬에 저장되었습니다.`, 'success');
+      }
     } catch {
       setIsSavingAll(false);
       showToast('전체 최종 저장 중 오류가 발생했습니다.', 'error');
@@ -490,10 +495,22 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => {
+                setJsonText(exportDataAsJson());
+                setIsJsonModalOpen(true);
+              }}
+              className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer border border-zinc-700"
+              title="데이터 JSON 백업 및 불러오기"
+            >
+              <Code className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">JSON 백업/복원</span>
+            </button>
+            <button
+              type="button"
               onClick={handleFinalSaveAll}
               disabled={isSavingAll}
               className="px-3 sm:px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 text-xs font-black flex items-center gap-1.5 shadow-md shadow-amber-400/20 transition-all hover:scale-[1.02] cursor-pointer"
-              title="로고 및 공지사항 전체를 즉시 영구 저장합니다 (비로그인 방문자에게도 즉시 반영)"
+              title="로고 및 공지사항 전체를 즉시 영구 저장합니다 (배포 후 모든 방문자에게 즉시 반영)"
             >
               <Save className="w-3.5 h-3.5" />
               <span>{isSavingAll ? '전체 저장 중...' : '전체 최종 저장'}</span>
@@ -1507,6 +1524,103 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* JSON Backup & Restore Modal */}
+        {isJsonModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in">
+            <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl p-5 flex flex-col gap-4 text-zinc-100">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <Code className="w-5 h-5 text-amber-400" />
+                  <h3 className="font-bold text-base text-white">데이터 JSON 백업 및 복원</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsJsonModalOpen(false)}
+                  className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                현재 등록된 롤링티커 로고({logos.length}개) 및 공지사항({notices.length}개) 전체 데이터입니다.
+                내용을 복사하여 안전하게 백업하거나, 이전 백업 데이터를 아래 입력창에 붙여넣고 [복원 적용] 버튼을 누르면 즉시 복원 및 배포 파일에 동기화됩니다.
+              </p>
+
+              <div className="relative">
+                <textarea
+                  value={jsonText}
+                  onChange={(e) => setJsonText(e.target.value)}
+                  rows={12}
+                  className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-lg font-mono text-xs text-zinc-300 focus:outline-none focus:border-amber-400 resize-none"
+                  placeholder="JSON 데이터를 붙여넣으세요..."
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-zinc-800 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(jsonText);
+                      setJsonCopied(true);
+                      setTimeout(() => setJsonCopied(false), 2000);
+                      showToast('JSON 데이터가 클립보드에 복사되었습니다.', 'info');
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Check className={`w-3.5 h-3.5 ${jsonCopied ? 'text-emerald-400' : 'text-zinc-400'}`} />
+                    <span>{jsonCopied ? '복사됨!' : '클립보드 복사'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const blob = new Blob([jsonText], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `artfantasia_backup_${Date.now()}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      showToast('백업 파일이 다운로드되었습니다.', 'success');
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-zinc-400 rotate-180" />
+                    <span>JSON 파일 다운로드</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const ok = importDataFromJson(jsonText);
+                      if (ok) {
+                        setIsJsonModalOpen(false);
+                        showToast('[복원 완료] JSON 데이터가 성공적으로 복원되고 서버에 저장되었습니다.', 'success');
+                      } else {
+                        showToast('JSON 파싱 오류: 올바른 JSON 형식이 아닙니다.', 'error');
+                      }
+                    }}
+                    className="px-4 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>복원 적용 (불러오기)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsJsonModalOpen(false)}
+                    className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-xs font-semibold cursor-pointer"
+                  >
+                    닫기
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
