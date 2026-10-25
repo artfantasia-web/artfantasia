@@ -212,7 +212,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
             ))}
           </div>
 
-          <div className="pt-6 border-t border-zinc-800 space-y-3">
+          <div className="pt-6 border-t border-zinc-800">
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
@@ -220,13 +220,9 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
               }}
               className="w-full py-3.5 text-center text-sm font-black text-zinc-950 bg-amber-400 hover:bg-amber-300 rounded-xl hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-amber-400/20"
             >
-              <span>{language === 'ko' ? '프로젝트 제작 및 견적 문의하기' : 'Request Project Quotation & Inquiry'}</span>
+              <span>{language === 'ko' ? '견적 문의하기' : 'Request Quotation'}</span>
               <ArrowUpRight className="w-4 h-4 text-zinc-950" />
             </button>
-
-            <div className="text-xs text-zinc-500 text-center font-mono pt-1">
-              TEL: 010-8739-8611 · artfantasia01@gmail.com
-            </div>
           </div>
         </div>
       )}
