@@ -3,64 +3,10 @@ import { NoticeItem, InternationalLogoItem } from '../types';
 import { NOTICES } from '../data/content';
 import defaultPersistedData from '../data/persisted_admin_data.json';
 
-// Default initial 48 partner and client logos for the Hero infinite rolling ticker & portfolio
-export const DEFAULT_INTERNATIONAL_LOGOS: InternationalLogoItem[] = [
-  // 1-12: Global & Major Conglomerates
-  { id: 'logo-hyundai', name: 'HYUNDAI HMGMA', country: 'USA', countryKo: '미국', logoUrl: '', category: 'GLOBAL AUTOMOTIVE', active: true },
-  { id: 'logo-northwestern', name: 'NORTHWESTERN UNIV.', country: 'USA', countryKo: '미국', logoUrl: '', category: 'GLOBAL UNIVERSITY', active: true },
-  { id: 'logo-kotra', name: 'KOTRA', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'TRADE AGENCY', active: true },
-  { id: 'logo-keyvalve', name: 'KEYVALVE', country: 'SWEDEN', countryKo: '스웨덴', logoUrl: '', category: 'INDUSTRIAL', active: true },
-  { id: 'logo-donga', name: 'DONGA ENG', country: 'CZECH', countryKo: '체코', logoUrl: '', category: 'MANUFACTURING', active: true },
-  { id: 'logo-tidfore', name: 'TIDFORE', country: 'CHINA', countryKo: '중국', logoUrl: '', category: 'HEAVY INDUSTRY', active: true },
-  { id: 'logo-peking', name: 'PEKING UNIV.', country: 'CHINA', countryKo: '중국', logoUrl: '', category: 'GLOBAL UNIVERSITY', active: true },
-  { id: 'logo-ntu', name: 'NTU SINGAPORE', country: 'SINGAPORE', countryKo: '싱가포르', logoUrl: '', category: 'TECHNOLOGY', active: true },
-  { id: 'logo-dsec', name: 'DSEC', country: 'GLOBAL', countryKo: '조선해양', logoUrl: '', category: 'SHIPBUILDING', active: true },
-  { id: 'logo-samsung', name: 'SAMSUNG ELECTRONICS', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'ELECTRONICS', active: true },
-  { id: 'logo-e1', name: 'E1', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'ENERGY', active: true },
-  { id: 'logo-kwater', name: 'K-WATER', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'PUBLIC UTILITY', active: true },
+import { FIXED_INTERNATIONAL_LOGOS } from '../data/fixedLogos';
 
-  // 13-24: Broadcasters, Trade, Tech & Conglomerates
-  { id: 'logo-sbs', name: 'SBS MEDIA CREATE', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'BROADCAST MEDIA', active: true },
-  { id: 'logo-kita', name: 'KITA 한국무역협회', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'GLOBAL TRADE', active: true },
-  { id: 'logo-gbsa', name: 'GBSA 경기도경제과학진흥원', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'SCIENCE & TECH', active: true },
-  { id: 'logo-kobaco', name: 'KOBACO 한국방송광고진흥공사', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'BROADCAST AD', active: true },
-  { id: 'logo-ebs', name: 'EBS 한국교육방송', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'BROADCASTING', active: true },
-  { id: 'logo-kbs', name: 'KBS 한국방송', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'BROADCASTING', active: true },
-  { id: 'logo-cjenm', name: 'CJ ENM', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'ENTERTAINMENT', active: true },
-  { id: 'logo-skt', name: 'SK TELECOM', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'TELECOMMUNICATIONS', active: true },
-  { id: 'logo-lg', name: 'LG ELECTRONICS', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'TECH & ELECTRONICS', active: true },
-  { id: 'logo-posco', name: 'POSCO 포스코', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'STEEL & MATERIALS', active: true },
-  { id: 'logo-lotte', name: 'LOTTE 그룹', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'RETAIL & CHEMICAL', active: true },
-  { id: 'logo-hanwha', name: 'HANWHA 한화', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'AEROSPACE & ENERGY', active: true },
-
-  // 25-36: Public Institutions, Government Ministries & IT Giants
-  { id: 'logo-seoul', name: '서울특별시 SEOUL', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'METROPOLITAN GOV', active: true },
-  { id: 'logo-busan', name: '부산광역시 BUSAN', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'METROPOLITAN GOV', active: true },
-  { id: 'logo-iiac', name: '인천국제공항공사 IIAC', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'AVIATION & TRANSIT', active: true },
-  { id: 'logo-kto', name: 'KTO 한국관광공사', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'TOURISM & CULTURE', active: true },
-  { id: 'logo-mcst', name: '문화체육관광부 MCST', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'MINISTRY', active: true },
-  { id: 'logo-mss', name: '중소벤처기업부 MSS', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'MINISTRY', active: true },
-  { id: 'logo-msit', name: '과학기술정보통신부 MSIT', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'MINISTRY', active: true },
-  { id: 'logo-kocca', name: 'KOCCA 한국콘텐츠진흥원', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'CREATIVE CONTENT', active: true },
-  { id: 'logo-gscaltex', name: 'GS CALTEX GS칼텍스', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'ENERGY & PETRO', active: true },
-  { id: 'logo-kt', name: 'KT 케이티', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'TELECOM & AI', active: true },
-  { id: 'logo-kakao', name: '카카오 KAKAO', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'DIGITAL PLATFORM', active: true },
-  { id: 'logo-naver', name: '네이버 NAVER', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'TECH & AI', active: true },
-
-  // 37-48: Infrastructure, Prestigious Universities & Humanitarian Orgs
-  { id: 'logo-kepco', name: 'KEPCO 한국전력공사', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'ELECTRIC POWER', active: true },
-  { id: 'logo-ex', name: '한국도로공사 EX', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'INFRASTRUCTURE', active: true },
-  { id: 'logo-korail', name: '코레일 KORAIL', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'TRANSPORTATION', active: true },
-  { id: 'logo-inha', name: '인하대학교 INHA UNIV.', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'UNIVERSITY', active: true },
-  { id: 'logo-yonsei', name: '연세대학교 YONSEI UNIV.', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'UNIVERSITY', active: true },
-  { id: 'logo-korea-univ', name: '고려대학교 KOREA UNIV.', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'UNIVERSITY', active: true },
-  { id: 'logo-kaist', name: 'KAIST 한국과학기술원', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'SCIENCE & TECH', active: true },
-  { id: 'logo-snu', name: '서울대학교 SEOUL NATL UNIV.', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'UNIVERSITY', active: true },
-  { id: 'logo-unicef', name: 'UNICEF 유니세프한국위원회', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'GLOBAL NGO', active: true },
-  { id: 'logo-redcross', name: '대한적십자사 RED CROSS', country: 'GLOBAL', countryKo: '글로벌', logoUrl: '', category: 'HUMANITARIAN', active: true },
-  { id: 'logo-kead', name: '한국장애인고용공단 KEAD', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'PUBLIC WELFARE', active: true },
-  { id: 'logo-nhis', name: '국민건강보험공단 NHIS', country: 'KOREA', countryKo: '대한민국', logoUrl: '', category: 'PUBLIC HEALTHCARE', active: true },
-];
+// Permanent 51 fixed partner and client logos for the Hero infinite rolling ticker & portfolio
+export const DEFAULT_INTERNATIONAL_LOGOS: InternationalLogoItem[] = FIXED_INTERNATIONAL_LOGOS;
 
 interface AdminDataContextType {
   notices: NoticeItem[];
@@ -144,6 +90,22 @@ export const getNowFormatted = () => {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
 };
 
+export const APP_DATA_VERSION = '2026.10.25-v4';
+
+// Helper to determine if stored data in localStorage is from an obsolete dummy build
+function isNoticeDataStale(parsed: NoticeItem[]): boolean {
+  if (!Array.isArray(parsed) || parsed.length === 0) return true;
+  // If stored notices contain the old initial dummy post ("not-1" or "강남 크리에이티브 센터 확장 이전")
+  return parsed.some((n) => n.id === 'not-1' || (n.title && n.title.includes('강남 크리에이티브 센터 확장 이전')));
+}
+
+function isLogoDataStale(parsed: InternationalLogoItem[]): boolean {
+  if (!Array.isArray(parsed) || parsed.length === 0) return true;
+  // If stored logos have all empty logoUrls, they are from the old unpopulated export
+  const hasValidUrls = parsed.some((l) => l.logoUrl && l.logoUrl.trim().length > 0);
+  return !hasValidUrls;
+}
+
 export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Admin auth state (persisted in sessionStorage & localStorage)
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
@@ -157,13 +119,14 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   });
 
-  // Notices state: initialize from localStorage first, then from bundled persisted JSON, then fallback to NOTICES
+  // Notices state: initialize from localStorage first (if version matches and not stale), then bundled JSON, then NOTICES
   const [notices, setNotices] = useState<NoticeItem[]>(() => {
     try {
+      const storedVersion = localStorage.getItem('af_data_version');
       const stored = localStorage.getItem('af_custom_notices');
-      if (stored) {
+      if (stored && storedVersion === APP_DATA_VERSION) {
         const parsed = JSON.parse(stored) as NoticeItem[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (!isNoticeDataStale(parsed)) {
           return parsed.map((item) => ({
             ...item,
             category: item.category === '정보' ? '정보' : '소식',
@@ -173,27 +136,34 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch (err) {
       console.warn('Failed to load stored notices:', err);
     }
-    if (defaultPersistedData && Array.isArray((defaultPersistedData as any).notices)) {
-      return (defaultPersistedData as any).notices;
+    if (defaultPersistedData && Array.isArray((defaultPersistedData as any).notices) && (defaultPersistedData as any).notices.length > 0) {
+      const parsed = (defaultPersistedData as any).notices;
+      if (!isNoticeDataStale(parsed)) {
+        return parsed;
+      }
     }
     return NOTICES;
   });
 
-  // Logos state: initialize from localStorage first, then bundled persisted JSON, then fallback to DEFAULT_INTERNATIONAL_LOGOS
+  // Logos state: initialize from localStorage first (if version matches and not stale), then bundled JSON, then DEFAULT_INTERNATIONAL_LOGOS
   const [logos, setLogos] = useState<InternationalLogoItem[]>(() => {
     try {
+      const storedVersion = localStorage.getItem('af_data_version');
       const stored = localStorage.getItem('af_international_logos');
-      if (stored) {
+      if (stored && storedVersion === APP_DATA_VERSION) {
         const parsed = JSON.parse(stored) as InternationalLogoItem[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (!isLogoDataStale(parsed)) {
           return parsed;
         }
       }
     } catch (err) {
       console.warn('Failed to load stored logos:', err);
     }
-    if (defaultPersistedData && Array.isArray((defaultPersistedData as any).logos)) {
-      return (defaultPersistedData as any).logos;
+    if (defaultPersistedData && Array.isArray((defaultPersistedData as any).logos) && (defaultPersistedData as any).logos.length > 0) {
+      const parsed = (defaultPersistedData as any).logos;
+      if (!isLogoDataStale(parsed)) {
+        return parsed;
+      }
     }
     return DEFAULT_INTERNATIONAL_LOGOS;
   });
@@ -326,38 +296,46 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return false;
   };
 
-  // Initial synchronization:
-  // If browser has localStorage, auto-sync it to the server so disk files are immediately up-to-date!
-  // If browser does NOT have localStorage, fetch /admin_data.json to get the latest server data.
+  // Initial synchronization & version migration:
   useEffect(() => {
     try {
-      const localNotices = localStorage.getItem('af_custom_notices');
-      const localLogos = localStorage.getItem('af_international_logos');
-      if (localNotices || localLogos) {
-        const parsedN = localNotices ? JSON.parse(localNotices) : notices;
-        const parsedL = localLogos ? JSON.parse(localLogos) : logos;
-        syncToServer(parsedN, parsedL);
-      } else {
-        fetch(`/admin_data.json?t=${Date.now()}`)
-          .then((res) => (res.ok ? res.json() : null))
-          .then((data) => {
-            if (data) {
-              if (Array.isArray(data.notices) && data.notices.length > 0) {
-                setNotices(data.notices);
-                localStorage.setItem('af_custom_notices', JSON.stringify(data.notices));
-              }
-              if (Array.isArray(data.logos) && data.logos.length > 0) {
-                setLogos(data.logos);
-                localStorage.setItem('af_international_logos', JSON.stringify(data.logos));
-              }
-              if (data.lastSaved) {
-                setLastSavedNoticeTime(data.lastSaved);
-                setLastSavedLogoTime(data.lastSaved);
-              }
-            }
-          })
-          .catch(() => {});
+      const storedVersion = localStorage.getItem('af_data_version');
+      if (storedVersion !== APP_DATA_VERSION) {
+        // Upgrade stale localStorage cache to latest codebase data
+        localStorage.setItem('af_data_version', APP_DATA_VERSION);
+        localStorage.setItem('af_custom_notices', JSON.stringify(notices));
+        localStorage.setItem('af_international_logos', JSON.stringify(logos));
       }
+
+      // Always check if server / Netlify has deployed a newer admin_data.json
+      fetch(`/admin_data.json?t=${Date.now()}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) {
+            let hasUpdate = false;
+            if (Array.isArray(data.notices) && data.notices.length > 0 && !isNoticeDataStale(data.notices)) {
+              setNotices(data.notices);
+              localStorage.setItem('af_custom_notices', JSON.stringify(data.notices));
+              hasUpdate = true;
+            }
+            if (Array.isArray(data.logos) && data.logos.length > 0 && !isLogoDataStale(data.logos)) {
+              setLogos(data.logos);
+              localStorage.setItem('af_international_logos', JSON.stringify(data.logos));
+              hasUpdate = true;
+            }
+            if (hasUpdate) {
+              localStorage.setItem('af_data_version', APP_DATA_VERSION);
+            }
+            if (data.lastSaved) {
+              setLastSavedNoticeTime(data.lastSaved);
+              setLastSavedLogoTime(data.lastSaved);
+            }
+          }
+        })
+        .catch(() => {});
+
+      // Sync to dev server if running
+      syncToServer(notices, logos);
     } catch (err) {
       console.warn('Initial storage bootstrap warning:', err);
     }
