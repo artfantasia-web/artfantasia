@@ -80,8 +80,8 @@ export interface NoticeItem {
 }
 
 export interface InternationalLogoItem {
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
   country?: string;
   countryKo?: string;
   logoUrl?: string;

@@ -9,7 +9,6 @@ import { GoldenParticleCanvas } from './GoldenParticleCanvas';
 import { NavCategory } from '../types';
 import { useAdminData, DEFAULT_INTERNATIONAL_LOGOS } from '../context/AdminDataContext';
 import { useLanguage } from '../context/LanguageContext';
-import { getBrandLogoSvg } from '../data/brandLogosSvg';
 
 interface HeroProps {
   onExploreVideo: () => void;
@@ -208,42 +207,43 @@ export const Hero: React.FC<HeroProps> = ({
   };
 
   const { logos } = useAdminData();
-  const activeLogos = logos.filter((l) => l.active !== false);
+  // 관리자에서 링크를 걸거나 업로드한 로고 파일(logoUrl)만 필터링하여 노출
+  const validLogos = logos.filter(
+    (l) => l.active !== false && typeof l.logoUrl === 'string' && l.logoUrl.trim().length > 0
+  );
 
-  // Use the admin configured active logos pool, fallback to defaults only if pool is completely empty
-  const basePool = activeLogos.length > 0 ? activeLogos : DEFAULT_INTERNATIONAL_LOGOS;
+  const basePool = validLogos.length > 0
+    ? validLogos
+    : DEFAULT_INTERNATIONAL_LOGOS.filter((l) => typeof l.logoUrl === 'string' && l.logoUrl.trim().length > 0);
 
-  // 12 items per row (12 * 4 = exactly 48 items in 4 rows)
+  // 4개 행에 고르게 분할
   const quarter = Math.max(1, Math.ceil(basePool.length / 4));
   const row1Base = basePool.slice(0, quarter);
   const row2Base = basePool.slice(quarter, quarter * 2);
   const row3Base = basePool.slice(quarter * 2, quarter * 3);
   const row4Base = basePool.slice(quarter * 3);
 
-  // Helper to ensure each marquee row track fills the viewport edge-to-edge
-  const getFullRowLogos = (rowList: typeof basePool, fallbackName: string) => {
-    const base = rowList.length > 0 ? rowList : [{ id: fallbackName, name: fallbackName, active: true } as any];
-    let set = [...base];
+  // 무한 롤링 티커 트랙 구성 (실제 로고 파일이 있는 경우에만 연속 루프 형성)
+  const getFullRowLogos = (rowList: typeof basePool) => {
+    if (rowList.length === 0) return [];
+    let set = [...rowList];
     while (set.length < 16) {
-      set = [...set, ...base];
+      set = [...set, ...rowList];
     }
     return set;
   };
 
-  const row1 = getFullRowLogos(row1Base, 'ART FANTASIA');
-  const row2 = getFullRowLogos(row2Base, 'GLOBAL PARTNERS');
-  const row3 = getFullRowLogos(row3Base, 'CREATIVE CLIENTS');
-  const row4 = getFullRowLogos(row4Base, 'INTERNATIONAL PORTFOLIO');
+  const row1 = getFullRowLogos(row1Base);
+  const row2 = getFullRowLogos(row2Base);
+  const row3 = getFullRowLogos(row3Base);
+  const row4 = getFullRowLogos(row4Base);
 
-  // Marquee item rendering dynamic international portfolio logo with ultra-crisp high-DPI resolution
+  // 롤링티커 아이템 렌더링: 관리자에서 링크하거나 업로드한 로고 파일만 출력
   const renderMarqueeLogoItem = (logo: any, key: string | number) => {
-    let rawSrc = logo.logoUrl;
-    if (!rawSrc || !rawSrc.trim()) {
-      // Fallback to high-definition vector SVG for brand
-      rawSrc = getBrandLogoSvg(logo.id, logo.name);
-    }
+    const rawSrc = logo.logoUrl?.trim();
+    if (!rawSrc) return null;
     let imageSrc = rawSrc;
-    if (imageSrc && imageSrc.trim().startsWith('<svg')) {
+    if (imageSrc.startsWith('<svg')) {
       imageSrc = `data:image/svg+xml;utf8,${encodeURIComponent(imageSrc)}`;
     }
 
@@ -257,25 +257,19 @@ export const Hero: React.FC<HeroProps> = ({
           backfaceVisibility: 'hidden',
         }}
       >
-        {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={logo.name || 'Partner Logo'}
-            loading="eager"
-            decoding="sync"
-            className="h-6 sm:h-[26px] max-w-[115px] sm:max-w-[135px] w-auto object-contain transition-transform duration-300 group-hover/lbox:scale-105"
-            style={{
-              imageRendering: '-webkit-optimize-contrast',
-              transform: 'translateZ(0)',
-              WebkitBackfaceVisibility: 'hidden',
-              backfaceVisibility: 'hidden',
-            }}
-          />
-        ) : (
-          <span className="text-[12px] sm:text-[13px] font-bold font-mono text-zinc-900 tracking-tight truncate px-2">
-            {logo.name}
-          </span>
-        )}
+        <img
+          src={imageSrc}
+          alt={logo.name || 'Partner Logo'}
+          loading="eager"
+          decoding="sync"
+          className="h-6 sm:h-[26px] max-w-[115px] sm:max-w-[135px] w-auto object-contain transition-transform duration-300 group-hover/lbox:scale-105"
+          style={{
+            imageRendering: '-webkit-optimize-contrast',
+            transform: 'translateZ(0)',
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden',
+          }}
+        />
       </div>
     );
   };

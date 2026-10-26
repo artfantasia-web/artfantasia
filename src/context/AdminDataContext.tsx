@@ -88,7 +88,16 @@ export const getNowFormatted = () => {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
 };
 
-export const APP_DATA_VERSION = '2026.10.25-v4';
+export const APP_DATA_VERSION = '2026.10.26-v1';
+
+// Helper to ensure each logo item in memory has an id for React keys and admin management
+function ensureLogoIds(list: InternationalLogoItem[]): InternationalLogoItem[] {
+  return list.map((item, idx) => ({
+    ...item,
+    id: item.id || `logo-item-${idx + 1}`,
+    active: item.active !== false,
+  }));
+}
 
 // Helper to determine if stored data in localStorage is from an obsolete dummy build
 function isNoticeDataStale(parsed: NoticeItem[]): boolean {
@@ -145,13 +154,13 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (stored && storedVersion === APP_DATA_VERSION) {
         const parsed = JSON.parse(stored) as InternationalLogoItem[];
         if (!isLogoDataStale(parsed)) {
-          return parsed;
+          return ensureLogoIds(parsed);
         }
       }
     } catch (err) {
       console.warn('Failed to load stored logos:', err);
     }
-    return DEFAULT_INTERNATIONAL_LOGOS;
+    return ensureLogoIds(DEFAULT_INTERNATIONAL_LOGOS);
   });
 
   // Last saved timestamps
@@ -464,7 +473,7 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const resetLogosToDefault = () => {
-    setLogos(DEFAULT_INTERNATIONAL_LOGOS);
+    setLogos(ensureLogoIds(DEFAULT_INTERNATIONAL_LOGOS));
   };
 
   return (

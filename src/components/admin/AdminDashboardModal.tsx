@@ -25,7 +25,6 @@ import {
 } from 'lucide-react';
 import { useAdminData, extractYouTubeId, compressImageFile, APP_DATA_VERSION, getNowFormatted } from '../../context/AdminDataContext';
 import { NoticeItem, InternationalLogoItem } from '../../types';
-import { getBrandLogoSvg } from '../../data/brandLogosSvg';
 import { formatNoticeContent } from '../../utils/formatNotice';
 
 interface AdminDashboardModalProps {
@@ -421,8 +420,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
   const handleStartEditLogo = (logo: InternationalLogoItem) => {
     setIsEditingLogo(true);
-    setEditingLogoId(logo.id);
-    setLogoName(logo.name);
+    setEditingLogoId(logo.id || null);
+    setLogoName(logo.name || '');
     setLogoUrl(logo.logoUrl || '');
   };
 
@@ -433,24 +432,14 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       return;
     }
 
-    const assignedName = logoName.trim() || `TICKER-LOGO-${Date.now().toString().slice(-4)}`;
-
     if (isEditingLogo && editingLogoId) {
       updateLogo(editingLogoId, {
-        name: assignedName,
-        country: 'GLOBAL',
-        category: 'TICKER LOGO',
         logoUrl: logoUrl.trim(),
-        websiteUrl: '',
       });
       showToast('무한롤링티커 로고가 수정되었습니다.', 'success');
     } else {
       addLogo({
-        name: assignedName,
-        country: 'GLOBAL',
-        category: 'TICKER LOGO',
         logoUrl: logoUrl.trim(),
-        websiteUrl: '',
         active: true,
       });
       showToast('새 로고가 무한롤링티커 구역에 삽입되었습니다.', 'success');
@@ -1524,13 +1513,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   {logos.map((logo, idx) => (
                     <div
-                      key={logo.id}
+                      key={logo.id || idx}
                       className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 flex flex-col justify-between gap-2.5 group transition-all"
                     >
                       <div className="flex flex-col items-center justify-center">
                         <div className="w-full h-14 rounded-lg bg-white border border-zinc-300 p-1.5 flex items-center justify-center shadow-xs overflow-hidden">
                           {(() => {
-                            const rawUrl = logo.logoUrl || getBrandLogoSvg(logo.id, logo.name);
+                            const rawUrl = logo.logoUrl || '';
                             const imgSrc = rawUrl.startsWith('<svg') ? `data:image/svg+xml;utf8,${encodeURIComponent(rawUrl)}` : rawUrl;
                             return (
                               <img
@@ -1561,7 +1550,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            deleteLogo(logo.id);
+                            if (logo.id) deleteLogo(logo.id);
                             if (editingLogoId === logo.id) {
                               resetLogoForm();
                             }
