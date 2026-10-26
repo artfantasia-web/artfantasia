@@ -7,7 +7,7 @@ import { CorporatePhilosophy } from './CorporatePhilosophy';
 import { SectionEditorialHeader } from './SectionEditorialHeader';
 import { GoldenParticleCanvas } from './GoldenParticleCanvas';
 import { NavCategory } from '../types';
-import { FIXED_INTERNATIONAL_LOGOS } from '../data/fixedLogos';
+import { useAdminData, DEFAULT_INTERNATIONAL_LOGOS } from '../context/AdminDataContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getBrandLogoSvg } from '../data/brandLogosSvg';
 
@@ -207,12 +207,13 @@ export const Hero: React.FC<HeroProps> = ({
     setProgress(ratio * 100);
   };
 
-  // Only logos with valid image links, completely fixed and decoupled from admin state
-  const basePool = FIXED_INTERNATIONAL_LOGOS.filter(
-    (l) => l.active !== false && Boolean(l.logoUrl && l.logoUrl.trim().length > 0)
-  );
+  const { logos } = useAdminData();
+  const activeLogos = logos.filter((l) => l.active !== false);
 
-  // 12-13 items per row in 4 rows
+  // Use the admin configured active logos pool, fallback to defaults only if pool is completely empty
+  const basePool = activeLogos.length > 0 ? activeLogos : DEFAULT_INTERNATIONAL_LOGOS;
+
+  // 12 items per row (12 * 4 = exactly 48 items in 4 rows)
   const quarter = Math.max(1, Math.ceil(basePool.length / 4));
   const row1Base = basePool.slice(0, quarter);
   const row2Base = basePool.slice(quarter, quarter * 2);
@@ -220,59 +221,31 @@ export const Hero: React.FC<HeroProps> = ({
   const row4Base = basePool.slice(quarter * 3);
 
   // Helper to ensure each marquee row track fills the viewport edge-to-edge
-  const getFullRowLogos = (rowList: typeof basePool) => {
-    if (rowList.length === 0) return [];
-    let set = [...rowList];
+  const getFullRowLogos = (rowList: typeof basePool, fallbackName: string) => {
+    const base = rowList.length > 0 ? rowList : [{ id: fallbackName, name: fallbackName, active: true } as any];
+    let set = [...base];
     while (set.length < 16) {
-      set = [...set, ...rowList];
+      set = [...set, ...base];
     }
     return set;
   };
 
-  const row1 = getFullRowLogos(row1Base);
-  const row2 = getFullRowLogos(row2Base);
-  const row3 = getFullRowLogos(row3Base);
-  const row4 = getFullRowLogos(row4Base);
+  const row1 = getFullRowLogos(row1Base, 'ART FANTASIA');
+  const row2 = getFullRowLogos(row2Base, 'GLOBAL PARTNERS');
+  const row3 = getFullRowLogos(row3Base, 'CREATIVE CLIENTS');
+  const row4 = getFullRowLogos(row4Base, 'INTERNATIONAL PORTFOLIO');
 
   // Marquee item rendering dynamic international portfolio logo with ultra-crisp high-DPI resolution
   const renderMarqueeLogoItem = (logo: any, key: string | number) => {
     let rawSrc = logo.logoUrl;
     if (!rawSrc || !rawSrc.trim()) {
+      // Fallback to high-definition vector SVG for brand
       rawSrc = getBrandLogoSvg(logo.id, logo.name);
     }
-    // Only display logos that have a valid image source / link
-    if (!rawSrc || !rawSrc.trim()) {
-      return null;
-    }
-
     let imageSrc = rawSrc;
     if (imageSrc && imageSrc.trim().startsWith('<svg')) {
       imageSrc = `data:image/svg+xml;utf8,${encodeURIComponent(imageSrc)}`;
     }
-
-    const hasWebsite = Boolean(logo.websiteUrl && logo.websiteUrl.trim().length > 0 && logo.websiteUrl !== '#');
-
-    const imageElement = (
-      <img
-        src={imageSrc}
-        alt={logo.name || 'Partner Logo'}
-        loading="eager"
-        decoding="sync"
-        className="h-6 sm:h-[26px] max-w-[115px] sm:max-w-[135px] w-auto object-contain transition-transform duration-300 group-hover/lbox:scale-105"
-        style={{
-          imageRendering: '-webkit-optimize-contrast',
-          transform: 'translateZ(0)',
-          WebkitBackfaceVisibility: 'hidden',
-          backfaceVisibility: 'hidden',
-        }}
-        onError={(e) => {
-          const fallbackSvg = getBrandLogoSvg(logo.id, logo.name);
-          if (fallbackSvg) {
-            (e.currentTarget as HTMLImageElement).src = `data:image/svg+xml;utf8,${encodeURIComponent(fallbackSvg)}`;
-          }
-        }}
-      />
-    );
 
     return (
       <div
@@ -284,18 +257,24 @@ export const Hero: React.FC<HeroProps> = ({
           backfaceVisibility: 'hidden',
         }}
       >
-        {hasWebsite ? (
-          <a
-            href={logo.websiteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-full h-full cursor-pointer"
-            title={`${logo.name} 바로가기`}
-          >
-            {imageElement}
-          </a>
+        {imageSrc ? (
+          <img
+            src={imageSrc}
+            alt={logo.name || 'Partner Logo'}
+            loading="eager"
+            decoding="sync"
+            className="h-6 sm:h-[26px] max-w-[115px] sm:max-w-[135px] w-auto object-contain transition-transform duration-300 group-hover/lbox:scale-105"
+            style={{
+              imageRendering: '-webkit-optimize-contrast',
+              transform: 'translateZ(0)',
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden',
+            }}
+          />
         ) : (
-          imageElement
+          <span className="text-[12px] sm:text-[13px] font-bold font-mono text-zinc-900 tracking-tight truncate px-2">
+            {logo.name}
+          </span>
         )}
       </div>
     );
