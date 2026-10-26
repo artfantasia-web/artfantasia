@@ -1,0 +1,438 @@
+{
+  "lastSaved": "2026.10.25 18:51:40",
+  "notices": [],
+  "logos": [
+    {
+      "id": "logo-hyundai",
+      "name": "HYUNDAI HMGMA",
+      "country": "USA",
+      "countryKo": "미국",
+      "logoUrl": "",
+      "category": "GLOBAL AUTOMOTIVE",
+      "active": true
+    },
+    {
+      "id": "logo-northwestern",
+      "name": "NORTHWESTERN UNIV.",
+      "country": "USA",
+      "countryKo": "미국",
+      "logoUrl": "",
+      "category": "GLOBAL UNIVERSITY",
+      "active": true
+    },
+    {
+      "id": "logo-kotra",
+      "name": "KOTRA",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "TRADE AGENCY",
+      "active": true
+    },
+    {
+      "id": "logo-keyvalve",
+      "name": "KEYVALVE",
+      "country": "SWEDEN",
+      "countryKo": "스웨덴",
+      "logoUrl": "",
+      "category": "INDUSTRIAL",
+      "active": true
+    },
+    {
+      "id": "logo-donga",
+      "name": "DONGA ENG",
+      "country": "CZECH",
+      "countryKo": "체코",
+      "logoUrl": "",
+      "category": "MANUFACTURING",
+      "active": true
+    },
+    {
+      "id": "logo-tidfore",
+      "name": "TIDFORE",
+      "country": "CHINA",
+      "countryKo": "중국",
+      "logoUrl": "",
+      "category": "HEAVY INDUSTRY",
+      "active": true
+    },
+    {
+      "id": "logo-peking",
+      "name": "PEKING UNIV.",
+      "country": "CHINA",
+      "countryKo": "중국",
+      "logoUrl": "",
+      "category": "GLOBAL UNIVERSITY",
+      "active": true
+    },
+    {
+      "id": "logo-ntu",
+      "name": "NTU SINGAPORE",
+      "country": "SINGAPORE",
+      "countryKo": "싱가포르",
+      "logoUrl": "",
+      "category": "TECHNOLOGY",
+      "active": true
+    },
+    {
+      "id": "logo-dsec",
+      "name": "DSEC",
+      "country": "GLOBAL",
+      "countryKo": "조선해양",
+      "logoUrl": "",
+      "category": "SHIPBUILDING",
+      "active": true
+    },
+    {
+      "id": "logo-samsung",
+      "name": "SAMSUNG ELECTRONICS",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "ELECTRONICS",
+      "active": true
+    },
+    {
+      "id": "logo-e1",
+      "name": "E1",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "ENERGY",
+      "active": true
+    },
+    {
+      "id": "logo-kwater",
+      "name": "K-WATER",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "PUBLIC UTILITY",
+      "active": true
+    },
+    {
+      "id": "logo-sbs",
+      "name": "SBS MEDIA CREATE",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "BROADCAST MEDIA",
+      "active": true
+    },
+    {
+      "id": "logo-kita",
+      "name": "KITA 한국무역협회",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "GLOBAL TRADE",
+      "active": true
+    },
+    {
+      "id": "logo-gbsa",
+      "name": "GBSA 경기도경제과학진흥원",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "SCIENCE & TECH",
+      "active": true
+    },
+    {
+      "id": "logo-kobaco",
+      "name": "KOBACO 한국방송광고진흥공사",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "BROADCAST AD",
+      "active": true
+    },
+    {
+      "id": "logo-ebs",
+      "name": "EBS 한국교육방송",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "BROADCASTING",
+      "active": true
+    },
+    {
+      "id": "logo-kbs",
+      "name": "KBS 한국방송",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "BROADCASTING",
+      "active": true
+    },
+    {
+      "id": "logo-cjenm",
+      "name": "CJ ENM",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "ENTERTAINMENT",
+      "active": true
+    },
+    {
+      "id": "logo-skt",
+      "name": "SK TELECOM",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "TELECOMMUNICATIONS",
+      "active": true
+    },
+    {
+      "id": "logo-lg",
+      "name": "LG ELECTRONICS",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "TECH & ELECTRONICS",
+      "active": true
+    },
+    {
+      "id": "logo-posco",
+      "name": "POSCO 포스코",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "STEEL & MATERIALS",
+      "active": true
+    },
+    {
+      "id": "logo-lotte",
+      "name": "LOTTE 그룹",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "RETAIL & CHEMICAL",
+      "active": true
+    },
+    {
+      "id": "logo-hanwha",
+      "name": "HANWHA 한화",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "AEROSPACE & ENERGY",
+      "active": true
+    },
+    {
+      "id": "logo-seoul",
+      "name": "서울특별시 SEOUL",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "METROPOLITAN GOV",
+      "active": true
+    },
+    {
+      "id": "logo-busan",
+      "name": "부산광역시 BUSAN",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "METROPOLITAN GOV",
+      "active": true
+    },
+    {
+      "id": "logo-iiac",
+      "name": "인천국제공항공사 IIAC",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "AVIATION & TRANSIT",
+      "active": true
+    },
+    {
+      "id": "logo-kto",
+      "name": "KTO 한국관광공사",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "TOURISM & CULTURE",
+      "active": true
+    },
+    {
+      "id": "logo-mcst",
+      "name": "문화체육관광부 MCST",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "MINISTRY",
+      "active": true
+    },
+    {
+      "id": "logo-mss",
+      "name": "중소벤처기업부 MSS",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "MINISTRY",
+      "active": true
+    },
+    {
+      "id": "logo-msit",
+      "name": "과학기술정보통신부 MSIT",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "MINISTRY",
+      "active": true
+    },
+    {
+      "id": "logo-kocca",
+      "name": "KOCCA 한국콘텐츠진흥원",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "CREATIVE CONTENT",
+      "active": true
+    },
+    {
+      "id": "logo-gscaltex",
+      "name": "GS CALTEX GS칼텍스",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "ENERGY & PETRO",
+      "active": true
+    },
+    {
+      "id": "logo-kt",
+      "name": "KT 케이티",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "TELECOM & AI",
+      "active": true
+    },
+    {
+      "id": "logo-kakao",
+      "name": "카카오 KAKAO",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "DIGITAL PLATFORM",
+      "active": true
+    },
+    {
+      "id": "logo-naver",
+      "name": "네이버 NAVER",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "TECH & AI",
+      "active": true
+    },
+    {
+      "id": "logo-kepco",
+      "name": "KEPCO 한국전력공사",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "ELECTRIC POWER",
+      "active": true
+    },
+    {
+      "id": "logo-ex",
+      "name": "한국도로공사 EX",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "INFRASTRUCTURE",
+      "active": true
+    },
+    {
+      "id": "logo-korail",
+      "name": "코레일 KORAIL",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "TRANSPORTATION",
+      "active": true
+    },
+    {
+      "id": "logo-inha",
+      "name": "인하대학교 INHA UNIV.",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "UNIVERSITY",
+      "active": true
+    },
+    {
+      "id": "logo-yonsei",
+      "name": "연세대학교 YONSEI UNIV.",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "UNIVERSITY",
+      "active": true
+    },
+    {
+      "id": "logo-korea-univ",
+      "name": "고려대학교 KOREA UNIV.",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "UNIVERSITY",
+      "active": true
+    },
+    {
+      "id": "logo-kaist",
+      "name": "KAIST 한국과학기술원",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "SCIENCE & TECH",
+      "active": true
+    },
+    {
+      "id": "logo-snu",
+      "name": "서울대학교 SEOUL NATL UNIV.",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "UNIVERSITY",
+      "active": true
+    },
+    {
+      "id": "logo-unicef",
+      "name": "UNICEF 유니세프한국위원회",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "GLOBAL NGO",
+      "active": true
+    },
+    {
+      "id": "logo-redcross",
+      "name": "대한적십자사 RED CROSS",
+      "country": "GLOBAL",
+      "countryKo": "글로벌",
+      "logoUrl": "",
+      "category": "HUMANITARIAN",
+      "active": true
+    },
+    {
+      "id": "logo-kead",
+      "name": "한국장애인고용공단 KEAD",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "PUBLIC WELFARE",
+      "active": true
+    },
+    {
+      "id": "logo-nhis",
+      "name": "국민건강보험공단 NHIS",
+      "country": "KOREA",
+      "countryKo": "대한민국",
+      "logoUrl": "",
+      "category": "PUBLIC HEALTHCARE",
+      "active": true
+    }
+  ]
+}

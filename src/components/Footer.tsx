@@ -77,9 +77,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry, onOpe
             </div>
           </div>
 
-          {/* Contact Direct Phone & Email */}
+          {/* Contact Direct Phone & Email (모바일에서는 숨김 처리, PC/태블릿에서 표시) */}
           <div className="md:col-span-5 flex flex-col md:items-end md:text-right space-y-4">
-            <div className="space-y-3 font-apple">
+            <div className="hidden md:flex flex-col md:items-end space-y-3 font-apple">
               <a
                 href={`tel:${COMPANY_INFO.inquiryPhone}`}
                 className="flex items-center gap-2.5 md:justify-end text-white hover:text-amber-300 transition-colors"
@@ -100,12 +100,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry, onOpe
               </a>
             </div>
 
-            <div className="pt-2 md:flex md:justify-end">
+            <div className="pt-2 w-full md:w-auto md:flex md:justify-end">
               <button
                 onClick={() => (onOpenInquiry ? onOpenInquiry() : onNavigate('inquiry'))}
-                className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-sm font-apple font-medium text-amber-300 hover:text-amber-200 border border-zinc-700 hover:border-amber-400/50 rounded-md transition-all shadow-sm cursor-pointer"
+                className="w-full md:w-auto text-center px-6 py-3 bg-amber-400 hover:bg-amber-300 text-sm font-apple font-extrabold text-zinc-950 rounded-xl transition-all shadow-md shadow-amber-400/20 hover:scale-[1.01] active:scale-95 cursor-pointer"
               >
-                온라인 제작 의뢰하기
+                견적 문의하기
               </button>
             </div>
           </div>

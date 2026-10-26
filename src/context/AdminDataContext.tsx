@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { NoticeItem, InternationalLogoItem } from '../types';
 import { NOTICES } from '../data/content';
-import defaultPersistedData from '../data/persisted_admin_data.json';
-
 import { FIXED_INTERNATIONAL_LOGOS } from '../data/fixedLogos';
 
 // Permanent 51 fixed partner and client logos for the Hero infinite rolling ticker & portfolio
@@ -119,7 +117,7 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   });
 
-  // Notices state: initialize from localStorage first (if version matches and not stale), then bundled JSON, then NOTICES
+  // Notices state: initialize from localStorage first (if version matches and not stale), then NOTICES
   const [notices, setNotices] = useState<NoticeItem[]>(() => {
     try {
       const storedVersion = localStorage.getItem('af_data_version');
@@ -136,16 +134,10 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch (err) {
       console.warn('Failed to load stored notices:', err);
     }
-    if (defaultPersistedData && Array.isArray((defaultPersistedData as any).notices) && (defaultPersistedData as any).notices.length > 0) {
-      const parsed = (defaultPersistedData as any).notices;
-      if (!isNoticeDataStale(parsed)) {
-        return parsed;
-      }
-    }
     return NOTICES;
   });
 
-  // Logos state: initialize from localStorage first (if version matches and not stale), then bundled JSON, then DEFAULT_INTERNATIONAL_LOGOS
+  // Logos state: initialize from localStorage first (if version matches and not stale), then DEFAULT_INTERNATIONAL_LOGOS
   const [logos, setLogos] = useState<InternationalLogoItem[]>(() => {
     try {
       const storedVersion = localStorage.getItem('af_data_version');
@@ -159,19 +151,13 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch (err) {
       console.warn('Failed to load stored logos:', err);
     }
-    if (defaultPersistedData && Array.isArray((defaultPersistedData as any).logos) && (defaultPersistedData as any).logos.length > 0) {
-      const parsed = (defaultPersistedData as any).logos;
-      if (!isLogoDataStale(parsed)) {
-        return parsed;
-      }
-    }
     return DEFAULT_INTERNATIONAL_LOGOS;
   });
 
   // Last saved timestamps
   const [lastSavedNoticeTime, setLastSavedNoticeTime] = useState<string | null>(() => {
     try {
-      return localStorage.getItem('af_notices_last_saved') || (defaultPersistedData as any)?.lastSaved || null;
+      return localStorage.getItem('af_notices_last_saved') || null;
     } catch {
       return null;
     }
@@ -179,7 +165,7 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [lastSavedLogoTime, setLastSavedLogoTime] = useState<string | null>(() => {
     try {
-      return localStorage.getItem('af_logos_last_saved') || (defaultPersistedData as any)?.lastSaved || null;
+      return localStorage.getItem('af_logos_last_saved') || null;
     } catch {
       return null;
     }

@@ -24,7 +24,6 @@ app.post('/api/admin/save-data', (req, res) => {
 
     const distFile = path.join(distPath, 'admin_data.json');
     const publicFile = path.join(__dirname, 'public', 'admin_data.json');
-    const srcFile = path.join(__dirname, 'src', 'data', 'persisted_admin_data.json');
 
     try {
       if (!fs.existsSync(distPath)) fs.mkdirSync(distPath, { recursive: true });
@@ -35,12 +34,6 @@ app.post('/api/admin/save-data', (req, res) => {
       const publicDir = path.join(__dirname, 'public');
       if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
       fs.writeFileSync(publicFile, jsonStr, 'utf-8');
-    } catch {}
-
-    try {
-      const srcDir = path.join(__dirname, 'src', 'data');
-      if (!fs.existsSync(srcDir)) fs.mkdirSync(srcDir, { recursive: true });
-      fs.writeFileSync(srcFile, jsonStr, 'utf-8');
     } catch {}
 
     res.status(200).json({ success: true, message: 'Saved successfully to server' });
