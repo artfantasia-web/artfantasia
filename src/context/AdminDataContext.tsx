@@ -291,31 +291,32 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return false;
   };
 
-  // Initial synchronization & version migration:
+  // Initial synchronization: Fetch the latest stored admin data from server on load
   useEffect(() => {
     try {
       const storedVersion = localStorage.getItem('af_data_version');
       if (storedVersion !== APP_DATA_VERSION) {
-        // Upgrade stale localStorage cache to latest codebase data
         localStorage.setItem('af_data_version', APP_DATA_VERSION);
-        localStorage.setItem('af_custom_notices', JSON.stringify(notices));
-        localStorage.setItem('af_international_logos', JSON.stringify(logos));
       }
 
-      // Always check if server / Netlify has deployed a newer admin_data.json
-      fetch(`/admin_data.json?t=${Date.now()}`)
-        .then((res) => (res.ok ? res.json() : null))
+      // Check if server has updated logos and notices
+      const fetchPromise = fetch(`/api/admin/get-data?t=${Date.now()}`)
+        .then((res) => (res.ok ? res.json() : fetch(`/admin_data.json?t=${Date.now()}`).then((r) => r.ok ? r.json() : null)))
+        .catch(() => fetch(`/admin_data.json?t=${Date.now()}`).then((r) => r.ok ? r.json() : null));
+
+      fetchPromise
         .then((data) => {
           if (data) {
             let hasUpdate = false;
+            if (Array.isArray(data.logos) && data.logos.length > 0 && !isLogoDataStale(data.logos)) {
+              const withIds = ensureLogoIds(data.logos);
+              setLogos(withIds);
+              localStorage.setItem('af_international_logos', JSON.stringify(withIds));
+              hasUpdate = true;
+            }
             if (Array.isArray(data.notices) && data.notices.length > 0 && !isNoticeDataStale(data.notices)) {
               setNotices(data.notices);
               localStorage.setItem('af_custom_notices', JSON.stringify(data.notices));
-              hasUpdate = true;
-            }
-            if (Array.isArray(data.logos) && data.logos.length > 0 && !isLogoDataStale(data.logos)) {
-              setLogos(data.logos);
-              localStorage.setItem('af_international_logos', JSON.stringify(data.logos));
               hasUpdate = true;
             }
             if (hasUpdate) {
@@ -328,9 +329,6 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           }
         })
         .catch(() => {});
-
-      // Sync to dev server if running
-      syncToServer(notices, logos);
     } catch (err) {
       console.warn('Initial storage bootstrap warning:', err);
     }
@@ -449,7 +447,7 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setNotices((prev) => prev.filter((n) => n.id !== id));
   };
 
-  // Logo CRUD
+  // Logo CRUD with real-time automatic server synchronization
   const addLogo = (logo: Omit<InternationalLogoItem, 'id'>): InternationalLogoItem => {
     const newId = `logo-${Date.now()}`;
     const newLogo: InternationalLogoItem = {
@@ -458,22 +456,46 @@ export const AdminDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       active: logo.active !== undefined ? logo.active : true,
       createdAt: new Date().toISOString(),
     };
-    setLogos((prev) => [...prev, newLogo]);
+    setLogos((prev) => {
+      const next = [...prev, newLogo];
+      try {
+        localStorage.setItem('af_international_logos', JSON.stringify(next));
+      } catch {}
+      syncToServer(notices, next);
+      return next;
+    });
     return newLogo;
   };
 
   const updateLogo = (id: string, updated: Partial<InternationalLogoItem>) => {
-    setLogos((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, ...updated } : l))
-    );
+    setLogos((prev) => {
+      const next = prev.map((l) => (l.id === id ? { ...l, ...updated } : l));
+      try {
+        localStorage.setItem('af_international_logos', JSON.stringify(next));
+      } catch {}
+      syncToServer(notices, next);
+      return next;
+    });
   };
 
   const deleteLogo = (id: string) => {
-    setLogos((prev) => prev.filter((l) => l.id !== id));
+    setLogos((prev) => {
+      const next = prev.filter((l) => l.id !== id);
+      try {
+        localStorage.setItem('af_international_logos', JSON.stringify(next));
+      } catch {}
+      syncToServer(notices, next);
+      return next;
+    });
   };
 
   const resetLogosToDefault = () => {
-    setLogos(ensureLogoIds(DEFAULT_INTERNATIONAL_LOGOS));
+    const freshLogos = ensureLogoIds(DEFAULT_INTERNATIONAL_LOGOS);
+    setLogos(freshLogos);
+    try {
+      localStorage.setItem('af_international_logos', JSON.stringify(freshLogos));
+    } catch {}
+    syncToServer(notices, freshLogos);
   };
 
   return (

@@ -15,6 +15,57 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const HOST = '0.0.0.0';
 
 const distPath = path.join(__dirname, 'dist');
+const publicUploads = path.join(__dirname, 'public', 'uploads');
+const distUploads = path.join(distPath, 'uploads');
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(publicUploads));
+app.use('/uploads', express.static(distUploads));
+
+// Admin File Upload API: Saves uploaded logo images permanently
+app.post('/api/admin/upload-file', (req, res) => {
+  try {
+    const { fileData } = req.body;
+    if (!fileData) {
+      return res.status(400).json({ success: false, error: 'No file data provided' });
+    }
+
+    let ext = '.png';
+    let base64Content = fileData;
+
+    const publicUploadPath = path.join(__dirname, 'public', 'uploads', 'logos');
+    const distUploadPath = path.join(distPath, 'uploads', 'logos');
+    fs.mkdirSync(publicUploadPath, { recursive: true });
+    fs.mkdirSync(distUploadPath, { recursive: true });
+
+    if (fileData.startsWith('data:image/svg+xml')) {
+      ext = '.svg';
+      const commaIdx = fileData.indexOf(',');
+      const raw = fileData.slice(commaIdx + 1);
+      const text = fileData.includes(';base64,') ? Buffer.from(raw, 'base64').toString('utf-8') : decodeURIComponent(raw);
+      const safeName = `logo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.svg`;
+      fs.writeFileSync(path.join(publicUploadPath, safeName), text, 'utf-8');
+      fs.writeFileSync(path.join(distUploadPath, safeName), text, 'utf-8');
+      return res.status(200).json({ success: true, url: `/uploads/logos/${safeName}` });
+    } else if (fileData.startsWith('data:image/')) {
+      const match = fileData.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+      if (match) {
+        ext = match[1] === 'jpeg' ? '.jpg' : `.${match[1]}`;
+        base64Content = match[2];
+      }
+    }
+
+    const safeName = `logo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`;
+    const buffer = Buffer.from(base64Content, 'base64');
+
+    fs.writeFileSync(path.join(publicUploadPath, safeName), buffer);
+    fs.writeFileSync(path.join(distUploadPath, safeName), buffer);
+
+    return res.status(200).json({ success: true, url: `/uploads/logos/${safeName}` });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // Admin Data Persistence API
 app.post('/api/admin/save-data', (req, res) => {
@@ -35,6 +86,18 @@ app.post('/api/admin/save-data', (req, res) => {
       if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
       fs.writeFileSync(publicFile, jsonStr, 'utf-8');
     } catch {}
+
+    // Persist to source code fixedLogos.ts so non-logged-in users and rebuilds get the exact logos
+    if (Array.isArray(data.logos) && data.logos.length > 0) {
+      try {
+        const cleaned = data.logos.map((l: any) => ({ logoUrl: l.logoUrl }));
+        const fixedLogosFile = path.join(__dirname, 'src', 'data', 'fixedLogos.ts');
+        const logosCode = `import { InternationalLogoItem } from "../types";\n\nexport const FIXED_INTERNATIONAL_LOGOS: InternationalLogoItem[] = ${JSON.stringify(cleaned, null, 2)};\n`;
+        fs.writeFileSync(fixedLogosFile, logosCode, 'utf-8');
+      } catch (e) {
+        console.warn('Could not write to fixedLogos.ts:', e);
+      }
+    }
 
     res.status(200).json({ success: true, message: 'Saved successfully to server' });
   } catch (err: any) {

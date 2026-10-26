@@ -20,6 +20,58 @@ export default defineConfig(() => {
               return next();
             }
 
+            if (url === '/api/admin/upload-file' && req.method === 'POST') {
+              let body = '';
+              req.on('data', (chunk) => {
+                body += chunk;
+              });
+              req.on('end', () => {
+                try {
+                  const { fileData } = JSON.parse(body);
+                  if (!fileData) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: false, error: 'No file data provided' }));
+                    return;
+                  }
+
+                  let ext = '.png';
+                  let base64Content = fileData;
+
+                  const publicUploadDir = path.resolve(import.meta.dirname, 'public/uploads/logos');
+                  fs.mkdirSync(publicUploadDir, { recursive: true });
+
+                  if (fileData.startsWith('data:image/svg+xml')) {
+                    ext = '.svg';
+                    const commaIdx = fileData.indexOf(',');
+                    const raw = fileData.slice(commaIdx + 1);
+                    const text = fileData.includes(';base64,') ? Buffer.from(raw, 'base64').toString('utf-8') : decodeURIComponent(raw);
+                    const safeName = `logo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.svg`;
+                    fs.writeFileSync(path.join(publicUploadDir, safeName), text, 'utf-8');
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true, url: `/uploads/logos/${safeName}` }));
+                    return;
+                  } else if (fileData.startsWith('data:image/')) {
+                    const match = fileData.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+                    if (match) {
+                      ext = match[1] === 'jpeg' ? '.jpg' : `.${match[1]}`;
+                      base64Content = match[2];
+                    }
+                  }
+
+                  const safeName = `logo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`;
+                  const buffer = Buffer.from(base64Content, 'base64');
+                  fs.writeFileSync(path.join(publicUploadDir, safeName), buffer);
+
+                  res.writeHead(200, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ success: true, url: `/uploads/logos/${safeName}` }));
+                } catch (err: any) {
+                  res.writeHead(500, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ success: false, error: err.message }));
+                }
+              });
+              return;
+            }
+
             if (url === '/api/admin/save-data' && req.method === 'POST') {
               let body = '';
               req.on('data', (chunk) => {
@@ -37,7 +89,8 @@ export default defineConfig(() => {
                   // Also persist directly into git-tracked TypeScript files so git push to GitHub/Netlify works out-of-the-box!
                   if (Array.isArray(data.logos) && data.logos.length > 0) {
                     const fixedLogosFile = path.resolve(import.meta.dirname, 'src/data/fixedLogos.ts');
-                    const logosCode = `import { InternationalLogoItem } from "../types";\n\nexport const FIXED_INTERNATIONAL_LOGOS: InternationalLogoItem[] = ${JSON.stringify(data.logos, null, 2)};\n`;
+                    const cleaned = data.logos.map((l: any) => ({ logoUrl: l.logoUrl }));
+                    const logosCode = `import { InternationalLogoItem } from "../types";\n\nexport const FIXED_INTERNATIONAL_LOGOS: InternationalLogoItem[] = ${JSON.stringify(cleaned, null, 2)};\n`;
                     fs.writeFileSync(fixedLogosFile, logosCode, 'utf-8');
                   }
                   if (Array.isArray(data.notices) && data.notices.length > 0) {

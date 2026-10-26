@@ -436,13 +436,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       updateLogo(editingLogoId, {
         logoUrl: logoUrl.trim(),
       });
-      showToast('무한롤링티커 로고가 수정되었습니다.', 'success');
+      showToast('무한롤링티커 로고가 수정 및 서버에 저장되었습니다.', 'success');
     } else {
       addLogo({
         logoUrl: logoUrl.trim(),
         active: true,
       });
-      showToast('새 로고가 무한롤링티커 구역에 삽입되었습니다.', 'success');
+      showToast('새 로고가 저장되어 비로그인자를 포함한 모든 방문자에게 즉시 반영됩니다.', 'success');
     }
 
     resetLogoForm();
@@ -454,25 +454,42 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
     setIsUploadingLogoImage(true);
     try {
-      // If SVG file, read raw text and store as clean vector SVG Data URI
+      let payloadDataUrl = '';
       if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
         const text = await file.text();
-        const svgDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(text)}`;
-        setLogoUrl(svgDataUrl);
-        showToast('고화질 SVG 벡터 로고가 등록되었습니다.', 'success');
+        payloadDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(text)}`;
       } else if (file.size < 600 * 1024) {
-        // Read directly as high-res data URL to avoid quality loss
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          setLogoUrl(ev.target?.result as string);
-          showToast('고화질 무손실 로고 이미지가 등록되었습니다.', 'success');
-        };
-        reader.readAsDataURL(file);
+        payloadDataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (ev) => resolve(ev.target?.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
       } else {
-        const compressedBase64 = await compressImageFile(file, 1200, 0.95);
-        setLogoUrl(compressedBase64);
-        showToast('고화질 로고 이미지가 등록되었습니다.', 'success');
+        payloadDataUrl = await compressImageFile(file, 1200, 0.95);
       }
+
+      // Try uploading to server endpoint for permanent storage & lightweight static URL
+      try {
+        const uploadRes = await fetch('/api/admin/upload-file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: file.name, fileData: payloadDataUrl }),
+        });
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          if (uploadData.url) {
+            setLogoUrl(uploadData.url);
+            showToast('로고 파일이 서버에 영구 업로드되어 모든 방문자에게 노출됩니다.', 'success');
+            return;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('Server upload fallback to data URI:', uploadErr);
+      }
+
+      setLogoUrl(payloadDataUrl);
+      showToast('고화질 로고 이미지가 등록되었습니다.', 'success');
     } catch {
       showToast('로고 이미지 업로드 중 오류가 발생했습니다.', 'error');
     } finally {

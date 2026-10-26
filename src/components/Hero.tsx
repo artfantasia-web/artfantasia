@@ -207,8 +207,9 @@ export const Hero: React.FC<HeroProps> = ({
   };
 
   const { logos } = useAdminData();
-  // 관리자에서 링크를 걸거나 업로드한 로고 파일(logoUrl)만 필터링하여 노출
-  const validLogos = logos.filter(
+  // 관리자에서 링크를 걸거나 업로드한 로고 파일(logoUrl)만 필터링하여 노출 (비로그인자도 항상 로고 확인 가능)
+  const candidateLogos = (logos && logos.length > 0) ? logos : DEFAULT_INTERNATIONAL_LOGOS;
+  const validLogos = candidateLogos.filter(
     (l) => l.active !== false && typeof l.logoUrl === 'string' && l.logoUrl.trim().length > 0
   );
 
@@ -262,6 +263,9 @@ export const Hero: React.FC<HeroProps> = ({
           alt={logo.name || 'Partner Logo'}
           loading="eager"
           decoding="sync"
+          onError={(e) => {
+            (e.currentTarget as HTMLElement).style.display = 'none';
+          }}
           className="h-6 sm:h-[26px] max-w-[115px] sm:max-w-[135px] w-auto object-contain transition-transform duration-300 group-hover/lbox:scale-105"
           style={{
             imageRendering: '-webkit-optimize-contrast',
