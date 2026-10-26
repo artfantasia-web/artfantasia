@@ -466,7 +466,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
             <div className="relative z-10 mt-7 pt-5.5 border-t border-zinc-800/80 text-center max-w-2xl mx-auto space-y-2">
               <p className="text-sm sm:text-base text-zinc-300 font-medium leading-relaxed">
                 아트판타지아(ArtFantasia)는<br />
-                영상과 음악을 제작하는
+                공공기관·기업·교육기관 영상제작과 오리지널 음악을 창조하는
               </p>
               <p className="text-base sm:text-xl font-black text-amber-400 tracking-tight">
                 "대한민국 문화컨텐츠 여성기업 브랜드"입니다.
@@ -476,7 +476,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
             {/* Bottom Signature Line (Expanded 5% Spacing) */}
             <div className="relative z-10 mt-7 pt-4.5 border-t border-zinc-800/80 text-center">
               <p className="text-xs sm:text-sm text-zinc-400 font-medium">
-                주식회사 아트판타지아 대표이사 및 크리에이티브 디렉터 드림
+                아트판타지아 대표이사 및 크리에이티브 디렉터 드림
               </p>
             </div>
           </div>

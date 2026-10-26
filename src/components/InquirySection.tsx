@@ -330,7 +330,7 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
                       required
                       value={quickForm.company}
                       onChange={(e) => setQuickForm({ ...quickForm, company: e.target.value })}
-                      placeholder="예: 주식회사 아트판타지아"
+                      placeholder="예: 아트판타지아"
                       className="w-full px-4 py-3.5 rounded-xl bg-zinc-950 border border-zinc-700 text-base sm:text-lg font-medium font-apple text-white placeholder-zinc-500 placeholder:text-base focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-colors shadow-inner"
                     />
                   </div>

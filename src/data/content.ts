@@ -6,7 +6,7 @@ export const COMPANY_INFO = {
   nameKo: '아트판타지아',
   nameEn: 'ART FANTASIA',
   legalName: '아트판타지아',
-  legalNameKo: '주식회사 아트판타지아',
+  legalNameKo: '아트판타지아',
   established: '2015',
   establishedDetail: '2015년 12월 법인 설립',
   headquarters: '서울특별시 관악구 관악로 943동',
@@ -963,8 +963,8 @@ export const VIDEO_PROJECTS: VideoProject[] = [
   {
     "id": "vid-359",
     "artfantasiaPostId": "359",
-    "title": "주식회사 융진 30주년 기념 홍보영상",
-    "client": "주식회사 융진",
+    "title": "융진 30주년 기념 홍보영상",
+    "client": "융진",
     "category": "corporate",
     "categoryLabel": "기업 30주년 홍보영상",
     "year": "2024",
@@ -2285,7 +2285,7 @@ export const MARKETING_CASES: MarketingCase[] = [
 
 export const NOTICES: NoticeItem[] = [
   {
-    id: "notice-adm-1792850060420",
+    id: "notice-1",
     title: "SBS M&C CREAM 2026년 11월호",
     author: "아트판타지아",
     category: "정보",
@@ -2298,7 +2298,7 @@ export const NOTICES: NoticeItem[] = [
     images: []
   },
   {
-    id: "notice-adm-1792849476593",
+    id: "notice-2",
     title: "한국방송광고공사 광고1번지 2026년 11월호",
     author: "아트판타지아",
     category: "정보",
@@ -2311,7 +2311,7 @@ export const NOTICES: NoticeItem[] = [
     images: []
   },
   {
-    id: "notice-adm-1792841998839",
+    id: "notice-3",
     title: "아트판타지아 홈페이지 리뉴얼 및 서버 증축",
     author: "아트판타지아",
     category: "소식",

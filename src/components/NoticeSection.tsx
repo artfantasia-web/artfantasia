@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
-import { useAdminData } from '../context/AdminDataContext';
+import { NOTICES } from '../data/content';
 import { NoticeItem } from '../types';
 import { Pin, Search, Eye, Calendar, Share2, Check, ArrowLeft, Youtube, Image as ImageIcon } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
 import { formatNoticeContent } from '../utils/formatNotice';
 
-interface NoticeSectionProps {
-  onOpenAdmin?: () => void;
-}
-
-export const NoticeSection: React.FC<NoticeSectionProps> = ({ onOpenAdmin: _onOpenAdmin }) => {
-  const { notices, updateNotice } = useAdminData();
+export const NoticeSection: React.FC = () => {
+  const [notices, setNotices] = useState<NoticeItem[]>(NOTICES);
   const [selectedCategory, setSelectedCategory] = useState<'all' | '소식' | '정보'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeNotice, setActiveNotice] = useState<NoticeItem | null>(null);
@@ -30,7 +26,9 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({ onOpenAdmin: _onOp
 
   const handleOpenNotice = (item: NoticeItem) => {
     // Increment view count
-    updateNotice(item.id, { views: (item.views || 0) + 1 });
+    setNotices((prev) =>
+      prev.map((n) => (n.id === item.id ? { ...n, views: (n.views || 0) + 1 } : n))
+    );
     setActiveNotice({ ...item, views: (item.views || 0) + 1 });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

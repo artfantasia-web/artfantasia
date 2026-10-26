@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>아트판타지아 | ART FANTASIA</title>
-  <subtitle>크리에이티브 미디어 프로덕션 &amp; 종합 마케팅 에이전시 아트판타지아. 최신 생성형 AI 영상제작, 기업 홍보영상, 브랜드필름, 오리지널 음악·라디오제작, 종합 마케팅.</subtitle>
+  <subtitle>크리에이티브 미디어 프로덕션 &amp; 종합마케팅 아트판타지아. 최신 생성형 AI 영상제작, 공공기관·기업·교육기관 영상제작, 기업 홍보영상, 브랜드필름, 미디어파사드, 오리지널 음악·라디오제작, 종합마케팅.</subtitle>
   <link href="https://artfantasia.co.kr/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="https://artfantasia.co.kr/" rel="alternate" type="text/html"/>
   <updated>2026-10-25T09:00:00+09:00</updated>

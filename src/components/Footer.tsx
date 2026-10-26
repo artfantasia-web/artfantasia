@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { COMPANY_INFO } from '../data/content';
 import { NavCategory } from '../types';
 import { Mail, Phone, ArrowUp } from 'lucide-react';
@@ -6,30 +6,9 @@ import { Mail, Phone, ArrowUp } from 'lucide-react';
 interface FooterProps {
   onNavigate: (section: NavCategory) => void;
   onOpenInquiry: () => void;
-  onOpenAdmin?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry, onOpenAdmin }) => {
-  const [clickCount, setClickCount] = useState(0);
-  const clickTimerRef = useRef<any>(null);
-
-  const handleCopyrightClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const nextCount = clickCount + 1;
-    if (nextCount >= 3) {
-      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
-      setClickCount(0);
-      if (onOpenAdmin) {
-        onOpenAdmin();
-      }
-      return;
-    }
-    setClickCount(nextCount);
-    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
-    clickTimerRef.current = setTimeout(() => {
-      setClickCount(0);
-    }, 1500);
-  };
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry }) => {
   return (
     <footer className="bg-zinc-950 border-t border-zinc-800 text-zinc-400 py-12">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
@@ -54,14 +33,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry, onOpe
             </button>
             <div className="pt-2 text-xs font-apple text-zinc-400">
               <div className="font-apple text-zinc-300 leading-normal">
-                <span
-                  onClick={handleCopyrightClick}
-                  className="cursor-pointer select-none transition-colors hover:text-amber-400"
-                  title="Art Fantasia"
-                >
-                  Copyright
-                </span>{' '}
-                (C) 아트판타지아 (ART FANTASIA). ALL RIGHTS RESERVED.
+                Copyright (C) 아트판타지아 (ART FANTASIA). ALL RIGHTS RESERVED.
               </div>
             </div>
 

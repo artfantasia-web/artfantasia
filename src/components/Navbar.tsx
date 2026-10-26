@@ -7,7 +7,6 @@ interface NavbarProps {
   activeSection: NavCategory;
   onNavigate: (section: NavCategory) => void;
   onOpenInquiry: () => void;
-  onOpenAdmin?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpenInquiry }) => {

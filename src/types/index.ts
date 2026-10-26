@@ -79,17 +79,6 @@ export interface NoticeItem {
   youtubeId?: string;
 }
 
-export interface InternationalLogoItem {
-  id?: string;
-  name?: string;
-  country?: string;
-  countryKo?: string;
-  logoUrl?: string;
-  websiteUrl?: string;
-  category?: string;
-  active?: boolean;
-  createdAt?: string;
-}
 
 export interface InquiryFormData {
   category: string;

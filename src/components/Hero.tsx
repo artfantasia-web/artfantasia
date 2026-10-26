@@ -7,8 +7,8 @@ import { CorporatePhilosophy } from './CorporatePhilosophy';
 import { SectionEditorialHeader } from './SectionEditorialHeader';
 import { GoldenParticleCanvas } from './GoldenParticleCanvas';
 import { NavCategory } from '../types';
-import { useAdminData, DEFAULT_INTERNATIONAL_LOGOS } from '../context/AdminDataContext';
 import { useLanguage } from '../context/LanguageContext';
+import { TICKER_ROW_1, TICKER_ROW_2, TICKER_ROW_3, TICKER_ROW_4, PartnerLogo } from '../data/partners';
 
 interface HeroProps {
   onExploreVideo: () => void;
@@ -206,77 +206,25 @@ export const Hero: React.FC<HeroProps> = ({
     setProgress(ratio * 100);
   };
 
-  const { logos } = useAdminData();
-  // 관리자에서 링크를 걸거나 업로드한 로고 파일(logoUrl)만 필터링하여 노출 (비로그인자도 항상 로고 확인 가능)
-  const candidateLogos = (logos && logos.length > 0) ? logos : DEFAULT_INTERNATIONAL_LOGOS;
-  const validLogos = candidateLogos.filter(
-    (l) => l.active !== false && typeof l.logoUrl === 'string' && l.logoUrl.trim().length > 0
+  // 롤링 티커 로고 박스 렌더링
+  const renderLogoBox = (logo: PartnerLogo, key: string) => (
+    <div
+      key={key}
+      className="h-[34px] sm:h-[38px] min-w-[98px] sm:min-w-[110px] max-w-[140px] rounded-lg bg-white border border-[#cbd5e1] hover:border-amber-400/80 shadow-2xs hover:shadow-sm shrink-0 select-none transition-all duration-200 cursor-default overflow-hidden flex items-center justify-center px-2.5 py-1 group/box"
+      style={{
+        transform: 'translateZ(0)',
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
+      }}
+    >
+      <img
+        src={`/assets/logos/${logo.filename}`}
+        alt="Partner Logo"
+        loading="eager"
+        className="max-h-[19px] sm:max-h-[21px] w-auto max-w-[75px] sm:max-w-[87px] object-contain transition-transform duration-300 group-hover/box:scale-105 filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.04)]"
+      />
+    </div>
   );
-
-  const basePool = validLogos.length > 0
-    ? validLogos
-    : DEFAULT_INTERNATIONAL_LOGOS.filter((l) => typeof l.logoUrl === 'string' && l.logoUrl.trim().length > 0);
-
-  // 4개 행에 고르게 분할
-  const quarter = Math.max(1, Math.ceil(basePool.length / 4));
-  const row1Base = basePool.slice(0, quarter);
-  const row2Base = basePool.slice(quarter, quarter * 2);
-  const row3Base = basePool.slice(quarter * 2, quarter * 3);
-  const row4Base = basePool.slice(quarter * 3);
-
-  // 무한 롤링 티커 트랙 구성 (실제 로고 파일이 있는 경우에만 연속 루프 형성)
-  const getFullRowLogos = (rowList: typeof basePool) => {
-    if (rowList.length === 0) return [];
-    let set = [...rowList];
-    while (set.length < 16) {
-      set = [...set, ...rowList];
-    }
-    return set;
-  };
-
-  const row1 = getFullRowLogos(row1Base);
-  const row2 = getFullRowLogos(row2Base);
-  const row3 = getFullRowLogos(row3Base);
-  const row4 = getFullRowLogos(row4Base);
-
-  // 롤링티커 아이템 렌더링: 관리자에서 링크하거나 업로드한 로고 파일만 출력
-  const renderMarqueeLogoItem = (logo: any, key: string | number) => {
-    const rawSrc = logo.logoUrl?.trim();
-    if (!rawSrc) return null;
-    let imageSrc = rawSrc;
-    if (imageSrc.startsWith('<svg')) {
-      imageSrc = `data:image/svg+xml;utf8,${encodeURIComponent(imageSrc)}`;
-    }
-
-    return (
-      <div
-        key={key}
-        className="group/lbox h-[44px] sm:h-[48px] min-w-[130px] sm:min-w-[155px] max-w-[210px] px-3 py-1 rounded-lg bg-white hover:bg-[#fafafa] border border-[#cbd5e1] shadow-xs hover:shadow-md shrink-0 select-none flex items-center justify-center transition-all cursor-default overflow-hidden"
-        style={{
-          transform: 'translateZ(0)',
-          WebkitBackfaceVisibility: 'hidden',
-          backfaceVisibility: 'hidden',
-        }}
-      >
-        <img
-          src={imageSrc}
-          alt={logo.name || 'Partner Logo'}
-          loading="eager"
-          decoding="sync"
-          onError={(e) => {
-            (e.currentTarget as HTMLElement).style.display = 'none';
-          }}
-          className="h-6 sm:h-[26px] max-w-[115px] sm:max-w-[135px] w-auto object-contain transition-transform duration-300 group-hover/lbox:scale-105"
-          style={{
-            imageRendering: '-webkit-optimize-contrast',
-            transform: 'translateZ(0)',
-            WebkitBackfaceVisibility: 'hidden',
-            backfaceVisibility: 'hidden',
-          }}
-        />
-      </div>
-    );
-  };
 
   return (
     <section className="relative pt-3 sm:pt-4 pb-16 overflow-hidden border-b border-zinc-800 bg-[#09090b]">
@@ -810,50 +758,50 @@ export const Hero: React.FC<HeroProps> = ({
               aria-hidden="true"
             />
 
-            {/* Row 1: Left to Right Continuous Moving Track */}
+            {/* Row 1: Left to Right Continuous Moving Track (Logos 1 ~ 13) */}
             <div className="overflow-hidden w-full relative z-10">
               <div className="animate-marquee-ltr flex gap-2.5 sm:gap-3">
-                {row1.map((l, idx) =>
-                  renderMarqueeLogoItem(l, `r1-a-${l.id || idx}-${idx}`)
+                {TICKER_ROW_1.map((logo, idx) =>
+                  renderLogoBox(logo, `r1-a-${idx}-${logo.id}`)
                 )}
-                {row1.map((l, idx) =>
-                  renderMarqueeLogoItem(l, `r1-b-${l.id || idx}-${idx}`)
+                {TICKER_ROW_1.map((logo, idx) =>
+                  renderLogoBox(logo, `r1-b-${idx}-${logo.id}`)
                 )}
               </div>
             </div>
 
-            {/* Row 2: Left to Right Continuous Moving Track */}
+            {/* Row 2: Left to Right Continuous Moving Track (Logos 14 ~ 26) */}
             <div className="overflow-hidden w-full relative z-10">
               <div className="animate-marquee-ltr-slow flex gap-2.5 sm:gap-3">
-                {row2.map((l, idx) =>
-                  renderMarqueeLogoItem(l, `r2-a-${l.id || idx}-${idx}`)
+                {TICKER_ROW_2.map((logo, idx) =>
+                  renderLogoBox(logo, `r2-a-${idx}-${logo.id}`)
                 )}
-                {row2.map((l, idx) =>
-                  renderMarqueeLogoItem(l, `r2-b-${l.id || idx}-${idx}`)
+                {TICKER_ROW_2.map((logo, idx) =>
+                  renderLogoBox(logo, `r2-b-${idx}-${logo.id}`)
                 )}
               </div>
             </div>
 
-            {/* Row 3: Left to Right Continuous Moving Track */}
+            {/* Row 3: Left to Right Continuous Moving Track (Logos 27 ~ 36) */}
             <div className="overflow-hidden w-full relative z-10">
               <div className="animate-marquee-ltr-slower flex gap-2.5 sm:gap-3">
-                {row3.map((l, idx) =>
-                  renderMarqueeLogoItem(l, `r3-a-${l.id || idx}-${idx}`)
+                {TICKER_ROW_3.map((logo, idx) =>
+                  renderLogoBox(logo, `r3-a-${idx}-${logo.id}`)
                 )}
-                {row3.map((l, idx) =>
-                  renderMarqueeLogoItem(l, `r3-b-${l.id || idx}-${idx}`)
+                {TICKER_ROW_3.map((logo, idx) =>
+                  renderLogoBox(logo, `r3-b-${idx}-${logo.id}`)
                 )}
               </div>
             </div>
 
-            {/* Row 4: Left to Right Continuous Moving Track */}
+            {/* Row 4: Left to Right Continuous Moving Track (Logos 37 ~ 49) */}
             <div className="overflow-hidden w-full relative z-10">
               <div className="animate-marquee-ltr-offset flex gap-2.5 sm:gap-3">
-                {row4.map((l, idx) =>
-                  renderMarqueeLogoItem(l, `r4-a-${l.id || idx}-${idx}`)
+                {TICKER_ROW_4.map((logo, idx) =>
+                  renderLogoBox(logo, `r4-a-${idx}-${logo.id}`)
                 )}
-                {row4.map((l, idx) =>
-                  renderMarqueeLogoItem(l, `r4-b-${l.id || idx}-${idx}`)
+                {TICKER_ROW_4.map((logo, idx) =>
+                  renderLogoBox(logo, `r4-b-${idx}-${logo.id}`)
                 )}
               </div>
             </div>
