@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { VIDEO_PROJECTS } from '../data/content';
 import { VideoProject, VideoCategory } from '../types';
 import { Play, Pause, Volume2, VolumeX, Maximize, X, Award, Clock, CheckCircle2, ArrowUpRight, Youtube, Lock, Sparkles, Film, Tv, Clapperboard, Bot, Share2, Check } from 'lucide-react';
@@ -117,9 +117,45 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
   const [activeProject, setActiveProject] = useState<VideoProject | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Deep-link direct screening modal opening via hash #video-${project.id} or #video-${artfantasiaPostId}
+  useEffect(() => {
+    const handleHashCheck = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#video-')) {
+        const targetId = hash.replace(/^#video-/, '').trim();
+        const found = VIDEO_PROJECTS.find(
+          (p) => p.id === targetId || p.artfantasiaPostId === targetId
+        );
+        if (found) {
+          setActiveProject(found);
+        }
+      } else if (activeProject) {
+        setActiveProject(null);
+      }
+    };
+
+    handleHashCheck();
+    window.addEventListener('hashchange', handleHashCheck);
+    return () => window.removeEventListener('hashchange', handleHashCheck);
+  }, [activeProject]);
+
+  const openProjectModal = (project: VideoProject) => {
+    setActiveProject(project);
+    window.location.hash = `video-${project.id}`;
+  };
+
+  const closeProjectModal = () => {
+    setActiveProject(null);
+    if (window.location.hash && window.location.hash.startsWith('#video-')) {
+      history.pushState(null, '', '#video');
+    }
+  };
+
   const copyProjectLink = (project: VideoProject, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    navigator.clipboard.writeText(`${window.location.origin}#video-${project.id}`);
+    const shareUrl = `${window.location.origin}/#video-${project.id}`;
+    navigator.clipboard.writeText(shareUrl);
+    window.location.hash = `video-${project.id}`;
     setCopiedId(project.id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -661,7 +697,7 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              onClick={() => setActiveProject(project)}
+              onClick={() => openProjectModal(project)}
               className="group cursor-pointer rounded-xl bg-white transition-all duration-300 overflow-hidden flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.7)] shadow-md"
             >
               {/* Media Card Thumbnail Container */}
@@ -744,8 +780,14 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
 
         {/* Video Reel Modal / YouTube Embed Screening */}
         {activeProject && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in">
-            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative text-zinc-900 border-0">
+          <div
+            onClick={closeProjectModal}
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative text-zinc-900 border-0"
+            >
               {/* Header */}
               <div className="flex items-center justify-between p-4 sm:p-5 border-b border-zinc-100 bg-white sticky top-0 z-10 backdrop-blur-md">
                 <div className="flex items-center gap-2.5 truncate mr-4">
@@ -772,7 +814,7 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveProject(null)}
+                    onClick={closeProjectModal}
                     className="p-1.5 text-zinc-400 hover:text-zinc-900 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer shrink-0"
                     aria-label="닫기"
                     title="닫기"

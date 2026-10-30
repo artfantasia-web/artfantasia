@@ -307,9 +307,44 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
   const [copiedTrackId, setCopiedTrackId] = useState<string | null>(null);
   const filteredTracks = AFAN_ORIGINAL_TRACKS;
 
+  const handleOpenTrackModal = (track: AfanTrack) => {
+    setActiveTrack(track);
+    window.location.hash = `afanmusic-${track.id}`;
+  };
+
+  const handleCloseTrackModal = () => {
+    setActiveTrack(null);
+    if (window.location.hash && window.location.hash.startsWith('#afanmusic-')) {
+      history.pushState(null, '', '#afanmusic');
+    }
+  };
+
+  useEffect(() => {
+    const handleHashCheck = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#afanmusic-')) {
+        const targetId = hash.replace(/^#afanmusic-/, '').trim();
+        const found = AFAN_ORIGINAL_TRACKS.find(
+          (t) => t.id === targetId || t.postNumber === targetId
+        );
+        if (found) {
+          setActiveTrack(found);
+        }
+      } else if (activeTrack) {
+        setActiveTrack(null);
+      }
+    };
+
+    handleHashCheck();
+    window.addEventListener('hashchange', handleHashCheck);
+    return () => window.removeEventListener('hashchange', handleHashCheck);
+  }, [activeTrack]);
+
   const copyTrackLink = (track: AfanTrack, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    navigator.clipboard.writeText(track.postUrl);
+    const shareUrl = `${window.location.origin}/#afanmusic-${track.id}`;
+    navigator.clipboard.writeText(shareUrl);
+    window.location.hash = `afanmusic-${track.id}`;
     setCopiedTrackId(track.id);
     setTimeout(() => setCopiedTrackId(null), 2000);
   };
@@ -861,7 +896,7 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
           {filteredTracks.map((track) => (
             <div
               key={track.id}
-              onClick={() => setActiveTrack(track)}
+              onClick={() => handleOpenTrackModal(track)}
               className="group cursor-pointer rounded-xl bg-white transition-all duration-300 overflow-hidden flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.7)] shadow-md"
             >
               {/* Media Card Thumbnail Container (16:9) */}
@@ -933,8 +968,14 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
 
         {/* Video Reel Modal / Screening Popup (Matching VideoPortfolio Modal) */}
         {activeTrack && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in">
-            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative text-zinc-900 border-0">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in"
+            onClick={handleCloseTrackModal}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative text-zinc-900 border-0"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Header */}
               <div className="flex items-center justify-between p-4 sm:p-5 border-b border-zinc-100 bg-white sticky top-0 z-10 backdrop-blur-md">
                 <div className="flex items-center gap-2.5 truncate mr-4">
@@ -961,7 +1002,7 @@ export const AfanMusicSection: React.FC<AfanMusicSectionProps> = ({ onOpenInquir
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveTrack(null)}
+                    onClick={handleCloseTrackModal}
                     className="p-1.5 text-zinc-400 hover:text-zinc-900 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer shrink-0"
                     aria-label="닫기"
                     title="닫기"

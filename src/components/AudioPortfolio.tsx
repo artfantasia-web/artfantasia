@@ -102,12 +102,42 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
 
 
 
+  // Deep-link direct audio modal opening via hash #audio-${track.id}
+  useEffect(() => {
+    const handleHashCheck = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#audio-')) {
+        const targetId = hash.replace(/^#audio-/, '').trim();
+        const found = AUDIO_TRACKS.find(
+          (t) => t.id === targetId || t.artfantasiaPostId === targetId
+        );
+        if (found) {
+          setScreeningTrack(found);
+          setIsModalPlaying(true);
+          setModalTime(0);
+          setModalDuration(found.durationSeconds || 20);
+        }
+      } else if (screeningTrack) {
+        if (modalAudioRef.current) {
+          modalAudioRef.current.pause();
+        }
+        setIsModalPlaying(false);
+        setScreeningTrack(null);
+      }
+    };
+
+    handleHashCheck();
+    window.addEventListener('hashchange', handleHashCheck);
+    return () => window.removeEventListener('hashchange', handleHashCheck);
+  }, [screeningTrack]);
+
   // Open screening window modal with a selected audio track
   const handleOpenScreening = (track: AudioTrack) => {
     setScreeningTrack(track);
     setIsModalPlaying(true);
     setModalTime(0);
     setModalDuration(track.durationSeconds || 20);
+    window.location.hash = `audio-${track.id}`;
   };
 
   // Close screening window modal and pause audio
@@ -117,6 +147,9 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
     }
     setIsModalPlaying(false);
     setScreeningTrack(null);
+    if (window.location.hash && window.location.hash.startsWith('#audio-')) {
+      history.pushState(null, '', '#audio');
+    }
   };
 
   // Handle track switch inside modal or when modal opens
@@ -264,7 +297,9 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
 
   const copyTrackLink = (track: AudioTrack, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    navigator.clipboard.writeText(`${window.location.origin}#audio-${track.id}`);
+    const shareUrl = `${window.location.origin}/#audio-${track.id}`;
+    navigator.clipboard.writeText(shareUrl);
+    window.location.hash = `audio-${track.id}`;
     setCopiedId(track.id);
     setTimeout(() => setCopiedId(null), 2000);
   };

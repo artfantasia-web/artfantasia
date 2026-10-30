@@ -24,14 +24,47 @@ export const NoticeSection: React.FC = () => {
     return matchesCategory && matchesSearch;
   });
 
+  // Deep-link direct notice opening via hash #notice-${item.id}
+  React.useEffect(() => {
+    const handleHashCheck = () => {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#notice-')) {
+        const targetId = hash.replace(/^#notice-/, '').trim();
+        const found = notices.find((n) => n.id === targetId);
+        if (found) {
+          incrementViews(found.id);
+          setActiveNotice({ ...found, views: (found.views || 0) + 1 });
+        }
+      } else {
+        // If hash is no longer #notice-..., reset active notice
+        setActiveNotice(null);
+      }
+    };
+
+    handleHashCheck();
+    window.addEventListener('hashchange', handleHashCheck);
+    return () => window.removeEventListener('hashchange', handleHashCheck);
+  }, [notices]);
+
   const handleOpenNotice = (item: NoticeItem) => {
     incrementViews(item.id);
     setActiveNotice({ ...item, views: (item.views || 0) + 1 });
+    window.location.hash = `notice-${item.id}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCloseNotice = () => {
+    setActiveNotice(null);
+    if (window.location.hash && window.location.hash.startsWith('#notice-')) {
+      history.pushState(null, '', '#notice');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleShare = (item: NoticeItem) => {
-    navigator.clipboard.writeText(`${window.location.origin}#notice-${item.id}`);
+    const shareUrl = `${window.location.origin}/#notice-${item.id}`;
+    navigator.clipboard.writeText(shareUrl);
+    window.location.hash = `notice-${item.id}`;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -61,7 +94,7 @@ export const NoticeSection: React.FC = () => {
               type="button"
               onClick={() => {
                 setSelectedCategory('all');
-                if (activeNotice) setActiveNotice(null);
+                if (activeNotice) handleCloseNotice();
               }}
               className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 selectedCategory === 'all' && !activeNotice
@@ -85,7 +118,7 @@ export const NoticeSection: React.FC = () => {
               type="button"
               onClick={() => {
                 setSelectedCategory('소식');
-                if (activeNotice) setActiveNotice(null);
+                if (activeNotice) handleCloseNotice();
               }}
               className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 selectedCategory === '소식' && !activeNotice
@@ -114,7 +147,7 @@ export const NoticeSection: React.FC = () => {
               type="button"
               onClick={() => {
                 setSelectedCategory('정보');
-                if (activeNotice) setActiveNotice(null);
+                if (activeNotice) handleCloseNotice();
               }}
               className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 selectedCategory === '정보' && !activeNotice
@@ -156,10 +189,7 @@ export const NoticeSection: React.FC = () => {
             {activeNotice && (
               <button
                 type="button"
-                onClick={() => {
-                  setActiveNotice(null);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
+                onClick={handleCloseNotice}
                 className="px-3 py-2 rounded-lg text-xs font-bold text-amber-300 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 transition-all flex items-center gap-1.5 cursor-pointer ml-1"
                 title="글 목록으로 돌아가기"
               >
@@ -179,7 +209,7 @@ export const NoticeSection: React.FC = () => {
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 if (activeNotice && e.target.value.trim().length > 0) {
-                  setActiveNotice(null);
+                  handleCloseNotice();
                 }
               }}
               className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
@@ -278,10 +308,7 @@ export const NoticeSection: React.FC = () => {
               {/* Bottom Actions */}
               <div className="pt-6 border-t border-zinc-800/80 flex items-center justify-between">
                 <button
-                  onClick={() => {
-                    setActiveNotice(null);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
+                  onClick={handleCloseNotice}
                   className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-zinc-100 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors cursor-pointer flex items-center gap-2"
                 >
                   <ArrowLeft className="w-4 h-4 text-amber-400" />

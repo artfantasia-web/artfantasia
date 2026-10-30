@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { NavCategory } from './types';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -27,12 +27,48 @@ const PageLoadingFallback = () => (
   </div>
 );
 
+const getSectionFromHash = (hash: string): NavCategory => {
+  const clean = hash.replace(/^#\/?/, '').toLowerCase();
+  if (clean.startsWith('video')) return 'video';
+  if (clean.startsWith('audio')) return 'audio';
+  if (clean.startsWith('afanmusic') || clean.startsWith('afan')) return 'afanmusic';
+  if (clean.startsWith('marketing')) return 'marketing';
+  if (clean.startsWith('notice')) return 'notice';
+  if (clean.startsWith('inquiry') || clean.startsWith('contact')) return 'inquiry';
+  if (clean.startsWith('about')) return 'about';
+  return 'home';
+};
+
 function AppContent() {
-  const [activeSection, setActiveSection] = useState<NavCategory>('home');
+  const [activeSection, setActiveSection] = useState<NavCategory>(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      return getSectionFromHash(window.location.hash);
+    }
+    return 'home';
+  });
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const section = getSectionFromHash(window.location.hash);
+      setActiveSection(section);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Switch to dedicated page view
   const handleNavigate = (section: NavCategory) => {
     setActiveSection(section);
+    if (section === 'home') {
+      if (window.location.hash) {
+        history.pushState(null, '', window.location.pathname);
+      }
+    } else {
+      if (!window.location.hash.startsWith(`#${section}`)) {
+        window.location.hash = section;
+      }
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
