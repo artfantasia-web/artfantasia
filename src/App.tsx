@@ -3,6 +3,8 @@ import { NavCategory } from './types';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { Footer } from './components/Footer';
+import { NoticeProvider } from './context/NoticeContext';
+import { AdminNoticeModal } from './components/admin/AdminNoticeModal';
 import { Loader2 } from 'lucide-react';
 
 // Code-split heavy page views for ultra-fast initial bundle & performance
@@ -25,7 +27,7 @@ const PageLoadingFallback = () => (
   </div>
 );
 
-export default function App() {
+function AppContent() {
   const [activeSection, setActiveSection] = useState<NavCategory>('home');
 
   // Switch to dedicated page view
@@ -90,6 +92,17 @@ export default function App() {
         onNavigate={handleNavigate}
         onOpenInquiry={() => handleNavigate('inquiry')}
       />
+
+      {/* Admin Notice Manager Modal */}
+      <AdminNoticeModal />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <NoticeProvider>
+      <AppContent />
+    </NoticeProvider>
   );
 }

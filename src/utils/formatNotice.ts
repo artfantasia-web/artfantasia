@@ -15,6 +15,11 @@ export function formatNoticeContent(raw: string): string {
   formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #ffffff; font-weight: 700;">$1</strong>');
   formatted = formatted.replace(/\[굵게\](.*?)\[\/굵게\]/g, '<strong style="color: #ffffff; font-weight: 700;">$1</strong>');
 
+  // 1-2. Underline: <u>text</u> or __text__ or [밑줄]text[/밑줄]
+  formatted = formatted.replace(/<u>(.*?)<\/u>/gi, '<u style="text-decoration: underline; text-underline-offset: 4px; text-decoration-color: #fbbf24;">$1</u>');
+  formatted = formatted.replace(/__(.*?)__/g, '<u style="text-decoration: underline; text-underline-offset: 4px; text-decoration-color: #fbbf24;">$1</u>');
+  formatted = formatted.replace(/\[밑줄\](.*?)\[\/밑줄\]/g, '<u style="text-decoration: underline; text-underline-offset: 4px; text-decoration-color: #fbbf24;">$1</u>');
+
   // 2. Gold highlight: ★text★ or [골드]text[/골드]
   formatted = formatted.replace(/★(.*?)★/g, '<span style="color: #fbbf24; font-weight: 700;">$1</span>');
   formatted = formatted.replace(/\[골드\](.*?)\[\/골드\]/g, '<span style="color: #fbbf24; font-weight: 700;">$1</span>');
@@ -29,7 +34,7 @@ export function formatNoticeContent(raw: string): string {
   formatted = formatted.replace(/^(?:─{4,}|-{3,}|={3,})$/gm, '<hr style="border: 0; border-top: 1px solid #3f3f46; margin: 18px 0;" />');
 
   // 6. Links: [title](url)
-  formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #fbbf24; text-decoration: underline; font-weight: 600;">$1</a>');
+  formatted = formatted.replace(/\[(.*?)\]\((https?:\/\/.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #fbbf24; text-decoration: underline; font-weight: 600; text-underline-offset: 3px;">$1</a>');
 
   // 7. Bullet items: • item
   formatted = formatted.replace(/^•\s*(.+)$/gm, '<div style="display: flex; gap: 8px; margin: 4px 0;"><span style="color: #fbbf24; font-weight: bold;">•</span><span>$1</span></div>');

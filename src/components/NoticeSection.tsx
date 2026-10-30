@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { NOTICES } from '../data/content';
+import { useNotices } from '../context/NoticeContext';
 import { NoticeItem } from '../types';
-import { Pin, Search, Eye, Calendar, Share2, Check, ArrowLeft, Youtube, Image as ImageIcon } from 'lucide-react';
+import { Pin, Search, Eye, Calendar, Share2, Check, ArrowLeft, Youtube, Image as ImageIcon, Plus, Edit2, Lock } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
 import { formatNoticeContent } from '../utils/formatNotice';
 
 export const NoticeSection: React.FC = () => {
-  const [notices, setNotices] = useState<NoticeItem[]>(NOTICES);
+  const { notices, isAdmin, openAdminModal, deleteNotice, incrementViews } = useNotices();
   const [selectedCategory, setSelectedCategory] = useState<'all' | '소식' | '정보'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeNotice, setActiveNotice] = useState<NoticeItem | null>(null);
@@ -25,10 +25,7 @@ export const NoticeSection: React.FC = () => {
   });
 
   const handleOpenNotice = (item: NoticeItem) => {
-    // Increment view count
-    setNotices((prev) =>
-      prev.map((n) => (n.id === item.id ? { ...n, views: (n.views || 0) + 1 } : n))
-    );
+    incrementViews(item.id);
     setActiveNotice({ ...item, views: (item.views || 0) + 1 });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -141,6 +138,19 @@ export const NoticeSection: React.FC = () => {
                 {notices.filter((n) => n.category === '정보').length}
               </span>
             </button>
+
+            {/* Admin Quick Write Button (Visible when logged in) */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => openAdminModal()}
+                className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-zinc-950 shadow-sm shadow-amber-400/20 ml-1"
+                title="새 글 쓰기 & 게시판 관리"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>관리자 글쓰기</span>
+              </button>
+            )}
 
             {/* Quick 'Back to List' button when viewing article */}
             {activeNotice && (
@@ -278,13 +288,26 @@ export const NoticeSection: React.FC = () => {
                   <span>목록으로</span>
                 </button>
 
-                <button
-                  onClick={() => handleShare(activeNotice)}
-                  className="px-4 py-2.5 text-xs font-mono text-zinc-300 hover:text-white rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors flex items-center gap-1.5 cursor-pointer"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
-                  <span>{copied ? '링크 복사됨' : '공유하기'}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => openAdminModal(activeNotice)}
+                      className="px-4 py-2.5 text-xs font-bold text-amber-300 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Edit2 className="w-3.5 h-3.5 text-amber-400" />
+                      <span>이 글 수정</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => handleShare(activeNotice)}
+                    className="px-4 py-2.5 text-xs font-mono text-zinc-300 hover:text-white rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+                    <span>{copied ? '링크 복사됨' : '공유하기'}</span>
+                  </button>
+                </div>
               </div>
             </article>
           </div>
@@ -342,6 +365,20 @@ export const NoticeSection: React.FC = () => {
                             <ImageIcon className="w-2.5 h-2.5" />
                             <span>{item.images.length}</span>
                           </span>
+                        )}
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openAdminModal(item);
+                            }}
+                            className="p-1 px-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-300 text-[10px] font-bold border border-zinc-700 flex items-center gap-1 shrink-0 ml-1.5 transition-colors"
+                            title="이 글 수정 (관리자)"
+                          >
+                            <Edit2 className="w-2.5 h-2.5 text-amber-400" />
+                            <span>수정</span>
+                          </button>
                         )}
                       </div>
 

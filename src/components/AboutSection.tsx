@@ -471,6 +471,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
               <p className="text-base sm:text-xl font-black text-amber-400 tracking-tight">
                 "대한민국 문화컨텐츠 여성기업 브랜드"입니다.
               </p>
+              <div className="pt-1.5 flex items-center justify-center">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold tracking-tight">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  중소벤처기업부 여성기업 확인 (제 0113-2025-34993 호)
+                </span>
+              </div>
             </div>
 
             {/* Bottom Signature Line (Expanded 5% Spacing) */}

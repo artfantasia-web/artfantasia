@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Volume2, VolumeX, Film, Sparkles, Radio, ArrowRight, Building2, Tv, Music2, Headphones } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Film, Sparkles, Radio, ArrowRight, Building2, Tv, Music2, Headphones, ChevronLeft, ChevronRight, Info, CheckCircle2, LayoutGrid } from 'lucide-react';
 import { MosaicLogo3D } from './MosaicLogo3D';
 import { InternationalPortfolio } from './InternationalPortfolio';
 import { PassionVideoSection } from './PassionVideoSection';
@@ -8,7 +8,7 @@ import { SectionEditorialHeader } from './SectionEditorialHeader';
 import { GoldenParticleCanvas } from './GoldenParticleCanvas';
 import { NavCategory } from '../types';
 import { useLanguage } from '../context/LanguageContext';
-import { TICKER_ROW_1, TICKER_ROW_2, TICKER_ROW_3, TICKER_ROW_4, PartnerLogo } from '../data/partners';
+import { TICKER_ROW_1, TICKER_ROW_2, TICKER_ROW_3, TICKER_ROW_4, PARTNER_LOGOS, PartnerLogo } from '../data/partners';
 
 interface HeroProps {
   onExploreVideo: () => void;
@@ -30,6 +30,37 @@ export const Hero: React.FC<HeroProps> = ({
   const [timecode, setTimecode] = useState('00:00:00:00');
   const [showControls, setShowControls] = useState(true);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Active partner logo for analysis & description showcase
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string>('1');
+  const [hoveredPartnerId, setHoveredPartnerId] = useState<string | null>(null);
+  const [partnerCategoryFilter, setPartnerCategoryFilter] = useState<'all' | 'corporate' | 'public' | 'education' | 'defense_media'>('all');
+  const [isGridExpanded, setIsGridExpanded] = useState<boolean>(false);
+
+  // Active partner computed
+  const activePartner = PARTNER_LOGOS.find(p => p.id === (hoveredPartnerId || selectedPartnerId)) || PARTNER_LOGOS[0];
+  const activeIndex = PARTNER_LOGOS.findIndex(p => p.id === activePartner.id);
+
+  // Filtered partners for category browsing
+  const filteredPartners = partnerCategoryFilter === 'all'
+    ? PARTNER_LOGOS
+    : PARTNER_LOGOS.filter(p => p.categoryGroup === partnerCategoryFilter);
+
+  const handlePrevPartner = () => {
+    const list = filteredPartners;
+    const curIdx = list.findIndex(p => p.id === activePartner.id);
+    const nextIdx = (curIdx - 1 + list.length) % list.length;
+    setSelectedPartnerId(list[nextIdx].id);
+    setHoveredPartnerId(null);
+  };
+
+  const handleNextPartner = () => {
+    const list = filteredPartners;
+    const curIdx = list.findIndex(p => p.id === activePartner.id);
+    const nextIdx = (curIdx + 1) % list.length;
+    setSelectedPartnerId(list[nextIdx].id);
+    setHoveredPartnerId(null);
+  };
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const bgVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -206,25 +237,43 @@ export const Hero: React.FC<HeroProps> = ({
     setProgress(ratio * 100);
   };
 
-  // 롤링 티커 로고 박스 렌더링
-  const renderLogoBox = (logo: PartnerLogo, key: string) => (
-    <div
-      key={key}
-      className="h-[34px] sm:h-[38px] min-w-[98px] sm:min-w-[110px] max-w-[140px] rounded-lg bg-white border border-[#cbd5e1] hover:border-amber-400/80 shadow-2xs hover:shadow-sm shrink-0 select-none transition-all duration-200 cursor-default overflow-hidden flex items-center justify-center px-2.5 py-1 group/box"
-      style={{
-        transform: 'translateZ(0)',
-        WebkitBackfaceVisibility: 'hidden',
-        backfaceVisibility: 'hidden',
-      }}
-    >
-      <img
-        src={`/assets/logos/${logo.filename}`}
-        alt="Partner Logo"
-        loading="eager"
-        className="max-h-[19px] sm:max-h-[21px] w-auto max-w-[75px] sm:max-w-[87px] object-contain transition-transform duration-300 group-hover/box:scale-105 filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.04)]"
-      />
-    </div>
-  );
+  // 롤링 티커 로고 박스 렌더링 (호버 및 클릭 시 설명칸에 즉시 반영)
+  const renderLogoBox = (logo: PartnerLogo, key: string) => {
+    const isSelected = activePartner.id === logo.id;
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={() => {
+          setSelectedPartnerId(logo.id);
+        }}
+        onMouseEnter={() => setHoveredPartnerId(logo.id)}
+        onMouseLeave={() => setHoveredPartnerId(null)}
+        title={`${logo.name} · ${logo.category}`}
+        aria-label={`${logo.name} (${logo.category})`}
+        className={`h-[35px] sm:h-[39px] min-w-[100px] sm:min-w-[114px] max-w-[145px] rounded-lg bg-white shrink-0 select-none transition-all duration-200 cursor-pointer overflow-hidden flex items-center justify-center px-2.5 py-1 group/box relative ${
+          isSelected
+            ? 'border-2 border-amber-400 ring-2 ring-amber-400/40 shadow-md shadow-amber-500/20 scale-105 z-20'
+            : 'border border-[#cbd5e1] hover:border-amber-400/80 shadow-2xs hover:shadow-md hover:scale-[1.03]'
+        }`}
+        style={{
+          transform: 'translateZ(0)',
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+        }}
+      >
+        <img
+          src={`/assets/logos/${logo.filename}`}
+          alt={logo.name}
+          loading="eager"
+          className="max-h-[20px] sm:max-h-[22px] w-auto max-w-[78px] sm:max-w-[90px] object-contain transition-transform duration-300 group-hover/box:scale-105 filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.04)]"
+        />
+        {isSelected && (
+          <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-amber-500 ring-1 ring-white" />
+        )}
+      </button>
+    );
+  };
 
   return (
     <section className="relative pt-3 sm:pt-4 pb-16 overflow-hidden border-b border-zinc-800 bg-[#09090b]">

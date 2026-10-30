@@ -1,14 +1,39 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { COMPANY_INFO } from '../data/content';
 import { NavCategory } from '../types';
+import { useNotices } from '../context/NoticeContext';
 import { Mail, Phone, ArrowUp } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (section: NavCategory) => void;
   onOpenInquiry: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry, onOpenAdmin }) => {
+  const { openAdminModal } = useNotices();
+  const clickCountRef = useRef(0);
+  const clickTimerRef = useRef<any>(null);
+
+  const handleArtTripleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    clickCountRef.current += 1;
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+
+    if (clickCountRef.current >= 3) {
+      clickCountRef.current = 0;
+      if (onOpenAdmin) {
+        onOpenAdmin();
+      } else {
+        openAdminModal();
+      }
+    } else {
+      clickTimerRef.current = setTimeout(() => {
+        clickCountRef.current = 0;
+      }, 1500);
+    }
+  };
+
   return (
     <footer className="bg-zinc-950 border-t border-zinc-800 text-zinc-400 py-12">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
@@ -31,9 +56,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry }) => 
                 }}
               />
             </button>
+
             <div className="pt-2 text-xs font-apple text-zinc-400">
-              <div className="font-apple text-zinc-300 leading-normal">
-                Copyright (C) 아트판타지아 (ART FANTASIA). ALL RIGHTS RESERVED.
+              <div className="font-apple text-zinc-300 leading-normal select-none">
+                Copyright (C) 아트판타지아 (
+                <span
+                  onClick={handleArtTripleClick}
+                  className="cursor-pointer hover:text-white transition-colors"
+                  title=""
+                >
+                  ART
+                </span>{' '}
+                FANTASIA). ALL RIGHTS RESERVED.
               </div>
             </div>
 
