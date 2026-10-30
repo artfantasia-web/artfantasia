@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CountryItem {
   id: string;
   country: string;
+  countryEn: string;
   countryKo: string;
   code: string;
   projects: string[];
   highlight: string;
+  highlightEn: string;
   coords: { x: number; y: number }; // Precise coordinates in 15% top/bottom cropped map (%)
 }
 
@@ -15,82 +18,100 @@ const GLOBAL_PORTFOLIO_DATA: CountryItem[] = [
   {
     id: 'usa',
     country: 'USA',
+    countryEn: 'USA',
     countryKo: '미국',
     code: 'us',
     projects: ['NORTHWESTERN UNIV.', 'KOTRA', 'HYUNDAI HMGMA'],
     highlight: '현대자동차그룹 메타플랜트 아메리카 & 노스웨스턴 대학교 & KOTRA 글로벌 프로젝트',
+    highlightEn: 'Hyundai Motor Group Metaplant America & Northwestern Univ. & KOTRA Global Project',
     coords: { x: 34.5, y: 32.9 }
   },
   {
     id: 'sweden',
-    country: 'SWEDEN',
+    country: 'Sweden',
+    countryEn: 'Sweden',
     countryKo: '스웨덴',
     code: 'se',
     projects: ['Keyvalve PR-FILM'],
-    highlight: '유럽 산업 밸브 키밸브(Keyvalve) 글로벌 PR 필름',
+    highlight: '스웨덴 키밸브(Keyvalve) 글로벌 산업 PR 필름',
+    highlightEn: 'Sweden Keyvalve Global Industrial PR Film',
     coords: { x: 61.2, y: 12.1 }
   },
   {
     id: 'czech',
-    country: 'CZECH',
+    country: 'Czech Republic',
+    countryEn: 'Czech Republic',
     countryKo: '체코',
     code: 'cz',
     projects: ['Donga ENG PR-Film'],
-    highlight: '동아 ENG 유럽 현지 생산설비 홍보영상',
+    highlight: '체코 동아 ENG 유럽 현지 생산설비 홍보영상',
+    highlightEn: 'Czech Republic Dong-A ENG Local Production Facility PR Film',
     coords: { x: 60.5, y: 26.9 }
   },
   {
     id: 'russia',
-    country: 'RUSSIA',
+    country: 'Russia',
+    countryEn: 'Russia',
     countryKo: '러시아',
     code: 'ru',
     projects: ['KOTRA'],
-    highlight: 'KOTRA 글로벌 프로젝트',
+    highlight: '러시아 KOTRA 글로벌 프로젝트',
+    highlightEn: 'Russia KOTRA Global Project',
     coords: { x: 66.2, y: 17.9 }
   },
   {
     id: 'vietnam',
-    country: 'VIETNAM',
+    country: 'Vietnam',
+    countryEn: 'Vietnam',
     countryKo: '베트남',
     code: 'vn',
     projects: ['THEDAM TVCF'],
     highlight: '베트남 현지 지상파 TVCF 제작',
+    highlightEn: 'Vietnam Local Terrestrial TVCF Production',
     coords: { x: 77.2, y: 53.6 }
   },
   {
     id: 'china',
-    country: 'CHINA',
+    country: 'China',
+    countryEn: 'China',
     countryKo: '중국',
     code: 'cn',
     projects: ['PEKING UNIV.', 'TIDFORE PR-FILM', 'KOTRA'],
-    highlight: '북경대학교 & 타이포어(TIDFORE) 글로벌 기업 홍보영상',
+    highlight: '중국 북경대학교 & 타이포어(TIDFORE) 글로벌 기업 홍보영상',
+    highlightEn: 'China Peking University & Tidfore Global Corporate PR Film',
     coords: { x: 77.6, y: 31.1 }
   },
   {
     id: 'japan',
-    country: 'JAPAN',
+    country: 'Japan',
+    countryEn: 'Japan',
     countryKo: '일본',
     code: 'jp',
     projects: ['NGC', 'KOTRA'],
-    highlight: 'KOTRA 글로벌 프로젝트 & NGC',
+    highlight: '일본 KOTRA 글로벌 프로젝트 & NGC',
+    highlightEn: 'Japan KOTRA Global Project & NGC',
     coords: { x: 86.2, y: 36.0 }
   },
   {
     id: 'singapore',
-    country: 'SINGAPORE',
+    country: 'Singapore',
+    countryEn: 'Singapore',
     countryKo: '싱가포르',
     code: 'sg',
     projects: ['NANYANG Technological univ.'],
     highlight: '싱가포르 난양공과대학교(NTU) 글로벌 프로젝트',
+    highlightEn: 'Singapore Nanyang Technological University (NTU) Global Project',
     coords: { x: 77.8, y: 65.0 }
   },
   {
     id: 'indonesia',
-    country: 'INDONESIA',
+    country: 'Indonesia',
+    countryEn: 'Indonesia',
     countryKo: '인도네시아',
     code: 'id',
     projects: ['PRESIDENT VIP VIEW'],
     highlight: '인도네시아 대통령 VIP VIEW 프로젝트 시네마틱 영상',
+    highlightEn: 'Indonesia Presidential VIP VIEW Cinematic Film',
     coords: { x: 80.2, y: 72.6 }
   }
 ];
@@ -315,9 +336,11 @@ const BlueParticleBackground: React.FC = () => {
 };
 
 export const InternationalPortfolio: React.FC = () => {
+  const { language } = useLanguage();
   const [activeCountry, setActiveCountry] = useState<string>('usa');
   const mapBoxRef = useRef<HTMLDivElement>(null);
 
+  const isEn = language === 'en';
   const selected =
     GLOBAL_PORTFOLIO_DATA.find((c) => c.id === activeCountry) || GLOBAL_PORTFOLIO_DATA[0];
 
@@ -341,13 +364,14 @@ export const InternationalPortfolio: React.FC = () => {
           <div className="grid grid-cols-9 gap-1.5 sm:gap-2.5 w-full max-w-[560px] sm:max-w-[620px] px-1">
             {GLOBAL_PORTFOLIO_DATA.map((item) => {
               const isCurrent = activeCountry === item.id;
+              const displayName = isEn ? item.countryEn : item.countryKo;
               return (
                 <button
                   type="button"
                   key={item.id}
                   onClick={() => setActiveCountry(item.id)}
-                  title={`${item.countryKo} (${item.country})`}
-                  aria-label={`${item.countryKo} (${item.country})`}
+                  title={`${displayName} (${item.countryEn})`}
+                  aria-label={`${displayName} (${item.countryEn})`}
                   className={`group relative flex items-center justify-center p-0.5 rounded-sm sm:rounded transition-all duration-200 cursor-pointer aspect-[3/2] ${
                     isCurrent
                       ? 'ring-2 ring-amber-400 bg-amber-400/10 shadow-[0_0_12px_rgba(251,191,36,0.5)] scale-105 z-10'
@@ -356,7 +380,7 @@ export const InternationalPortfolio: React.FC = () => {
                 >
                   <FlagImage
                     code={item.code}
-                    name={item.countryKo}
+                    name={displayName}
                     className="w-full h-full object-contain"
                   />
                   {isCurrent && (
@@ -405,17 +429,23 @@ export const InternationalPortfolio: React.FC = () => {
               <div className="w-full py-2.5 px-4 bg-blue-950 flex items-center justify-center gap-2.5">
                 <FlagImage
                   code={selected.code}
-                  name={selected.countryKo}
+                  name={isEn ? selected.countryEn : selected.countryKo}
                   className="w-9 h-6 sm:w-10 sm:h-6.5 rounded-xs shadow-sm"
                 />
-                <span className="font-black text-sm sm:text-base text-white font-['Noto_Sans_KR',sans-serif] tracking-tight">
-                  {selected.countryKo}
+                <span className="font-black text-sm sm:text-base text-white font-['Noto_Sans_KR',sans-serif] tracking-tight capitalize">
+                  {isEn ? (
+                    <span className="notranslate" translate="no">
+                      {selected.countryEn}
+                    </span>
+                  ) : (
+                    selected.countryKo
+                  )}
                 </span>
               </div>
 
               {/* Highlight Sentence in Black with Bright Metallic Silver Background */}
               <p className="py-3 sm:py-3.5 px-4 sm:px-5 text-[12px] sm:text-[13.5px] font-bold text-zinc-950 leading-relaxed font-google font-['Noto_Sans_KR',sans-serif] tracking-tight text-center w-full break-keep antialiased bg-gradient-to-b from-[#ffffff] via-[#e3e8ee] to-[#c9d3df] shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),inset_0_-1px_1px_rgba(0,0,0,0.08)] border-t border-white/80">
-                {selected.highlight}
+                {isEn ? selected.highlightEn : selected.highlight}
               </p>
             </div>
           </div>

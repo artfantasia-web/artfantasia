@@ -172,7 +172,7 @@
 .animate-marquee-ltr {
   display: flex;
   width: max-content;
-  animation: marquee-ltr 120s linear infinite;
+  animation: marquee-ltr 108s linear infinite;
   will-change: transform;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -182,7 +182,7 @@
 .animate-marquee-ltr-slow {
   display: flex;
   width: max-content;
-  animation: marquee-ltr 138s linear infinite;
+  animation: marquee-ltr 124s linear infinite;
   will-change: transform;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -192,7 +192,7 @@
 .animate-marquee-ltr-slower {
   display: flex;
   width: max-content;
-  animation: marquee-ltr 126s linear infinite;
+  animation: marquee-ltr 113s linear infinite;
   will-change: transform;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -202,7 +202,7 @@
 .animate-marquee-ltr-offset {
   display: flex;
   width: max-content;
-  animation: marquee-ltr 132s linear infinite;
+  animation: marquee-ltr 119s linear infinite;
   will-change: transform;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
