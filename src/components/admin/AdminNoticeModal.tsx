@@ -57,6 +57,8 @@ export const AdminNoticeModal: React.FC = () => {
   const [formYoutubeId, setFormYoutubeId] = useState('');
   const [formContent, setFormContent] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   // Link dialog prompt state
   const [showLinkDialog, setShowLinkDialog] = useState(false);
@@ -97,6 +99,7 @@ export const AdminNoticeModal: React.FC = () => {
     setFormYoutubeId('');
     setFormContent('');
     setSaveSuccess(false);
+    setFormError('');
   };
 
   if (!isAdminModalOpen) return null;
@@ -171,9 +174,10 @@ export const AdminNoticeModal: React.FC = () => {
   const handleSaveNotice = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formTitle.trim()) {
-      alert('제목을 입력해주세요.');
+      setFormError('제목을 입력해주세요.');
       return;
     }
+    setFormError('');
 
     // Split content by double newlines or single newlines into paragraphs
     const paragraphs = formContent
@@ -207,9 +211,7 @@ export const AdminNoticeModal: React.FC = () => {
   };
 
   const handleDeleteNotice = (id: string, title: string) => {
-    if (window.confirm(`"${title}" 공지글을 삭제하시겠습니까?\n삭제된 글은 복구할 수 없습니다.`)) {
-      deleteNotice(id);
-    }
+    setDeleteTarget({ id, title });
   };
 
   return (
@@ -489,6 +491,13 @@ export const AdminNoticeModal: React.FC = () => {
                 <div className="p-3 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
                   <Check className="w-4 h-4 text-emerald-400" />
                   <span>게시글이 성공적으로 저장되었습니다!</span>
+                </div>
+              )}
+
+              {formError && (
+                <div className="p-3 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{formError}</span>
                 </div>
               )}
 
@@ -784,6 +793,46 @@ export const AdminNoticeModal: React.FC = () => {
                 className="px-4 py-1.5 rounded-lg bg-amber-400 text-zinc-950 hover:bg-amber-300 text-xs font-bold"
               >
                 링크 추가
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal (Self-contained in iframe) */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-sm rounded-2xl bg-zinc-900 border border-zinc-700/80 p-5 shadow-2xl text-center space-y-4">
+            <div className="w-11 h-11 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center mx-auto text-rose-400">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white">공지글 삭제 확인</h4>
+              <p className="text-xs text-zinc-300 mt-2 leading-relaxed break-keep">
+                &ldquo;<span className="text-white font-semibold">{deleteTarget.title}</span>&rdquo;<br />
+                글을 삭제하시겠습니까?
+              </p>
+              <p className="text-[11px] text-rose-400 mt-1 font-medium">
+                삭제된 글은 복구할 수 없습니다.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-300 transition-colors cursor-pointer"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteNotice(deleteTarget.id);
+                  setDeleteTarget(null);
+                }}
+                className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition-colors cursor-pointer shadow-md"
+              >
+                삭제하기
               </button>
             </div>
           </div>

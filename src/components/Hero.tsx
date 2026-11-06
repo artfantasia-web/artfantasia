@@ -322,14 +322,14 @@ export const Hero: React.FC<HeroProps> = ({
               style={{ animationDelay: '100ms' }}
             >
               <span className="font-['Noto_Sans_KR',sans-serif] font-bold tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-                AI시대에 영상과 음악으로 만들어지는 여러분의 이야기
+                AI시대에 영상과 음악으로 만들어지는 당신의 이야기
               </span>
             </div>
             <h1
               className="text-[21px] sm:text-[26px] md:text-[34px] lg:text-[40px] font-extrabold tracking-tight text-white leading-tight text-center opacity-0 animate-hero-reveal drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]"
               style={{ animationDelay: '250ms' }}
             >
-              여러분의 이야기는 <span className="text-amber-400 drop-shadow-[0_2px_12px_rgba(251,191,36,0.6)]">특별</span>해야 합니다.
+              당신의 이야기는 <span className="text-amber-400 drop-shadow-[0_2px_12px_rgba(251,191,36,0.6)]">특별</span>해야 합니다.
             </h1>
           </div>
         </div>
@@ -518,13 +518,13 @@ export const Hero: React.FC<HeroProps> = ({
           {/* Sophisticated Text-Centric Core Philosophy Quote */}
           <div className="my-10 sm:my-14 max-w-4xl mx-auto text-center px-4 select-none">
             <p className="font-['Noto_Sans_KR',sans-serif] text-xl sm:text-2xl md:text-3xl lg:text-[34px] font-black text-white tracking-tight leading-snug sm:leading-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
-              “최고의 브랜드는 바로 <span className="text-amber-300 font-black">여러분의 이야기</span>”
+              “최고의 브랜드는 바로 <span className="text-amber-300 font-black">당신의 이야기</span>”
             </p>
             <p className="text-xs sm:text-sm md:text-base text-zinc-400 leading-normal mt-2.5 max-w-2xl mx-auto font-normal font-['Noto_Sans_KR',sans-serif]">
               진정성 있는 스토리텔링과 타협 없는 오디오·비주얼 크래프트맨십으로
               <br />
               <span className="block mt-1 sm:mt-1 text-white font-bold drop-shadow-sm">
-                여러분의 이야기를 <span className="text-amber-300 font-bold">A클래스 시네마틱</span> 경험으로 완성하겠습니다.
+                당신의 이야기를 <span className="text-amber-300 font-bold">A클래스 시네마틱</span> 경험으로 완성하겠습니다.
               </span>
             </p>
           </div>

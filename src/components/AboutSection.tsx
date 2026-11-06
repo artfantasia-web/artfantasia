@@ -860,7 +860,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
               {/* Slogan & Core Philosophy Headline */}
               <div className="max-w-4xl mb-6 sm:mb-7">
                 <h4 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-zinc-900 tracking-tight leading-snug font-apple">
-                  여러분의 이야기가 세상에 울려 퍼지도록
+                  당신의 이야기가 세상에 울려 퍼지도록
                 </h4>
                 <p className="text-lg sm:text-xl md:text-2xl text-zinc-700 font-semibold tracking-tight mt-2.5">
                   우리는{' '}

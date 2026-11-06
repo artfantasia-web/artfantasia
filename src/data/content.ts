@@ -6,7 +6,18 @@ export const COMPANY_INFO = {
   nameKo: '아트판타지아',
   nameEn: 'AatFantasia',
   title: '아트판타지아 | AatFantasia - 홍보영상 · 광고영상 · AI영상제작 · 미디어파사드 · 음악라디오 · 종합마케팅',
-  businessDescription: '크리에이티브 프로덕션 & 종합마케팅 (여성기업). 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅',
+  businessDescription: '크리에이티브 프로덕션 & 종합마케팅 (여성기업). 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 해양·조선·바다 특화 영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅',
+  maritimeExpertise: {
+    title: '해양·조선·바다 특화 영상제작 기술',
+    summary: '선박 시운전, 대형 조선소 중공업 공정, 해양플랜트, 해양환경, 해상 드론 및 특수촬영 특화 역량',
+    references: ['DSEC 조선·해양 종합 엔지니어링 홍보영상', 'KOEM 해양환경공단 표준 예선작업절차 안전영상', '한국해양마이스터고등학교 실습선 4K 영상', 'K-water 한국수자원공사 프로젝트'],
+    techHighlights: [
+      '염분·강풍·거친 해상 파도에 대응하는 방수·내염 시네마 특수 촬영 장비 운용',
+      '원거리 해상 선박 및 플랜트 추적 항공 드론 촬영 기술',
+      '선박 정밀 3D 구조 시각화(VFX) 및 생성형 AI 해양 비주얼라이제이션',
+      '선박 예선작업 및 해양 안전 절차 표준 매뉴얼 영상화 노하우'
+    ]
+  },
   legalName: '아트판타지아',
   legalNameKo: '아트판타지아',
   ceo: '배정아',
@@ -27,8 +38,8 @@ export const COMPANY_INFO = {
   videoProductionReg: '170-11-10974635',
   directProductionCert: '제 2025-0495-01414 호',
   slogan: '세상을 영상과 음악으로 표현합니다',
-  subSlogan: '우리에게 최고의 브랜드는 바로 여러분입니다',
-  missionSlogan: '여러분의 이야기가 세상에 울려 퍼지도록',
+  subSlogan: '우리에게 최고의 브랜드는 바로 당신입니다',
+  missionSlogan: '당신의 이야기가 세상에 울려 퍼지도록',
   responsibilityPrinciple: '* 하도급 없는 책임 제작',
   tagline: '세상을 영상과 음악으로 표현합니다',
   subTagline: 'WE EXPRESS THE WORLD WITH IMAGES AND MUSIC // CHANGE THE GAME',

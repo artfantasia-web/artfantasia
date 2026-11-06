@@ -1,6 +1,6 @@
 {
   "name": "아트판타지아 | ART FANTASIA",
-  "description": "크리에이티브 프로덕션 & 종합마케팅(여성기업). 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅",
+  "description": "크리에이티브 프로덕션 & 종합마케팅(여성기업). 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 해양·조선·바다 특화 영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
