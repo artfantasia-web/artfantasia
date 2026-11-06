@@ -38,7 +38,7 @@ export const COMPANY_INFO = {
   videoProductionReg: '170-11-10974635',
   directProductionCert: '제 2025-0495-01414 호',
   slogan: '세상을 영상과 음악으로 표현합니다',
-  subSlogan: '우리에게 최고의 브랜드는 바로 당신입니다',
+  subSlogan: '우리에게 최고의 브랜드는 당신입니다',
   missionSlogan: '당신의 이야기가 세상에 울려 퍼지도록',
   responsibilityPrinciple: '* 하도급 없는 책임 제작',
   tagline: '세상을 영상과 음악으로 표현합니다',

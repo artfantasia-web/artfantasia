@@ -181,7 +181,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenInquiry: _onOp
               <>
                 우리에게 최고의 브랜드는{' '}
                 <span className="font-black text-amber-300 underline decoration-amber-400/60 underline-offset-4">
-                  여러분
+                  당신
                 </span>
                 입니다.
               </>
