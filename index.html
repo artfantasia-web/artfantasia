@@ -9,8 +9,12 @@
     <meta name="author" content="아트판타지아 (AatFantasia)" />
     <meta name="publisher" content="아트판타지아" />
     <meta name="copyright" content="Copyright © ART FANTASIA. All Rights Reserved." />
-    <link rel="canonical" href="https://artfantasia.co.kr" />
+    <link rel="canonical" href="https://artfantasia.co.kr/" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="rating" content="general" />
+    <meta name="format-detection" content="telephone=no" />
 
     <!-- 네이버 서치어드바이저 및 구글 서치콘솔 소유확인 메타태그 (소유확인 코드 발급 시 content에 입력) -->
     <meta name="naver-site-verification" content="7f415221c4b02aca4da64c77b119f235cf670775" />
@@ -22,7 +26,7 @@
     <meta property="og:site_name" content="아트판타지아 | AatFantasia" />
     <meta property="og:title" content="아트판타지아 | AatFantasia - 홍보영상 · 광고영상 · AI영상제작 · 미디어파사드 · 음악라디오 · 종합마케팅" />
     <meta property="og:description" content="크리에이티브 프로덕션 & 종합마케팅(여성기업). 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅" />
-    <meta property="og:url" content="https://artfantasia.co.kr" />
+    <meta property="og:url" content="https://artfantasia.co.kr/" />
     <meta property="og:image" content="https://artfantasia.co.kr/LOGO.png" />
     <meta property="og:image:alt" content="아트판타지아 공식 로고 - 세상을 영상과 음악으로 표현합니다" />
     <meta property="og:image:width" content="1200" />
@@ -34,7 +38,7 @@
     <meta name="twitter:description" content="크리에이티브 프로덕션 & 종합마케팅(여성기업). 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅" />
     <meta name="twitter:image" content="https://artfantasia.co.kr/LOGO.png" />
     <meta name="twitter:domain" content="artfantasia.co.kr" />
-    <meta name="twitter:url" content="https://artfantasia.co.kr" />
+    <meta name="twitter:url" content="https://artfantasia.co.kr/" />
 
     <!-- Favicon & Mobile Web App Manifest -->
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -47,7 +51,7 @@
     <link rel="alternate" type="application/atom+xml" title="아트판타지아 Atom 피드" href="/atom.xml" />
     <link rel="alternate" type="application/rss+xml" title="아트판타지아 Feed (feed.xml)" href="/feed.xml" />
 
-    <!-- Schema.org JSON-LD Structured Data for Naver and Google Rich Results -->
+    <!-- Schema.org JSON-LD Structured Data for Google Rich Results & AI Search Engines (ChatGPT, Perplexity, Claude, Gemini) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -57,33 +61,44 @@
           "@id": "https://artfantasia.co.kr/#organization",
           "name": "아트판타지아",
           "alternateName": ["AatFantasia", "ART FANTASIA", "ArtFantasia"],
-          "url": "https://artfantasia.co.kr",
+          "url": "https://artfantasia.co.kr/",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://artfantasia.co.kr/LOGO.png"
+            "url": "https://artfantasia.co.kr/LOGO.png",
+            "width": 876,
+            "height": 895
           },
           "image": "https://artfantasia.co.kr/LOGO.png",
           "description": "크리에이티브 프로덕션 & 종합마케팅(여성기업). 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅",
           "award": "중소벤처기업부 여성기업확인 (제 0113-2025-34993 호)",
-          "knowsAbout": ["여성기업", "홍보영상제작", "광고영상제작", "AI영상제작", "미디어파사드", "음악라디오제작", "종합마케팅"],
-          "telephone": "1661-5680",
+          "knowsAbout": ["여성기업", "홍보영상제작", "광고영상제작", "AI영상제작", "미디어파사드", "음악라디오제작", "종합마케팅", "라디오광고", "CM송제작"],
+          "telephone": "+82-1661-5680",
           "email": "af@artfantasia.co.kr",
           "foundingDate": "2015-12",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+82-1661-5680",
+            "contactType": "customer support",
+            "areaServed": "KR",
+            "availableLanguage": ["Korean", "English"]
+          },
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": "대구광역시 북구 학정로 132-1 아트판타지아 빌딩 / 서울 관악구 관악로 943",
-            "addressLocality": ["서울특별시", "대구광역시", "부산광역시"],
+            "streetAddress": "대구광역시 북구 학정로 132-1 아트판타지아 빌딩 / 서울 제작편집사무소: 관악구 관악로 943",
+            "addressLocality": "대구광역시",
+            "addressRegion": "대구광역시",
             "addressCountry": "KR"
           },
           "sameAs": [
-            "https://artfantasia.co.kr"
+            "https://artfantasia.co.kr/"
           ]
         },
         {
           "@type": "WebSite",
           "@id": "https://artfantasia.co.kr/#website",
-          "url": "https://artfantasia.co.kr",
+          "url": "https://artfantasia.co.kr/",
           "name": "아트판타지아 | AatFantasia - 홍보영상 · 광고영상 · AI영상제작 · 미디어파사드 · 음악라디오 · 종합마케팅",
+          "alternateName": ["ART FANTASIA", "ArtFantasia"],
           "description": "크리에이티브 프로덕션 & 종합마케팅(여성기업). 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅",
           "publisher": {
             "@id": "https://artfantasia.co.kr/#organization"
@@ -94,9 +109,10 @@
           "@type": "ProfessionalService",
           "@id": "https://artfantasia.co.kr/#service",
           "name": "아트판타지아 | AatFantasia - 홍보영상 · 광고영상 · AI영상제작 · 미디어파사드 · 음악라디오 · 종합마케팅 (여성기업)",
-          "url": "https://artfantasia.co.kr",
-          "telephone": "1661-5680",
+          "url": "https://artfantasia.co.kr/",
+          "telephone": "+82-1661-5680",
           "priceRange": "$$$",
+          "image": "https://artfantasia.co.kr/LOGO.png",
           "description": "크리에이티브 프로덕션 & 종합마케팅(여성기업). 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅",
           "parentOrganization": {
             "@id": "https://artfantasia.co.kr/#organization"
@@ -147,6 +163,54 @@
               }
             ]
           }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://artfantasia.co.kr/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "아트판타지아는 어떤 프로덕션인가요?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "아트판타지아(ArtFantasia)는 광고영상, AI 영상제작, 공공기관 및 기업 홍보영상, 미디어파사드, 음악 및 라디오 CM, 데이터 기반 종합마케팅을 아우르는 올인원 크리에이티브 프로덕션입니다. 중소벤처기업부 인증 여성기업으로 15년 이상 경력의 감독진과 자체 녹음실을 보유하고 있으며, 외주 재하청 없는 100% 책임 제작을 원칙으로 합니다."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "아트판타지아는 여성기업 확인 인증을 보유하고 있나요?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "네, 중소벤처기업부 여성기업확인(확인번호: 제 0113-2025-34993 호)을 보유한 공식 여성기업으로, 공공기관 및 지자체, 공기업의 여성기업 우선구매 및 수의계약 제도에 부합하는 적격 프로덕션입니다."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "제작 후 A/S 및 수정 규정은 어떻게 지원되나요?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "촬영 원본 및 녹음 원본, 프로젝트 파일을 자체 보안 서버에 1년 보관하는 원칙을 준수합니다. 자막/텍스트 수정은 1년 내 3회 무상, 영상/사진 컷 변경은 3개월 내 2회 무상, 성우 재녹음은 최종 시사 후 10일 이내 1회 무상 지원됩니다."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "영상과 음악/오디오를 동시에 원스톱 제작할 수 있나요?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "네, 아트판타지아는 시네마급 영상 제작팀과 자체 음악 스튜디오, 16개국 글로벌 성우 네트워크를 한 회사 안에 보유하고 있어 영상과 오리지널 음악, 성우 녹음, 효과음 믹싱까지 외주 없이 원스톱으로 제작 가능합니다."
+              }
+            }
+          ]
+        },
+        {
+          "@type": "VideoObject",
+          "@id": "https://artfantasia.co.kr/#showreel",
+          "name": "아트판타지아 공식 쇼릴 - 세상을 영상과 음악으로 표현합니다",
+          "description": "광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 미디어파사드, 음악라디오제작 공식 포트폴리오 쇼릴",
+          "thumbnailUrl": "https://artfantasia.co.kr/showreel_frame0.jpg",
+          "uploadDate": "2026-01-01T00:00:00+09:00",
+          "contentUrl": "https://artfantasia.co.kr/",
+          "embedUrl": "https://artfantasia.co.kr/"
         }
       ]
     }
@@ -172,7 +236,106 @@
       };
     </script>
     <script type="text/javascript" defer src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <div id="root"></div>
+    <!-- Semantic Pre-rendered Content for Search Engine Crawlers (Naver Yeti, Googlebot, etc.) -->
+    <!-- React createRoot mounts over this seamlessly on client-side JS boot -->
+    <div id="root">
+      <div class="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col justify-between p-6 sm:p-12 font-sans">
+        <header class="max-w-6xl mx-auto w-full pb-8 border-b border-zinc-800">
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+              <span class="text-xl sm:text-2xl font-black tracking-tight text-white font-mono">ART FANTASIA</span>
+              <span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-400 text-zinc-950">여성기업</span>
+            </div>
+            <nav aria-label="메인 메뉴" class="flex items-center gap-4 text-xs sm:text-sm font-semibold text-zinc-300">
+              <a href="/#video" class="hover:text-amber-400">영상제작</a>
+              <a href="/#audio" class="hover:text-amber-400">음악·라디오</a>
+              <a href="/#afanmusic" class="hover:text-amber-400">아판뮤직</a>
+              <a href="/#marketing" class="hover:text-amber-400">종합마케팅</a>
+              <a href="/#notice" class="hover:text-amber-400">소식&amp;정보</a>
+              <a href="/#about" class="hover:text-amber-400">회사소개</a>
+              <a href="/#inquiry" class="text-amber-400 hover:underline">제작문의</a>
+            </nav>
+          </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto w-full py-12 space-y-12">
+          <section class="space-y-4">
+            <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
+              아트판타지아 | AatFantasia - 크리에이티브 프로덕션 &amp; 종합마케팅 (여성기업)
+            </h1>
+            <p class="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-4xl font-normal">
+              세상을 영상과 음악으로 표현합니다. <strong>광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅</strong>.
+              중소벤처기업부 인증 여성기업으로 외주 재하청 없는 100% 책임 제작 원칙을 고수합니다.
+            </p>
+          </section>
+
+          <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6 border-t border-zinc-800">
+            <article class="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+              <h2 class="text-lg font-bold text-amber-400">AI 영상제작 (AI Film &amp; Gen-AI)</h2>
+              <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                최신 생성형 AI 모델 기반 영상제작, AI 콘티 및 비주얼 프리비즈, AI 필름, 혁신적인 생성형 광고 영상 제작.
+              </p>
+            </article>
+
+            <article class="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+              <h2 class="text-lg font-bold text-amber-400">영상제작 (Film &amp; Commercial)</h2>
+              <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                공공기관, 기업, 교육기관 영상제작, 기업 홍보영상, 브랜드 필름, TVCF 광고, 유튜브 오리지널 콘텐츠, 다큐멘터리 제작.
+              </p>
+            </article>
+
+            <article class="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+              <h2 class="text-lg font-bold text-amber-400">미디어파사드 &amp; 프로젝션 맵핑</h2>
+              <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                건축 외벽 미디어파사드 연출, 실감형 프로젝션 맵핑, 인터랙티브 미디어 아트, 공공·문화 공간 영상 연출 및 제작.
+              </p>
+            </article>
+
+            <article class="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+              <h2 class="text-lg font-bold text-amber-400">음악 &amp; 오디오 CM 제작</h2>
+              <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                지상파 온에어 라디오광고 CM송, 오리지널 BGM, 브랜드 사운드 징글, 대중음악 OST 제작 및 마스터링.
+              </p>
+            </article>
+
+            <article class="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+              <h2 class="text-lg font-bold text-amber-400">데이터 기반 종합마케팅</h2>
+              <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                데이터 기반 퍼포먼스 마케팅, 온·오프라인 미디어 믹스, 브랜드 성장 전략 컨설팅, 통합 디지털 캠페인.
+              </p>
+            </article>
+
+            <article class="p-6 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
+              <h2 class="text-lg font-bold text-amber-400">아판뮤직 (Afan Music)</h2>
+              <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                아트판타지아가 100% 자체 기획·작사·작곡·가창·믹싱하여 무료 공개한 오리지널 음원 라이브러리.
+              </p>
+            </article>
+          </section>
+
+          <section class="p-6 rounded-xl bg-zinc-900/40 border border-zinc-800 space-y-3">
+            <h2 class="text-base font-bold text-zinc-200">주요 실적 및 고객사</h2>
+            <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+              대한민국 정부, 삼성전자, 현대자동차, K-WATER 한국수자원공사, E1, 기획재정부, KOTRA, KDI 한국개발연구원, 신용보증기금, KOEM 해양환경공단, 사행산업통합감독위원회, 교촌 F&amp;B, 한화, 국방기술품질원, 창업진흥원 등 다수의 공공기관 및 대기업 프로젝트 총괄 제작.
+            </p>
+          </section>
+        </main>
+
+        <footer class="max-w-6xl mx-auto w-full pt-8 border-t border-zinc-800 text-xs text-zinc-500 space-y-2">
+          <p>상호: 아트판타지아 | 대표: 배정아 | 사업자등록번호: 837-87-03564 | 대표전화: 1661-5680 | 이메일: af@artfantasia.co.kr</p>
+          <p>인증정보: 중소벤처기업부 여성기업확인(제 0113-2025-34993 호) | 비디오제작업 신고(170-11-10974635) | 직접생산확인(제 2025-0495-01414 호)</p>
+          <p>본사: 대구광역시 북구 학정로 132-1 아트판타지아 빌딩 | 서울 제작편집사무소: 서울특별시 관악구 관악로 943</p>
+          <p class="pt-2 text-zinc-400 font-mono">Copyright &copy; ART FANTASIA. All Rights Reserved.</p>
+        </footer>
+      </div>
+    </div>
+    <noscript>
+      <div style="padding:20px;background:#09090b;color:#f4f4f5;font-family:sans-serif;">
+        <h1>아트판타지아 | AatFantasia - 크리에이티브 프로덕션 &amp; 종합마케팅 (여성기업)</h1>
+        <p>광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 종합마케팅</p>
+        <p>대표전화: 1661-5680 | 이메일: af@artfantasia.co.kr | 대구 본사: 대구 북구 학정로 132-1 | 서울사무소: 서울 관악구 관악로 943</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

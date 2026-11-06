@@ -1,3 +1,9 @@
+/robots.txt    /robots.txt    200
+/sitemap.xml   /sitemap.xml   200
+/rss.xml       /rss.xml       200
+/feed.xml      /feed.xml      200
+/atom.xml      /atom.xml      200
+
 /notice/93     /    301!
 /notice/97     /    301!
 /notice/95     /    301!
@@ -210,3 +216,7 @@
 /52    /    301!
 /127    /    301!
 /119    /    301!
+
+# SPA routing fallback
+/*      /index.html   200
+

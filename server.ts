@@ -47,6 +47,28 @@ app.get('/healthz', (_req, res) => {
   res.status(200).send('OK');
 });
 
+// Explicit robots.txt endpoint for search crawlers (Naver Yeti, Googlebot, etc.)
+app.get('/robots.txt', (_req, res) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+  res.setHeader('X-Robots-Tag', 'all');
+  const candidate = path.join(distPath, 'robots.txt');
+  const fallback = path.join(__dirname, 'public', 'robots.txt');
+  const target = fs.existsSync(candidate) ? candidate : fallback;
+  res.sendFile(target);
+});
+
+// Explicit sitemap.xml endpoint
+app.get('/sitemap.xml', (_req, res) => {
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+  res.setHeader('X-Robots-Tag', 'all');
+  const candidate = path.join(distPath, 'sitemap.xml');
+  const fallback = path.join(__dirname, 'public', 'sitemap.xml');
+  const target = fs.existsSync(candidate) ? candidate : fallback;
+  res.sendFile(target);
+});
+
 // Legacy notice URLs 301 redirect to homepage (matches public/_redirects)
 const legacyNotices = ['/notice/93', '/notice/97', '/notice/95', '/notice/354', '/notice/355', '/notice/118'];
 app.get(legacyNotices, (_req, res) => {
@@ -57,13 +79,19 @@ app.get(legacyNotices, (_req, res) => {
 app.get(['/rss', '/rss.xml', '/feed', '/feed.xml'], (_req, res) => {
   res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
-  res.sendFile(path.join(distPath, 'rss.xml'));
+  const candidate = path.join(distPath, 'rss.xml');
+  const fallback = path.join(__dirname, 'public', 'rss.xml');
+  const target = fs.existsSync(candidate) ? candidate : fallback;
+  res.sendFile(target);
 });
 
 app.get('/atom.xml', (_req, res) => {
   res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
-  res.sendFile(path.join(distPath, 'atom.xml'));
+  const candidate = path.join(distPath, 'atom.xml');
+  const fallback = path.join(__dirname, 'public', 'atom.xml');
+  const target = fs.existsSync(candidate) ? candidate : fallback;
+  res.sendFile(target);
 });
 
 // Single Page Application (SPA) fallback to index.html

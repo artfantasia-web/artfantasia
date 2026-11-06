@@ -27,34 +27,44 @@ const PageLoadingFallback = () => (
   </div>
 );
 
-const getSectionFromHash = (hash: string): NavCategory => {
-  const clean = hash.replace(/^#\/?/, '').toLowerCase();
-  if (clean.startsWith('video')) return 'video';
-  if (clean.startsWith('audio')) return 'audio';
-  if (clean.startsWith('afanmusic') || clean.startsWith('afan')) return 'afanmusic';
-  if (clean.startsWith('marketing')) return 'marketing';
-  if (clean.startsWith('notice')) return 'notice';
-  if (clean.startsWith('inquiry') || clean.startsWith('contact')) return 'inquiry';
-  if (clean.startsWith('about')) return 'about';
+const getSectionFromUrl = (): NavCategory => {
+  if (typeof window === 'undefined') return 'home';
+  const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+  if (hash.startsWith('video')) return 'video';
+  if (hash.startsWith('audio')) return 'audio';
+  if (hash.startsWith('afanmusic') || hash.startsWith('afan')) return 'afanmusic';
+  if (hash.startsWith('marketing')) return 'marketing';
+  if (hash.startsWith('notice')) return 'notice';
+  if (hash.startsWith('inquiry') || hash.startsWith('contact')) return 'inquiry';
+  if (hash.startsWith('about')) return 'about';
+
+  const pathname = window.location.pathname.replace(/^\//, '').toLowerCase();
+  if (pathname.startsWith('video')) return 'video';
+  if (pathname.startsWith('audio')) return 'audio';
+  if (pathname.startsWith('afanmusic') || pathname.startsWith('afan')) return 'afanmusic';
+  if (pathname.startsWith('marketing')) return 'marketing';
+  if (pathname.startsWith('notice')) return 'notice';
+  if (pathname.startsWith('inquiry') || pathname.startsWith('contact')) return 'inquiry';
+  if (pathname.startsWith('about')) return 'about';
+
   return 'home';
 };
 
 function AppContent() {
-  const [activeSection, setActiveSection] = useState<NavCategory>(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      return getSectionFromHash(window.location.hash);
-    }
-    return 'home';
-  });
+  const [activeSection, setActiveSection] = useState<NavCategory>(() => getSectionFromUrl());
 
   useEffect(() => {
-    const handleHashChange = () => {
-      const section = getSectionFromHash(window.location.hash);
+    const handleUrlChange = () => {
+      const section = getSectionFromUrl();
       setActiveSection(section);
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    window.addEventListener('popstate', handleUrlChange);
+    return () => {
+      window.removeEventListener('hashchange', handleUrlChange);
+      window.removeEventListener('popstate', handleUrlChange);
+    };
   }, []);
 
   // Switch to dedicated page view

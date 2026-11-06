@@ -1,0 +1,25 @@
+/*
+  X-Robots-Tag: all
+  X-Content-Type-Options: nosniff
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Robots-Tag: all
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Robots-Tag: all
+
+/rss.xml
+  Content-Type: application/rss+xml; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/feed.xml
+  Content-Type: application/rss+xml; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/atom.xml
+  Content-Type: application/atom+xml; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400

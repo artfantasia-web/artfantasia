@@ -1,19 +1,83 @@
-# Robots.txt for ART FANTASIA (artfantasia.co.kr)
-# Optimized for Google Search Console and Naver Search Advisor (Yeti)
-
 User-agent: *
 Allow: /
 
+# Major Global Search Engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-Video
+Allow: /
+
+User-agent: Google-InspectionTool
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Domestic Korean Search Engines
 User-agent: Yeti
 Allow: /
 
-User-agent: Googlebot
+User-agent: NaverBot
 Allow: /
 
 User-agent: Daumoa
 Allow: /
 
-User-agent: Bingbot
+User-agent: ZumBot
+Allow: /
+
+# AI Search & Retrieval Engines (ChatGPT, Perplexity, Claude, Gemini, Apple)
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Social & Meta Crawler Agents
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: kakaotalk-scrap
 Allow: /
 
 Sitemap: https://artfantasia.co.kr/sitemap.xml
