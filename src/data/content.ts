@@ -612,7 +612,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "categoryLabel": "국방 보안 홍보",
     "year": "2025",
     "postUrl": "https://artfantasia.co.kr/372",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FcrXtIU%2FbtsNL1XuK2F%2FAAAAAAAAAAAAAAAAAAAAANEz7snxBRYCdaqj3NMeRmnZ3uUfEngKIvMRsOypfBy-%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DrZGg8e%252BTLTdEe%252FeeTWwVMmWtPcg%253D",
+    "thumbnailUrl": "/assets/projects/vid-372.png",
     "badge": "보안 관리 비공개",
     "role": [
       "영상 기획",
@@ -642,7 +642,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "categoryLabel": "발전 및 국가기반시설",
     "year": "2025",
     "postUrl": "https://artfantasia.co.kr/373",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FbHOIDS%2FbtsN6TyOnMG%2FAAAAAAAAAAAAAAAAAAAAAHC2RZRYBGnYkv0hhjsdaBzqnpWTgplru7iX9HOoLXT-%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DyVH9NtTwy3n71BMA2M25RPncBZc%253D",
+    "thumbnailUrl": "/assets/projects/vid-373.png",
     "badge": "보안 관리 비공개",
     "role": [
       "영상 기획",
@@ -672,7 +672,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "categoryLabel": "공공 보안 홍보",
     "year": "2025",
     "postUrl": "https://artfantasia.co.kr/374",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FIM20S%2FbtsOgsgvLY3%2FAAAAAAAAAAAAAAAAAAAAAFUovGIM-8g1HN6IxL0aMXETdf-9Z6j1b30wyTNPEu-F%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3D5HXTcNKICi2usXvHgSnipFmPjz4%253D",
+    "thumbnailUrl": "/assets/projects/vid-374.png",
     "badge": "보안 관리 비공개",
     "role": [
       "영상 기획",
@@ -702,7 +702,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "categoryLabel": "군 부대소개 영화",
     "year": "2024",
     "postUrl": "https://artfantasia.co.kr/361",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FKLM6G%2FbtsIbTQMjqQ%2FAAAAAAAAAAAAAAAAAAAAAPTbMBWcE6XItFMQsh0NrQ7bHU9JJiEKVh8W4dWtrBzd%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3D3bQNk%252Bakn0IXxIPFYhq%252Frs3gMRY%253D",
+    "thumbnailUrl": "/assets/projects/vid-361.png",
     "badge": "보안 관리 비공개",
     "role": [
       "시나리오 구성",
@@ -732,7 +732,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "categoryLabel": "기관 보안관제 홍보",
     "year": "2025",
     "postUrl": "https://artfantasia.co.kr/375",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FygD29%2FbtsOFmtpZDn%2FAAAAAAAAAAAAAAAAAAAAAAXxI7vS9sSXkBFJKoAjeYonsBaOE_Yof81hfTrgmBwn%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DKhafOfa1O6OjHtzwkIS1ob%252BQzYo%253D",
+    "thumbnailUrl": "/assets/projects/vid-375.png",
     "badge": "보안 관리 비공개",
     "role": [
       "영상 기획",
@@ -1114,7 +1114,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "categoryLabel": "금융 보안 홍보",
     "year": "2023",
     "postUrl": "https://artfantasia.co.kr/340",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2Fq2jnb%2FbtsrqyX1Ge3%2FAAAAAAAAAAAAAAAAAAAAANB6AyZf7CM-s5YEezz5uYzRZ6w8NgNuFhr53iaE0Eqm%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DMb9WvAYKLmElWvrp1Az%252F9QMTrPU%253D",
+    "thumbnailUrl": "/assets/projects/vid-340.png",
     "badge": "보안 관리 비공개",
     "role": [
       "영상 기획",
@@ -1144,7 +1144,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "categoryLabel": "군 부대소개 영화",
     "year": "2022",
     "postUrl": "https://artfantasia.co.kr/317",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FUo3VN%2FbtrTGkZNmzW%2FAAAAAAAAAAAAAAAAAAAAAH1iHRB4WgAlBco9ydPiwBz3HUogTYCqA3bvyYzxod6X%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DeuLKpx1%252FDfcB2aHRjVmVI7qZdVU%253D",
+    "thumbnailUrl": "/assets/projects/vid-317.png",
     "badge": "보안 관리 비공개",
     "role": [
       "시나리오 구성",
@@ -1590,7 +1590,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "categoryLabel": "군 부대소개 영화",
     "year": "2017",
     "postUrl": "https://artfantasia.co.kr/131",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FyuWJa%2FbtrBCr2hFuP%2FAAAAAAAAAAAAAAAAAAAAAJLqdXrEwBMhscZm3YDexl0JnsyDQbUtDBx6eKc4Fn3O%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DCwJh%252Bgcw%252BglbGGU9yREjRLHC6FA%253D",
+    "thumbnailUrl": "/assets/projects/vid-131.png",
     "badge": "보안 관리 비공개",
     "role": [
       "시나리오 기획",
@@ -1620,7 +1620,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "categoryLabel": "군 부대소개 영화",
     "year": "2020",
     "postUrl": "https://artfantasia.co.kr/243",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FlmPQy%2FbtrBCss1l38%2FAAAAAAAAAAAAAAAAAAAAAMZ_b4ieI6n-IKi-1r1uJOeJhEVQs3vRQ2n1CyvIDTg9%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DQyN%252BZ0G%252BlAmLunPengkVXOEgZj8%253D",
+    "thumbnailUrl": "/assets/projects/vid-243.png",
     "badge": "보안 관리 비공개",
     "role": [
       "시나리오 기획",
@@ -1811,7 +1811,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "year": "2019",
     "duration": "03:10",
     "postUrl": "https://artfantasia.co.kr/187",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FRRE9p%2FbtrBF5cJ45P%2FAAAAAAAAAAAAAAAAAAAAAJT6kkEtdEq8wn5ODD09gVvjQjRQK0lREIsD5-O4LBDd%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DwVzzcszXYu1bZVg9F6UYub5Eu9M%253D",
+    "thumbnailUrl": "/assets/projects/vid-187.png",
     "badge": "교육부 LINC+ 사업",
     "role": [
       "산학협력 기획",
@@ -1874,7 +1874,7 @@ export const VIDEO_PROJECTS: VideoProject[] = [
     "year": "2016",
     "duration": "00:30",
     "postUrl": "https://artfantasia.co.kr/73",
-    "thumbnailUrl": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FbvMInb%2FbtrBGseL3h5%2FAAAAAAAAAAAAAAAAAAAAAI6yYm_sdG-7Zg5YGrNKf-vwgtrxU2S8kObSD6Xa_NTJ%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3DlpugrrNt4%252FNs6br3hQojjSG%252BjT8%253D",
+    "thumbnailUrl": "/assets/projects/vid-73.png",
     "badge": "베트남 온에어 TVCF",
     "role": [
       "TVCF 기획",
