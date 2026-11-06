@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
@@ -9,13 +10,21 @@ export default defineConfig(() => {
       react(),
       tailwindcss(),
       {
-        name: 'rss-feed-dev-middleware',
+        name: 'feed-and-llms-dev-middleware',
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
             const url = req.url?.split('?')[0];
             if (url === '/rss' || url === '/feed') {
               req.url = '/rss.xml';
               return next();
+            }
+            if (url === '/llms.txt' || url === '/.well-known/llms.txt') {
+              const filePath = path.resolve('public/llms.txt');
+              if (fs.existsSync(filePath)) {
+                res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+                res.end(fs.readFileSync(filePath));
+                return;
+              }
             }
 
             next();

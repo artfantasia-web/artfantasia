@@ -58,6 +58,17 @@ app.get('/robots.txt', (_req, res) => {
   res.sendFile(target);
 });
 
+// Explicit LLMs / AI agents context endpoint (llms.txt standard)
+app.get(['/llms.txt', '/.well-known/llms.txt'], (_req, res) => {
+  res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+  res.setHeader('X-Robots-Tag', 'all');
+  const candidate = path.join(distPath, 'llms.txt');
+  const fallback = path.join(__dirname, 'public', 'llms.txt');
+  const target = fs.existsSync(candidate) ? candidate : fallback;
+  res.sendFile(target);
+});
+
 // Explicit sitemap.xml endpoint
 app.get('/sitemap.xml', (_req, res) => {
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
