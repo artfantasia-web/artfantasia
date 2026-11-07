@@ -1,3 +1,11 @@
+# Naver Search Advisor & Yeti Crawlers (Placed at top for instant Yeti detection)
+User-agent: Yeti
+Allow: /
+
+User-agent: NaverBot
+Allow: /
+
+# All Search Engines & Crawlers
 User-agent: *
 Allow: /
 
@@ -24,12 +32,6 @@ User-agent: DuckDuckBot
 Allow: /
 
 # Domestic Korean Search Engines
-User-agent: Yeti
-Allow: /
-
-User-agent: NaverBot
-Allow: /
-
 User-agent: Daumoa
 Allow: /
 
