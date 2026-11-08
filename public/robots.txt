@@ -1,6 +1,13 @@
 # Naver Search Advisor & Yeti Crawlers (Placed at top for instant Yeti detection)
 User-agent: Yeti
 Allow: /
+Allow: /about
+Allow: /video
+Allow: /audio
+Allow: /afanmusic
+Allow: /marketing
+Allow: /notice
+Allow: /inquiry
 
 User-agent: NaverBot
 Allow: /
@@ -8,6 +15,13 @@ Allow: /
 # All Search Engines & Crawlers
 User-agent: *
 Allow: /
+Allow: /about
+Allow: /video
+Allow: /audio
+Allow: /afanmusic
+Allow: /marketing
+Allow: /notice
+Allow: /inquiry
 
 # Major Global Search Engines
 User-agent: Googlebot

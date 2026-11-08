@@ -22,14 +22,14 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navItems: { id: NavCategory; label: string; sub: string }[] = [
-    { id: 'home', label: language === 'ko' ? '홈으로' : 'Home', sub: 'HOME' },
-    { id: 'about', label: language === 'ko' ? '회사소개' : 'About', sub: 'ABOUT' },
-    { id: 'video', label: language === 'ko' ? '영상제작' : 'Film & Video', sub: 'FILM' },
-    { id: 'audio', label: language === 'ko' ? '라디오광고' : 'Radio CM', sub: 'RADIO' },
-    { id: 'afanmusic', label: language === 'ko' ? '아판뮤직' : 'Afan Music', sub: 'AFAN MUSIC' },
-    { id: 'marketing', label: language === 'ko' ? '마케팅' : 'Marketing', sub: 'MARKETING' },
-    { id: 'notice', label: language === 'ko' ? '소식' : 'News', sub: 'NEWS' },
+  const navItems: { id: NavCategory; label: string; sub: string; path: string }[] = [
+    { id: 'home', label: language === 'ko' ? '홈으로' : 'Home', sub: 'HOME', path: '/' },
+    { id: 'about', label: language === 'ko' ? '회사소개' : 'About', sub: 'ABOUT', path: '/about' },
+    { id: 'video', label: language === 'ko' ? '영상제작' : 'Film & Video', sub: 'FILM', path: '/video' },
+    { id: 'audio', label: language === 'ko' ? '라디오광고' : 'Radio CM', sub: 'RADIO', path: '/audio' },
+    { id: 'afanmusic', label: language === 'ko' ? '아판뮤직' : 'Afan Music', sub: 'AFAN MUSIC', path: '/afanmusic' },
+    { id: 'marketing', label: language === 'ko' ? '마케팅' : 'Marketing', sub: 'MARKETING', path: '/marketing' },
+    { id: 'notice', label: language === 'ko' ? '소식' : 'News', sub: 'NEWS', path: '/notice' },
   ];
 
   const handleNavClick = (id: NavCategory) => {
@@ -48,8 +48,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
           {/* Top Bar: Brand Logo on Left (Go to Home) & Category Links on Right */}
           <div className="flex items-center justify-between gap-6 xl:gap-8">
             {/* Zone 1: Official Brand Logo Image (Click to Navigate to Home) */}
-            <button
-              onClick={() => handleNavClick('home')}
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavClick('home');
+              }}
               className="group flex items-center text-left whitespace-nowrap shrink-0 transition-opacity hover:opacity-80 cursor-pointer py-0.5"
               aria-label={language === 'ko' ? '아트판타지아 홈으로 이동' : 'Art Fantasia Home'}
               title={language === 'ko' ? '홈으로 이동' : 'Go to Home'}
@@ -63,16 +67,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
                     'https://github.com/artfantasia-web/new1/blob/main/01lo.png?raw=true';
                 }}
               />
-            </button>
+            </a>
 
             {/* Zone 2: Clean Single-Line Nav Links + 언어 번역 버튼 + 제작문의 Button */}
-            <nav className="hidden lg:flex items-center gap-4 xl:gap-6 font-apple antialiased scale-[1.08] origin-right">
+            <nav className="hidden lg:flex items-center gap-4 xl:gap-6 font-apple antialiased scale-[1.08] origin-right" aria-label="주요 메뉴">
               {navItems.map((item) => {
                 const isActive = activeSection === item.id;
                 return (
-                  <button
+                  <a
                     key={item.id}
-                    onClick={() => handleNavClick(item.id)}
+                    href={item.path}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavClick(item.id);
+                    }}
                     className={`group relative py-1.5 px-0.5 text-[15px] tracking-tight transition-all duration-200 whitespace-nowrap shrink-0 cursor-pointer ${
                       isActive
                         ? 'text-white font-bold'
@@ -87,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
                           : 'w-0 bg-gradient-to-r from-[#f97316] to-[#d91b5c] group-hover:w-full opacity-80'
                       }`}
                     />
-                  </button>
+                  </a>
                 );
               })}
 
@@ -130,8 +138,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
               </div>
 
               {/* 제작문의 버튼 (하단 영상제작 바로가기 스타일 & 효과 적용: bg-amber-400, text-zinc-950, shadow-amber-400, hover:scale-[1.02]) */}
-              <button
-                onClick={() => handleNavClick('inquiry')}
+              <a
+                href="/inquiry"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick('inquiry');
+                }}
                 className={`ml-1 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-black font-apple tracking-tight transition-all duration-200 cursor-pointer text-zinc-950 shadow-md shadow-amber-400/20 hover:shadow-amber-400/35 hover:scale-[1.02] active:scale-95 ${
                   activeSection === 'inquiry'
                     ? 'bg-amber-400 ring-2 ring-white/90 shadow-[0_0_16px_rgba(251,191,36,0.6)]'
@@ -140,7 +152,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
               >
                 <Send className="w-3.5 h-3.5 text-zinc-950" />
                 <span className="text-zinc-950 font-black">{language === 'ko' ? '제작문의' : 'Inquiry'}</span>
-              </button>
+              </a>
             </nav>
 
             {/* Mobile Menu Hamburger */}
@@ -191,9 +203,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
               </div>
             </div>
             {navItems.map((item) => (
-              <button
+              <a
                 key={item.id}
-                onClick={() => handleNavClick(item.id)}
+                href={item.path}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(item.id);
+                }}
                 className={`w-full flex items-center justify-between py-3.5 border-b border-zinc-800 text-left text-lg font-semibold font-apple tracking-tight transition-colors ${
                   activeSection === item.id
                     ? 'text-white font-bold'
@@ -207,13 +223,15 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
                   <span className="font-apple">{item.label}</span>
                 </div>
                 <span className="text-xs font-mono text-zinc-500">{item.sub}</span>
-              </button>
+              </a>
             ))}
           </div>
 
           <div className="pt-6 border-t border-zinc-800">
-            <button
-              onClick={() => {
+            <a
+              href="/inquiry"
+              onClick={(e) => {
+                e.preventDefault();
                 setMobileMenuOpen(false);
                 onOpenInquiry();
               }}
@@ -221,7 +239,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate, onOpe
             >
               <span>{language === 'ko' ? '견적 문의하기' : 'Request Quotation'}</span>
               <ArrowUpRight className="w-4 h-4 text-zinc-950" />
-            </button>
+            </a>
           </div>
         </div>
       )}

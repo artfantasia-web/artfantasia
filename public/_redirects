@@ -6,6 +6,16 @@
 /naver*.html   /naver:splat.html   200
 /naver7f415221c4b02aca4da64c77b119f235cf670775.html   /naver7f415221c4b02aca4da64c77b119f235cf670775.html   200
 
+# Independent sub-pages for search engines
+/about        /about/index.html        200
+/video        /video/index.html        200
+/audio        /audio/index.html        200
+/afanmusic    /afanmusic/index.html    200
+/marketing    /marketing/index.html    200
+/notice       /notice/index.html       200
+/inquiry      /inquiry/index.html      200
+
+
 
 /notice/93     /    301!
 /notice/97     /    301!

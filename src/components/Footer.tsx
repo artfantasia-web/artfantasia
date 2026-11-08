@@ -71,6 +71,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenInquiry, onOpe
               </div>
             </div>
 
+
+
             <div className="pt-1 flex items-center gap-3">
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}

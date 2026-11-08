@@ -118,6 +118,19 @@ app.get('/atom.xml', (_req, res) => {
   res.sendFile(target);
 });
 
+// Serve dedicated HTML for independent sub-pages if available
+const subpages = ['about', 'video', 'audio', 'afanmusic', 'marketing', 'notice', 'inquiry'];
+subpages.forEach((page) => {
+  app.get([`/${page}`, `/${page}/`], (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    const subpageHtml = path.join(distPath, page, 'index.html');
+    if (fs.existsSync(subpageHtml)) {
+      return res.sendFile(subpageHtml);
+    }
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+});
+
 // Single Page Application (SPA) fallback to index.html
 app.get('*', (_req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

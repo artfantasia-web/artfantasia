@@ -43,6 +43,16 @@ export default defineConfig(() => {
       cssMinify: true,
       chunkSizeWarningLimit: 900,
       rollupOptions: {
+        input: {
+          main: path.resolve(import.meta.dirname, 'index.html'),
+          about: path.resolve(import.meta.dirname, 'about/index.html'),
+          video: path.resolve(import.meta.dirname, 'video/index.html'),
+          audio: path.resolve(import.meta.dirname, 'audio/index.html'),
+          afanmusic: path.resolve(import.meta.dirname, 'afanmusic/index.html'),
+          marketing: path.resolve(import.meta.dirname, 'marketing/index.html'),
+          notice: path.resolve(import.meta.dirname, 'notice/index.html'),
+          inquiry: path.resolve(import.meta.dirname, 'inquiry/index.html'),
+        },
         output: {
           manualChunks(id: string) {
             if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
