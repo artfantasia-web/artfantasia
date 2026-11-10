@@ -142,6 +142,17 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
   const openProjectModal = (project: VideoProject) => {
     setActiveProject(project);
     window.location.hash = `video-${project.id}`;
+
+    // Dynamically update Open Graph image to the project's representative screen
+    const thumb = project.thumbnailUrl?.startsWith('http') 
+      ? project.thumbnailUrl 
+      : `${window.location.origin}${project.thumbnailUrl || '/og-video.jpg'}`;
+    const ogImg = document.querySelector('meta[property="og:image"]');
+    if (ogImg) ogImg.setAttribute('content', thumb);
+    const ogImgSec = document.querySelector('meta[property="og:image:secure_url"]');
+    if (ogImgSec) ogImgSec.setAttribute('content', thumb);
+    const twImg = document.querySelector('meta[name="twitter:image"]');
+    if (twImg) twImg.setAttribute('content', thumb);
   };
 
   const closeProjectModal = () => {
@@ -149,15 +160,51 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
     if (window.location.hash && window.location.hash.startsWith('#video-')) {
       history.pushState(null, '', '#video');
     }
+    // Restore video section's representative screen
+    const ogImg = document.querySelector('meta[property="og:image"]');
+    if (ogImg) ogImg.setAttribute('content', 'https://artfantasia.co.kr/og-video.jpg');
+    const ogImgSec = document.querySelector('meta[property="og:image:secure_url"]');
+    if (ogImgSec) ogImgSec.setAttribute('content', 'https://artfantasia.co.kr/og-video.jpg');
+    const twImg = document.querySelector('meta[name="twitter:image"]');
+    if (twImg) twImg.setAttribute('content', 'https://artfantasia.co.kr/og-video.jpg');
   };
 
   const copyProjectLink = (project: VideoProject, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const shareUrl = `${window.location.origin}/#video-${project.id}`;
-    navigator.clipboard.writeText(shareUrl);
-    window.location.hash = `video-${project.id}`;
-    setCopiedId(project.id);
-    setTimeout(() => setCopiedId(null), 2000);
+    const shareUrl = `${window.location.origin}/video#video-${project.id}`;
+
+    // Ensure OG tags match this project's representative screen
+    const thumb = project.thumbnailUrl?.startsWith('http') 
+      ? project.thumbnailUrl 
+      : `${window.location.origin}${project.thumbnailUrl || '/og-video.jpg'}`;
+    const ogImg = document.querySelector('meta[property="og:image"]');
+    if (ogImg) ogImg.setAttribute('content', thumb);
+    const twImg = document.querySelector('meta[name="twitter:image"]');
+    if (twImg) twImg.setAttribute('content', thumb);
+
+    // Native Web Share API (KakaoTalk, mobile SNS share sheet)
+    if (navigator.share) {
+      navigator.share({
+        title: `${project.title} | 아트판타지아 영상제작`,
+        text: `[아트판타지아 영상제작] ${project.client} - ${project.title}`,
+        url: shareUrl,
+      }).then(() => {
+        setCopiedId(project.id);
+        setTimeout(() => setCopiedId(null), 2500);
+      }).catch((err) => {
+        if (err.name !== 'AbortError') {
+          navigator.clipboard.writeText(shareUrl);
+          window.location.hash = `video-${project.id}`;
+          setCopiedId(project.id);
+          setTimeout(() => setCopiedId(null), 2500);
+        }
+      });
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      window.location.hash = `video-${project.id}`;
+      setCopiedId(project.id);
+      setTimeout(() => setCopiedId(null), 2500);
+    }
   };
 
   // Showcase Cinema Video states (Exact playback style matching AboutSection)
@@ -802,14 +849,20 @@ export const VideoPortfolio: React.FC<VideoPortfolioProps> = ({ onOpenInquiry })
                   <button
                     type="button"
                     onClick={(e) => copyProjectLink(activeProject, e)}
-                    className="p-1.5 text-zinc-400 hover:text-zinc-900 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer shrink-0"
-                    title={copiedId === activeProject.id ? "링크 복사 완료!" : "공유하기"}
+                    className="px-2.5 py-1.5 text-zinc-500 hover:text-zinc-900 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer shrink-0 flex items-center gap-1.5 border border-zinc-200/80"
+                    title={copiedId === activeProject.id ? "공유 링크가 복사되었습니다! (카카오톡/SNS에 바로 붙여넣기)" : "카카오톡 및 SNS 공유하기"}
                     aria-label="공유하기"
                   >
                     {copiedId === activeProject.id ? (
-                      <Check className="w-5 h-5 text-emerald-600" />
+                      <>
+                        <Check className="w-4 h-4 text-emerald-600" />
+                        <span className="text-xs font-semibold text-emerald-600">링크 복사완료</span>
+                      </>
                     ) : (
-                      <Share2 className="w-5 h-5" />
+                      <>
+                        <Share2 className="w-4 h-4 text-zinc-600" />
+                        <span className="text-xs font-medium text-zinc-700">공유하기</span>
+                      </>
                     )}
                   </button>
                   <button
