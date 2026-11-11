@@ -2,10 +2,10 @@ import { VideoProject, AudioTrack, MarketingCase, NoticeItem } from '../types';
 
 export const COMPANY_INFO = {
   brandName: '아트판타지아',
-  brandNameEn: 'AatFantasia',
+  brandNameEn: 'ArtFantasia',
   nameKo: '아트판타지아',
-  nameEn: 'AatFantasia',
-  title: '아트판타지아 | AatFantasia - 홍보영상 · 광고영상 · AI영상제작 · 미디어파사드 · 음악라디오 · 종합마케팅',
+  nameEn: 'ArtFantasia',
+  title: '아트판타지아 | ArtFantasia - 홍보영상 · 광고영상 · AI영상제작 · 미디어파사드 · 음악라디오 · 종합마케팅',
   businessDescription: '크리에이티브 프로덕션, 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 여성기업 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 마케팅',
   maritimeExpertise: {
     title: '해양·조선·바다 특화 영상제작 기술',

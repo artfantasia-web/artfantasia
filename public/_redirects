@@ -1,8 +1,5 @@
 /robots.txt    /robots.txt    200
 /sitemap.xml   /sitemap.xml   200
-/rss.xml       /rss.xml       200
-/feed.xml      /feed.xml      200
-/atom.xml      /atom.xml      200
 /naver*.html   /naver:splat.html   200
 /naver7f415221c4b02aca4da64c77b119f235cf670775.html   /naver7f415221c4b02aca4da64c77b119f235cf670775.html   200
 
