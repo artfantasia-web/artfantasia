@@ -2,7 +2,12 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import fs from 'fs';
-import {defineConfig} from 'vite';
+import { fileURLToPath } from 'url';
+import { defineConfig } from 'vite';
+
+const rootDir = typeof import.meta.dirname !== 'undefined'
+  ? import.meta.dirname
+  : path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => {
   return {
@@ -34,7 +39,7 @@ export default defineConfig(() => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(import.meta.dirname, '.'),
+        '@': path.resolve(rootDir, '.'),
       },
     },
     build: {
@@ -44,14 +49,14 @@ export default defineConfig(() => {
       chunkSizeWarningLimit: 900,
       rollupOptions: {
         input: {
-          main: path.resolve(import.meta.dirname, 'index.html'),
-          about: path.resolve(import.meta.dirname, 'about/index.html'),
-          video: path.resolve(import.meta.dirname, 'video/index.html'),
-          audio: path.resolve(import.meta.dirname, 'audio/index.html'),
-          afanmusic: path.resolve(import.meta.dirname, 'afanmusic/index.html'),
-          marketing: path.resolve(import.meta.dirname, 'marketing/index.html'),
-          notice: path.resolve(import.meta.dirname, 'notice/index.html'),
-          inquiry: path.resolve(import.meta.dirname, 'inquiry/index.html'),
+          main: path.resolve(rootDir, 'index.html'),
+          about: path.resolve(rootDir, 'about/index.html'),
+          video: path.resolve(rootDir, 'video/index.html'),
+          audio: path.resolve(rootDir, 'audio/index.html'),
+          afanmusic: path.resolve(rootDir, 'afanmusic/index.html'),
+          marketing: path.resolve(rootDir, 'marketing/index.html'),
+          notice: path.resolve(rootDir, 'notice/index.html'),
+          inquiry: path.resolve(rootDir, 'inquiry/index.html'),
         },
         output: {
           manualChunks(id: string) {
