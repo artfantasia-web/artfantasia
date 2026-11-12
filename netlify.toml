@@ -30,7 +30,6 @@
   [headers.values]
     Content-Type = "text/plain; charset=utf-8"
     Cache-Control = "public, max-age=0, must-revalidate"
-    X-Robots-Tag = "all"
     Access-Control-Allow-Origin = "*"
 
 [[headers]]

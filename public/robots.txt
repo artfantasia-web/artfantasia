@@ -1,36 +1,27 @@
-# Naver Search Advisor & Yeti Crawlers (Placed at top for instant Yeti detection)
+# ==============================================================================
+# robots.txt for ArtFantasia (https://artfantasia.co.kr)
+# Optimized for Naver Search Advisor (Yeti), Googlebot, Bingbot, and AI Crawlers
+# ==============================================================================
+
+# 1. Universal Search Engine Crawler Permissions
+User-agent: *
+Allow: /
+
+# 2. Naver Search Advisor & Yeti Crawlers (Explicit Naver declaration)
 User-agent: Yeti
 Allow: /
-Allow: /about
-Allow: /video
-Allow: /audio
-Allow: /afanmusic
-Allow: /marketing
-Allow: /notice
-Allow: /inquiry
 
 User-agent: NaverBot
 Allow: /
 
-# All Search Engines & Crawlers
-User-agent: *
-Allow: /
-Allow: /about
-Allow: /video
-Allow: /audio
-Allow: /afanmusic
-Allow: /marketing
-Allow: /notice
-Allow: /inquiry
+# 3. Sitemaps and Feeds
+Sitemap: https://artfantasia.co.kr/sitemap.xml
 
-# Major Global Search Engines
+# 4. Major Global & Domestic Search Engines
 User-agent: Googlebot
 Allow: /
 
 User-agent: Googlebot-Image
-Allow: /
-
-User-agent: Googlebot-Video
 Allow: /
 
 User-agent: Google-InspectionTool
@@ -39,20 +30,13 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
-User-agent: Slurp
-Allow: /
-
-User-agent: DuckDuckBot
-Allow: /
-
-# Domestic Korean Search Engines
 User-agent: Daumoa
 Allow: /
 
 User-agent: ZumBot
 Allow: /
 
-# AI Search & Retrieval Engines (ChatGPT, Perplexity, Claude, Gemini, Apple)
+# 5. AI Search & Reasoning Engines
 User-agent: GPTBot
 Allow: /
 
@@ -80,20 +64,15 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
-# Social & Meta Crawler Agents
-User-agent: FacebookBot
-Allow: /
-
-User-agent: Meta-ExternalAgent
+# 6. Social Preview Crawlers (KakaoTalk, Twitter/X, Facebook, Slack)
+User-agent: kakaotalk-scrap
 Allow: /
 
 User-agent: Twitterbot
 Allow: /
 
+User-agent: FacebookBot
+Allow: /
+
 User-agent: LinkedInBot
 Allow: /
-
-User-agent: kakaotalk-scrap
-Allow: /
-
-Sitemap: https://artfantasia.co.kr/sitemap.xml
