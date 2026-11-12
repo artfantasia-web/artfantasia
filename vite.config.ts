@@ -10,10 +10,14 @@ export default defineConfig(() => {
       react(),
       tailwindcss(),
       {
-        name: 'llms-dev-middleware',
+        name: 'feed-and-llms-dev-middleware',
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
             const url = req.url?.split('?')[0];
+            if (url === '/rss' || url === '/feed') {
+              req.url = '/rss.xml';
+              return next();
+            }
             if (url === '/llms.txt' || url === '/.well-known/llms.txt') {
               const filePath = path.resolve('public/llms.txt');
               if (fs.existsSync(filePath)) {

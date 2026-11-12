@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>아트판타지아 | ArtFantasia - 홍보영상 · 광고영상 · AI영상제작 · 미디어파사드 · 음악라디오 · 종합마케팅</title>
+  <subtitle>크리에이티브 프로덕션, 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 여성기업 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 마케팅</subtitle>
+  <link href="https://artfantasia.co.kr/atom.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://artfantasia.co.kr/" rel="alternate" type="text/html"/>
+  <updated>2026-10-25T09:00:00+09:00</updated>
+  <id>https://artfantasia.co.kr/</id>
+  <author>
+    <name>아트판타지아</name>
+    <email>af@artfantasia.co.kr</email>
+  </author>
+
+  <entry>
+    <title>[정보] SBS M&C CREAM 2026년 11월호</title>
+    <link href="https://artfantasia.co.kr/notice#notice-1"/>
+    <id>https://artfantasia.co.kr/notice/notice-1</id>
+    <updated>2026-10-24T09:00:00+09:00</updated>
+    <summary>SBS : TV,라디오 패키지 광고상품, 편성표 광고단가 안내.</summary>
+  </entry>
+
+  <entry>
+    <title>[정보] 한국방송광고공사 광고1번지 2026년 11월호</title>
+    <link href="https://artfantasia.co.kr/notice#notice-2"/>
+    <id>https://artfantasia.co.kr/notice/notice-2</id>
+    <updated>2026-10-24T09:00:00+09:00</updated>
+    <summary>MBC, KBS, 외 라디오광고 편성표 및 광고단가 안내.</summary>
+  </entry>
+
+  <entry>
+    <title>[소식] 아트판타지아 홈페이지 리뉴얼 및 서버 증축</title>
+    <link href="https://artfantasia.co.kr/notice#notice-3"/>
+    <id>https://artfantasia.co.kr/notice/notice-3</id>
+    <updated>2026-10-24T09:00:00+09:00</updated>
+    <summary>AI시대에 맞는 현명한 대처와 발전되어가는 저희를 소개 드리고자 합니다.</summary>
+  </entry>
+
+  <entry>
+    <title>[영상] 우리에게 AI녀석은 멋진 도구_Change the Game 브랜드 필름</title>
+    <link href="https://artfantasia.co.kr/video#video-vid-380"/>
+    <id>https://artfantasia.co.kr/video/vid-380</id>
+    <updated>2025-07-01T09:00:00+09:00</updated>
+    <summary>영상과 음악 모두 생성형 AI 기술을 접목하여 100% 자체 제작된 아트판타지아의 혁신 브랜드 필름 Change the Game 공식 릴리즈.</summary>
+  </entry>
+</feed>

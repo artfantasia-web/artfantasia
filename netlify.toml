@@ -1,0 +1,302 @@
+# ==============================================================================
+# Netlify Configuration for ArtFantasia (아트판타지아)
+# Configured for Naver Yeti, Googlebot, Bingbot, and AI Search Engines (GPTBot, ClaudeBot, PerplexityBot)
+# ==============================================================================
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# ------------------------------------------------------------------------------
+# 1. Global & Search Crawler Headers
+# ------------------------------------------------------------------------------
+
+# Global Security & Crawler indexing permissions for all routes
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Access-Control-Allow-Origin = "*"
+
+# Search Engine Crawlers & Verification Files
+[[headers]]
+  for = "/robots.txt"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Content-Type = "application/xml; charset=utf-8"
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+
+# RSS 2.0 and Atom feeds for RSS readers, subscribers, and search engines
+[[headers]]
+  for = "/rss.xml"
+  [headers.values]
+    Content-Type = "application/rss+xml; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/feed.xml"
+  [headers.values]
+    Content-Type = "application/rss+xml; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/atom.xml"
+  [headers.values]
+    Content-Type = "application/atom+xml; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+
+# AI Engine Model Context Protocol & llms.txt endpoints
+[[headers]]
+  for = "/llms.txt"
+  [headers.values]
+    Content-Type = "text/markdown; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/.well-known/llms.txt"
+  [headers.values]
+    Content-Type = "text/markdown; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+
+# Naver Search Advisor Ownership Verification
+[[headers]]
+  for = "/naver*.html"
+  [headers.values]
+    Content-Type = "text/html; charset=utf-8"
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/naver7f415221c4b02aca4da64c77b119f235cf670775.html"
+  [headers.values]
+    Content-Type = "text/html; charset=utf-8"
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+
+# Pre-rendered HTML Sub-pages for Bots & Crawlers
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Robots-Tag = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+
+# Static Build Assets (JS, CSS, hashed fonts)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+# Social Open Graph Images (KakaoTalk, Naver, Twitter/X, Facebook previews)
+[[headers]]
+  for = "/og-*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/LOGO.png"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+    Access-Control-Allow-Origin = "*"
+
+# ------------------------------------------------------------------------------
+# 2. Redirects & Routing Rules
+# ------------------------------------------------------------------------------
+
+# Static files that must be served directly without SPA rewrite
+[[redirects]]
+  from = "/robots.txt"
+  to = "/robots.txt"
+  status = 200
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/sitemap.xml"
+  status = 200
+
+[[redirects]]
+  from = "/rss.xml"
+  to = "/rss.xml"
+  status = 200
+
+[[redirects]]
+  from = "/rss"
+  to = "/rss.xml"
+  status = 200
+
+[[redirects]]
+  from = "/feed.xml"
+  to = "/feed.xml"
+  status = 200
+
+[[redirects]]
+  from = "/feed"
+  to = "/feed.xml"
+  status = 200
+
+[[redirects]]
+  from = "/atom.xml"
+  to = "/atom.xml"
+  status = 200
+
+[[redirects]]
+  from = "/llms.txt"
+  to = "/llms.txt"
+  status = 200
+
+[[redirects]]
+  from = "/.well-known/llms.txt"
+  to = "/llms.txt"
+  status = 200
+
+# Naver Search Advisor verification
+[[redirects]]
+  from = "/naver7f415221c4b02aca4da64c77b119f235cf670775.html"
+  to = "/naver7f415221c4b02aca4da64c77b119f235cf670775.html"
+  status = 200
+
+[[redirects]]
+  from = "/naver*.html"
+  to = "/naver:splat.html"
+  status = 200
+
+# Independent sub-pages (Pre-rendered static HTML served with 200 for search bots)
+[[redirects]]
+  from = "/about"
+  to = "/about/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/about/"
+  to = "/about/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/video"
+  to = "/video/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/video/"
+  to = "/video/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/audio"
+  to = "/audio/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/audio/"
+  to = "/audio/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/afanmusic"
+  to = "/afanmusic/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/afanmusic/"
+  to = "/afanmusic/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/marketing"
+  to = "/marketing/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/marketing/"
+  to = "/marketing/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/notice"
+  to = "/notice/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/notice/"
+  to = "/notice/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/inquiry"
+  to = "/inquiry/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/inquiry/"
+  to = "/inquiry/index.html"
+  status = 200
+
+# Legacy notice & post URLs 301 permanent redirect to root
+[[redirects]]
+  from = "/notice/93"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/notice/97"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/notice/95"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/notice/354"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/notice/355"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/notice/118"
+  to = "/"
+  status = 301
+  force = true
+
+# Single Page Application (SPA) fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
