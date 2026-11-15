@@ -591,7 +591,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
             <div className="mt-6 rounded-lg bg-zinc-950 border border-zinc-800/80 overflow-hidden">
               <div className="flex items-center justify-between px-4 sm:px-6 py-3 bg-zinc-900/60 border-b border-zinc-800 text-[11px] font-mono text-zinc-400 tracking-wider">
                 <span>게시글 ({filteredNotices.length})</span>
-                <span className="hidden sm:inline">제목 · 대표 이미지</span>
+                <span className="hidden sm:inline">대표 이미지 · 제목</span>
               </div>
 
               <div className="divide-y divide-zinc-800/60">
@@ -633,9 +633,27 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                       <div
                         key={item.id}
                         onClick={() => handleOpenNotice(item)}
-                        className="group cursor-pointer p-4 sm:px-6 sm:py-5 flex items-center justify-between gap-4 sm:gap-6 hover:bg-zinc-900/40 transition-colors"
+                        className="group cursor-pointer p-4 sm:px-6 sm:py-5 flex items-center gap-4 sm:gap-6 hover:bg-zinc-900/40 transition-colors"
                       >
-                        {/* Left Side: Badges, Title, Excerpt & Meta */}
+                        {/* Left Side: Representative Image Thumbnail */}
+                        {thumbnail && (
+                          <div className="w-24 h-20 sm:w-40 sm:h-28 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shrink-0 relative shadow-md">
+                            <img
+                              src={thumbnail.src}
+                              alt={item.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                            {thumbnail.isVideoFallback && (
+                              <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/75 border border-red-500/40 text-red-400 text-[9.5px] font-bold flex items-center gap-1">
+                                <Youtube className="w-2.5 h-2.5" />
+                                <span>영상</span>
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Right Side: Badges, Title, Excerpt & Meta */}
                         <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex items-center gap-2 flex-wrap">
                             {item.pinned && (
@@ -719,24 +737,6 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                             </span>
                           </div>
                         </div>
-
-                        {/* Right Side: Representative Image Thumbnail */}
-                        {thumbnail && (
-                          <div className="w-24 h-20 sm:w-40 sm:h-28 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shrink-0 relative shadow-md">
-                            <img
-                              src={thumbnail.src}
-                              alt={item.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              loading="lazy"
-                            />
-                            {thumbnail.isVideoFallback && (
-                              <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/75 border border-red-500/40 text-red-400 text-[9.5px] font-bold flex items-center gap-1">
-                                <Youtube className="w-2.5 h-2.5" />
-                                <span>영상</span>
-                              </span>
-                            )}
-                          </div>
-                        )}
                       </div>
                     );
                   })
