@@ -8,43 +8,30 @@
 /robots.txt
   Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=0, must-revalidate
-  Access-Control-Allow-Origin: *
 
 /sitemap.xml
   Content-Type: application/xml; charset=utf-8
   Cache-Control: public, max-age=0, must-revalidate
-  X-Robots-Tag: all
-  Access-Control-Allow-Origin: *
 
 /rss.xml
   Content-Type: application/rss+xml; charset=utf-8
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
-  X-Robots-Tag: all
-  Access-Control-Allow-Origin: *
 
 /feed.xml
   Content-Type: application/rss+xml; charset=utf-8
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
-  X-Robots-Tag: all
-  Access-Control-Allow-Origin: *
 
 /atom.xml
   Content-Type: application/atom+xml; charset=utf-8
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
-  X-Robots-Tag: all
-  Access-Control-Allow-Origin: *
 
 /llms.txt
   Content-Type: text/markdown; charset=utf-8
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
-  X-Robots-Tag: all
-  Access-Control-Allow-Origin: *
 
 /naver*.html
   Content-Type: text/html; charset=utf-8
   Cache-Control: public, max-age=0, must-revalidate
-  Access-Control-Allow-Origin: *
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
-  Access-Control-Allow-Origin: *

@@ -18,30 +18,6 @@ const distPath = path.join(__dirname, 'dist');
 const publicUploads = path.join(__dirname, 'public', 'uploads');
 const distUploads = path.join(distPath, 'uploads');
 
-// Serve uploaded assets statically
-app.use('/uploads', express.static(publicUploads));
-app.use('/uploads', express.static(distUploads));
-
-app.use(
-  express.static(distPath, {
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('rss.xml')) {
-        res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
-        res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
-      } else if (filePath.endsWith('sitemap.xml')) {
-        res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-      } else if (filePath.endsWith('index.html') || filePath.endsWith('site.webmanifest')) {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      } else if (filePath.includes(path.sep + 'assets' + path.sep)) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      } else {
-        res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
-      }
-    },
-  })
-);
-
 // Health check endpoint for Cloud Run
 app.get('/healthz', (_req, res) => {
   res.status(200).send('OK');
@@ -52,10 +28,29 @@ app.get('/robots.txt', (_req, res) => {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
   res.setHeader('X-Robots-Tag', 'all');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   const candidate = path.join(distPath, 'robots.txt');
   const fallback = path.join(__dirname, 'public', 'robots.txt');
   const target = fs.existsSync(candidate) ? candidate : fallback;
-  res.sendFile(target);
+  if (fs.existsSync(target)) {
+    return res.sendFile(target);
+  }
+  res.status(200).send('User-agent: *\nAllow: /\nSitemap: https://artfantasia.co.kr/sitemap.xml\n');
+});
+
+// Explicit sitemap.xml endpoint
+app.get('/sitemap.xml', (_req, res) => {
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+  res.setHeader('X-Robots-Tag', 'all');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const candidate = path.join(distPath, 'sitemap.xml');
+  const fallback = path.join(__dirname, 'public', 'sitemap.xml');
+  const target = fs.existsSync(candidate) ? candidate : fallback;
+  if (fs.existsSync(target)) {
+    return res.sendFile(target);
+  }
+  res.status(404).send('Sitemap not found');
 });
 
 // Explicit Naver verification file endpoint (handles naver*.html directly)
@@ -76,46 +71,71 @@ app.get(['/llms.txt', '/.well-known/llms.txt'], (_req, res) => {
   res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
   res.setHeader('X-Robots-Tag', 'all');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   const candidate = path.join(distPath, 'llms.txt');
   const fallback = path.join(__dirname, 'public', 'llms.txt');
   const target = fs.existsSync(candidate) ? candidate : fallback;
-  res.sendFile(target);
-});
-
-// Explicit sitemap.xml endpoint
-app.get('/sitemap.xml', (_req, res) => {
-  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
-  res.setHeader('X-Robots-Tag', 'all');
-  const candidate = path.join(distPath, 'sitemap.xml');
-  const fallback = path.join(__dirname, 'public', 'sitemap.xml');
-  const target = fs.existsSync(candidate) ? candidate : fallback;
-  res.sendFile(target);
-});
-
-// Legacy notice URLs 301 redirect to homepage (matches public/_redirects)
-const legacyNotices = ['/notice/93', '/notice/97', '/notice/95', '/notice/354', '/notice/355', '/notice/118'];
-app.get(legacyNotices, (_req, res) => {
-  res.redirect(301, '/');
+  if (fs.existsSync(target)) {
+    return res.sendFile(target);
+  }
+  res.status(404).send('Not found');
 });
 
 // Explicit RSS and Feed endpoints (serves valid XML feed directly without SPA fallback)
 app.get(['/rss', '/rss.xml', '/feed', '/feed.xml'], (_req, res) => {
   res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+  res.setHeader('X-Robots-Tag', 'all');
   const candidate = path.join(distPath, 'rss.xml');
   const fallback = path.join(__dirname, 'public', 'rss.xml');
   const target = fs.existsSync(candidate) ? candidate : fallback;
-  res.sendFile(target);
+  if (fs.existsSync(target)) {
+    return res.sendFile(target);
+  }
+  res.status(404).send('Feed not found');
 });
 
 app.get('/atom.xml', (_req, res) => {
   res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+  res.setHeader('X-Robots-Tag', 'all');
   const candidate = path.join(distPath, 'atom.xml');
   const fallback = path.join(__dirname, 'public', 'atom.xml');
   const target = fs.existsSync(candidate) ? candidate : fallback;
-  res.sendFile(target);
+  if (fs.existsSync(target)) {
+    return res.sendFile(target);
+  }
+  res.status(404).send('Atom feed not found');
+});
+
+// Serve uploaded assets statically
+app.use('/uploads', express.static(publicUploads));
+app.use('/uploads', express.static(distUploads));
+
+app.use(
+  express.static(distPath, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('rss.xml')) {
+        res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+      } else if (filePath.endsWith('sitemap.xml')) {
+        res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+      } else if (filePath.endsWith('index.html') || filePath.endsWith('site.webmanifest')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      } else if (filePath.includes(path.sep + 'assets' + path.sep)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+      }
+    },
+  })
+);
+
+// Legacy notice URLs 301 redirect to homepage (matches public/_redirects)
+const legacyNotices = ['/notice/93', '/notice/97', '/notice/95', '/notice/354', '/notice/355', '/notice/118'];
+app.get(legacyNotices, (_req, res) => {
+  res.redirect(301, '/');
 });
 
 

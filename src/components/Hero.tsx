@@ -238,7 +238,7 @@ export const Hero: React.FC<HeroProps> = ({
   };
 
   // 롤링 티커 로고 박스 렌더링 (호버 및 클릭 시 설명칸에 즉시 반영)
-  const renderLogoBox = (logo: PartnerLogo, key: string) => {
+  const renderLogoBox = (logo: PartnerLogo, key: string, isDuplicate = false) => {
     const isSelected = activePartner.id === logo.id;
     return (
       <button
@@ -249,8 +249,10 @@ export const Hero: React.FC<HeroProps> = ({
         }}
         onMouseEnter={() => setHoveredPartnerId(logo.id)}
         onMouseLeave={() => setHoveredPartnerId(null)}
-        title={`${logo.name} · ${logo.category}`}
-        aria-label={`${logo.name} (${logo.category})`}
+        title={isDuplicate ? undefined : `${logo.name} · ${logo.category}`}
+        aria-label={isDuplicate ? undefined : `${logo.name} (${logo.category})`}
+        aria-hidden={isDuplicate ? true : undefined}
+        tabIndex={isDuplicate ? -1 : undefined}
         className={`h-[35px] sm:h-[39px] min-w-[100px] sm:min-w-[114px] max-w-[145px] rounded-lg bg-white shrink-0 select-none transition-all duration-200 cursor-pointer overflow-hidden flex items-center justify-center px-2.5 py-1 group/box relative ${
           isSelected
             ? 'border-2 border-amber-400 ring-2 ring-amber-400/40 shadow-md shadow-amber-500/20 scale-105 z-20'
@@ -264,7 +266,7 @@ export const Hero: React.FC<HeroProps> = ({
       >
         <img
           src={`/assets/logos/${logo.filename}`}
-          alt={logo.name}
+          alt={isDuplicate ? '' : logo.name}
           loading="eager"
           className="max-h-[20px] sm:max-h-[22px] w-auto max-w-[78px] sm:max-w-[90px] object-contain transition-transform duration-300 group-hover/box:scale-105 filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.04)]"
         />
@@ -810,48 +812,64 @@ export const Hero: React.FC<HeroProps> = ({
             {/* Row 1: Left to Right Continuous Moving Track (Logos 1 ~ 13) */}
             <div className="overflow-hidden w-full relative z-10">
               <div className="animate-marquee-ltr flex gap-2.5 sm:gap-3">
-                {TICKER_ROW_1.map((logo, idx) =>
-                  renderLogoBox(logo, `r1-a-${idx}-${logo.id}`)
-                )}
-                {TICKER_ROW_1.map((logo, idx) =>
-                  renderLogoBox(logo, `r1-b-${idx}-${logo.id}`)
-                )}
+                <div className="flex gap-2.5 sm:gap-3 shrink-0">
+                  {TICKER_ROW_1.map((logo, idx) =>
+                    renderLogoBox(logo, `r1-a-${idx}-${logo.id}`)
+                  )}
+                </div>
+                <div className="flex gap-2.5 sm:gap-3 shrink-0" aria-hidden="true">
+                  {TICKER_ROW_1.map((logo, idx) =>
+                    renderLogoBox(logo, `r1-b-${idx}-${logo.id}`, true)
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Row 2: Left to Right Continuous Moving Track (Logos 14 ~ 26) */}
             <div className="overflow-hidden w-full relative z-10">
               <div className="animate-marquee-ltr-slow flex gap-2.5 sm:gap-3">
-                {TICKER_ROW_2.map((logo, idx) =>
-                  renderLogoBox(logo, `r2-a-${idx}-${logo.id}`)
-                )}
-                {TICKER_ROW_2.map((logo, idx) =>
-                  renderLogoBox(logo, `r2-b-${idx}-${logo.id}`)
-                )}
+                <div className="flex gap-2.5 sm:gap-3 shrink-0">
+                  {TICKER_ROW_2.map((logo, idx) =>
+                    renderLogoBox(logo, `r2-a-${idx}-${logo.id}`)
+                  )}
+                </div>
+                <div className="flex gap-2.5 sm:gap-3 shrink-0" aria-hidden="true">
+                  {TICKER_ROW_2.map((logo, idx) =>
+                    renderLogoBox(logo, `r2-b-${idx}-${logo.id}`, true)
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Row 3: Left to Right Continuous Moving Track (Logos 27 ~ 36) */}
             <div className="overflow-hidden w-full relative z-10">
               <div className="animate-marquee-ltr-slower flex gap-2.5 sm:gap-3">
-                {TICKER_ROW_3.map((logo, idx) =>
-                  renderLogoBox(logo, `r3-a-${idx}-${logo.id}`)
-                )}
-                {TICKER_ROW_3.map((logo, idx) =>
-                  renderLogoBox(logo, `r3-b-${idx}-${logo.id}`)
-                )}
+                <div className="flex gap-2.5 sm:gap-3 shrink-0">
+                  {TICKER_ROW_3.map((logo, idx) =>
+                    renderLogoBox(logo, `r3-a-${idx}-${logo.id}`)
+                  )}
+                </div>
+                <div className="flex gap-2.5 sm:gap-3 shrink-0" aria-hidden="true">
+                  {TICKER_ROW_3.map((logo, idx) =>
+                    renderLogoBox(logo, `r3-b-${idx}-${logo.id}`, true)
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Row 4: Left to Right Continuous Moving Track (Logos 37 ~ 49) */}
             <div className="overflow-hidden w-full relative z-10">
               <div className="animate-marquee-ltr-offset flex gap-2.5 sm:gap-3">
-                {TICKER_ROW_4.map((logo, idx) =>
-                  renderLogoBox(logo, `r4-a-${idx}-${logo.id}`)
-                )}
-                {TICKER_ROW_4.map((logo, idx) =>
-                  renderLogoBox(logo, `r4-b-${idx}-${logo.id}`)
-                )}
+                <div className="flex gap-2.5 sm:gap-3 shrink-0">
+                  {TICKER_ROW_4.map((logo, idx) =>
+                    renderLogoBox(logo, `r4-a-${idx}-${logo.id}`)
+                  )}
+                </div>
+                <div className="flex gap-2.5 sm:gap-3 shrink-0" aria-hidden="true">
+                  {TICKER_ROW_4.map((logo, idx) =>
+                    renderLogoBox(logo, `r4-b-${idx}-${logo.id}`, true)
+                  )}
+                </div>
               </div>
             </div>
 

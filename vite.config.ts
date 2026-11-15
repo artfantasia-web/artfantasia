@@ -19,6 +19,26 @@ export default defineConfig(() => {
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
             const url = req.url?.split('?')[0];
+            if (url === '/robots.txt') {
+              const filePath = path.resolve('public/robots.txt');
+              if (fs.existsSync(filePath)) {
+                res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+                res.setHeader('X-Robots-Tag', 'all');
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                res.end(fs.readFileSync(filePath));
+                return;
+              }
+            }
+            if (url === '/sitemap.xml') {
+              const filePath = path.resolve('public/sitemap.xml');
+              if (fs.existsSync(filePath)) {
+                res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+                res.setHeader('X-Robots-Tag', 'all');
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                res.end(fs.readFileSync(filePath));
+                return;
+              }
+            }
             if (url === '/rss' || url === '/feed') {
               req.url = '/rss.xml';
               return next();
