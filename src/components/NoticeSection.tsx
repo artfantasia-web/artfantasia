@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNotices } from '../context/NoticeContext';
 import { NoticeItem } from '../types';
-import { Pin, Search, Eye, Calendar, Share2, Check, ArrowLeft, Youtube, Image as ImageIcon, Plus, Edit2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Pin, Search, Calendar, Share2, Check, ArrowLeft, Youtube, Plus, Edit2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
 import { formatNoticeContent, extractEmbeddedYoutubeIds, extractYoutubeVideoId } from '../utils/formatNotice';
 import { applyNoticeDetailSeo, formatNoticeSlug } from '../utils/seo';
@@ -484,10 +484,6 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                       <Calendar className="w-3.5 h-3.5 text-zinc-500" />
                       {activeNotice.date}
                     </time>
-                    <span className="flex items-center gap-1.5">
-                      <Eye className="w-3.5 h-3.5 text-zinc-500" />
-                      조회 {activeNotice.views}
-                    </span>
                   </div>
                 </div>
 
@@ -588,30 +584,25 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
           <>
 
             {/* Notice List Card Container */}
-            <div className="mt-6 rounded-lg bg-zinc-950 border border-zinc-800/80 overflow-hidden">
-              <div className="flex items-center justify-between px-4 sm:px-6 py-3 bg-zinc-900/60 border-b border-zinc-800 text-[11px] font-mono text-zinc-400 tracking-wider">
-                <span>게시글 ({filteredNotices.length})</span>
-                <span className="hidden sm:inline">대표 이미지 · 제목</span>
-              </div>
-
-              <div className="divide-y divide-zinc-800/60">
+            <div className="mt-6 rounded-lg bg-[#f1f1f4] border border-zinc-300/80 overflow-hidden shadow-sm">
+              <div className="divide-y divide-zinc-300/80">
                 {isLoading && notices.length === 0 ? (
-                  <div className="p-12 flex flex-col items-center justify-center gap-3 text-zinc-400 text-xs font-mono">
-                    <Loader2 className="w-5 h-5 text-amber-400 animate-spin" />
+                  <div className="p-12 flex flex-col items-center justify-center gap-3 text-zinc-500 text-xs font-mono">
+                    <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
                     <span>공지사항을 불러오는 중입니다...</span>
                   </div>
                 ) : error && notices.length === 0 ? (
-                  <div className="p-12 flex flex-col items-center justify-center gap-3 text-zinc-400 text-xs">
-                    <div className="flex items-center gap-2 text-rose-300">
-                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <div className="p-12 flex flex-col items-center justify-center gap-3 text-zinc-600 text-xs">
+                    <div className="flex items-center gap-2 text-rose-600">
+                      <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
                       <span>{error}</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => refreshNotices()}
-                      className="px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                      className="px-3.5 py-1.5 rounded-lg bg-zinc-200 hover:bg-zinc-300 border border-zinc-300 text-zinc-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
                     >
-                      <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+                      <RefreshCw className="w-3.5 h-3.5 text-amber-600" />
                       <span>다시 불러오기</span>
                     </button>
                   </div>
@@ -623,21 +614,16 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                   filteredNotices.map((item) => {
                     const thumbnail = extractNoticeThumbnail(item);
                     const excerpt = extractNoticeExcerpt(item.content || []);
-                    const embeddedIds = extractEmbeddedYoutubeIds(item.content || []);
-                    const totalVideos =
-                      embeddedIds.length +
-                      (item.youtubeId && !embeddedIds.includes(item.youtubeId) ? 1 : 0);
-                    const totalImages = thumbnail ? thumbnail.imageCount : 0;
 
                     return (
                       <div
                         key={item.id}
                         onClick={() => handleOpenNotice(item)}
-                        className="group cursor-pointer p-4 sm:px-6 sm:py-5 flex items-center gap-4 sm:gap-6 hover:bg-zinc-900/40 transition-colors"
+                        className="group cursor-pointer px-4 py-3 sm:px-6 sm:py-3.5 flex items-center gap-4 sm:gap-6 bg-[#f1f1f4] hover:bg-[#e7e7ec] transition-colors"
                       >
                         {/* Left Side: Representative Image Thumbnail */}
                         {thumbnail && (
-                          <div className="w-24 h-20 sm:w-40 sm:h-28 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shrink-0 relative shadow-md">
+                          <div className="w-[106px] h-[80px] sm:w-[176px] sm:h-[110px] rounded-xl overflow-hidden border border-zinc-300/80 bg-zinc-200 shrink-0 relative shadow-sm">
                             <img
                               src={thumbnail.src}
                               alt={item.title}
@@ -654,10 +640,10 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                         )}
 
                         {/* Right Side: Badges, Title, Excerpt & Meta */}
-                        <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex-1 min-w-0 space-y-1.5">
                           <div className="flex items-center gap-2 flex-wrap">
                             {item.pinned && (
-                              <span className="px-1.5 py-0.5 rounded bg-amber-400/15 text-amber-400 border border-amber-400/30 text-[10px] font-bold flex items-center gap-1 shrink-0">
+                              <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold flex items-center gap-1 shrink-0">
                                 <Pin className="w-2.5 h-2.5 rotate-45" />
                                 <span>고정</span>
                               </span>
@@ -665,24 +651,12 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                             <span
                               className={`px-2 py-0.5 rounded text-[10.5px] font-bold shrink-0 border ${
                                 item.category === '정보'
-                                  ? 'bg-sky-400/15 text-sky-300 border-sky-400/30'
-                                  : 'bg-amber-400/15 text-amber-300 border-amber-400/30'
+                                  ? 'bg-sky-100 text-sky-800 border-sky-200'
+                                  : 'bg-amber-100 text-amber-800 border-amber-200'
                               }`}
                             >
                               {item.category === '정보' ? '정보' : '소식'}
                             </span>
-                            {totalVideos > 0 && (
-                              <span className="text-[10px] text-red-400 bg-red-400/10 border border-red-400/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
-                                <Youtube className="w-2.5 h-2.5" />
-                                <span>{totalVideos > 1 ? `영상 ${totalVideos}` : '영상'}</span>
-                              </span>
-                            )}
-                            {totalImages > 0 && (
-                              <span className="text-[10px] text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
-                                <ImageIcon className="w-2.5 h-2.5" />
-                                <span>{totalImages}</span>
-                              </span>
-                            )}
                             {isAdmin && (
                               <button
                                 type="button"
@@ -690,7 +664,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                                   e.stopPropagation();
                                   openAdminModal(item);
                                 }}
-                                className="p-1 px-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-300 text-[10px] font-bold border border-zinc-700 flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                                className="p-1 px-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-amber-300 text-[10px] font-bold border border-zinc-800 flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
                                 title="이 글 수정 (관리자)"
                               >
                                 <Edit2 className="w-2.5 h-2.5 text-amber-400" />
@@ -712,7 +686,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                                   e.stopPropagation();
                                 }
                               }}
-                              className="block text-base sm:text-lg font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-2 leading-snug"
+                              className="block text-base sm:text-lg font-bold text-zinc-900 group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug"
                             >
                               {item.title}
                             </a>
@@ -720,20 +694,16 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
 
                           {/* Short Excerpt */}
                           {excerpt && (
-                            <p className="text-xs sm:text-sm text-zinc-400 line-clamp-1 sm:line-clamp-2 leading-relaxed">
+                            <p className="text-xs sm:text-sm text-zinc-600 line-clamp-1 leading-snug">
                               {excerpt}
                             </p>
                           )}
 
-                          {/* Date & Views */}
-                          <div className="flex items-center gap-3.5 text-[11px] font-mono text-zinc-500 pt-0.5">
+                          {/* Date */}
+                          <div className="flex items-center gap-3.5 text-[11px] font-mono text-zinc-500">
                             <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3 text-zinc-600" />
+                              <Calendar className="w-3 h-3 text-zinc-400" />
                               <span>{item.date}</span>
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Eye className="w-3 h-3 text-zinc-600" />
-                              <span>조회 {item.views}</span>
                             </span>
                           </div>
                         </div>

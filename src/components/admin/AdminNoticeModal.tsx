@@ -1828,10 +1828,6 @@ export const AdminNoticeModal: React.FC = () => {
                             <Calendar className="w-3 h-3 text-zinc-600" />
                             {item.date}
                           </span>
-                          <span className="text-xs text-zinc-500 font-mono flex items-center gap-1">
-                            <Eye className="w-3 h-3 text-zinc-600" />
-                            조회 {item.views}
-                          </span>
                         </div>
 
                         <h5 className="text-sm font-semibold text-white truncate">
