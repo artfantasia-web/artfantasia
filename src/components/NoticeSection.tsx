@@ -9,8 +9,20 @@ export const NoticeSection: React.FC = () => {
   const { notices, isAdmin, openAdminModal, deleteNotice, incrementViews } = useNotices();
   const [selectedCategory, setSelectedCategory] = useState<'all' | '소식' | '정보'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeNotice, setActiveNotice] = useState<NoticeItem | null>(null);
+  const [activeNoticeId, setActiveNoticeId] = useState<string | null>(() => {
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    if (hash && hash.startsWith('#notice-')) {
+      return hash.replace(/^#notice-/, '').trim() || null;
+    }
+    return null;
+  });
   const [copied, setCopied] = useState(false);
+  const lastCountedIdRef = React.useRef<string | null>(null);
+
+  const activeNotice = React.useMemo(
+    () => (activeNoticeId ? notices.find((n) => n.id === activeNoticeId) || null : null),
+    [notices, activeNoticeId]
+  );
 
   const filteredNotices = notices.filter((item) => {
     const itemCat = item.category === '정보' ? '정보' : '소식';
@@ -24,37 +36,57 @@ export const NoticeSection: React.FC = () => {
     return matchesCategory && matchesSearch;
   });
 
-  // Deep-link direct notice opening via hash #notice-${item.id}
+  // Sync activeNoticeId with browser hash without triggering view count loops
   React.useEffect(() => {
     const handleHashCheck = () => {
       const hash = window.location.hash;
       if (hash && hash.startsWith('#notice-')) {
         const targetId = hash.replace(/^#notice-/, '').trim();
-        const found = notices.find((n) => n.id === targetId);
-        if (found) {
-          incrementViews(found.id);
-          setActiveNotice({ ...found, views: (found.views || 0) + 1 });
-        }
+        setActiveNoticeId(targetId || null);
       } else {
-        // If hash is no longer #notice-..., reset active notice
-        setActiveNotice(null);
+        setActiveNoticeId(null);
       }
     };
 
     handleHashCheck();
     window.addEventListener('hashchange', handleHashCheck);
     return () => window.removeEventListener('hashchange', handleHashCheck);
-  }, [notices]);
+  }, []);
+
+  // Increment view count safely at most once per browser session when viewing a notice (skip when admin is managing)
+  React.useEffect(() => {
+    if (!activeNoticeId) {
+      lastCountedIdRef.current = null;
+      return;
+    }
+
+    if (isAdmin) return;
+    if (lastCountedIdRef.current === activeNoticeId) return;
+
+    const exists = notices.some((n) => n.id === activeNoticeId);
+    if (!exists) return;
+
+    lastCountedIdRef.current = activeNoticeId;
+
+    try {
+      const viewedKey = `artfantasia_viewed_${activeNoticeId}`;
+      if (!sessionStorage.getItem(viewedKey)) {
+        sessionStorage.setItem(viewedKey, '1');
+        incrementViews(activeNoticeId);
+      }
+    } catch {
+      incrementViews(activeNoticeId);
+    }
+  }, [activeNoticeId, notices, isAdmin, incrementViews]);
 
   const handleOpenNotice = (item: NoticeItem) => {
-    incrementViews(item.id);
-    setActiveNotice({ ...item, views: (item.views || 0) + 1 });
+    setActiveNoticeId(item.id);
     window.location.hash = `notice-${item.id}`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCloseNotice = () => {
-    setActiveNotice(null);
+    setActiveNoticeId(null);
     if (window.location.hash && window.location.hash.startsWith('#notice-')) {
       history.pushState(null, '', '#notice');
     }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { NoticeItem } from '../types';
 import { NOTICES } from '../data/content';
 
@@ -94,7 +94,7 @@ export const NoticeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const newNotice: NoticeItem = {
       ...item,
       id: `notice-custom-${Date.now()}`,
-      views: 1,
+      views: 0,
     };
 
     setNotices((prev) => [newNotice, ...prev]);
@@ -111,13 +111,13 @@ export const NoticeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setNotices((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const incrementViews = (id: string) => {
+  const incrementViews = useCallback((id: string) => {
     setNotices((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, views: (item.views || 0) + 1 } : item
       )
     );
-  };
+  }, []);
 
   return (
     <NoticeContext.Provider
