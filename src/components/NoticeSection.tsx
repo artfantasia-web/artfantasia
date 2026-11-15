@@ -268,7 +268,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
   };
 
   return (
-    <section id="notice" className="pt-6 sm:pt-8 pb-16 sm:pb-24 border-b border-zinc-800 bg-[#09090b]">
+    <section id="notice" className="pt-6 sm:pt-8 pb-16 sm:pb-24 bg-[#09090b]">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         {/* Section Header (uses h2 when viewing a detail article so the article's h1 is primary) */}
         <StandardSectionHeader
