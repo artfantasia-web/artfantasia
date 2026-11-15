@@ -339,9 +339,18 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
 
   const formatShowcaseTime = (secs: number) => {
     if (isNaN(secs) || secs < 0) return '00:00';
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = Math.floor(secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  const formatShowcaseTimecode = (secs: number) => {
+    if (isNaN(secs) || secs < 0) return '00:00:00:00';
     const m = Math.floor(secs / 60);
     const s = Math.floor(secs % 60);
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
+    const f = Math.floor((secs % 1) * 30);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `00:${pad(m)}:${pad(s)}:${pad(f)}`;
   };
 
   const handleShowcaseTimeUpdate = () => {
@@ -493,7 +502,7 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
               <div className="flex items-center gap-4">
                 <span className="hidden sm:inline text-zinc-400 font-medium tracking-wider notranslate" translate="no">CODEC: H.264 / PRORES</span>
                 <span className="text-zinc-100 font-bold tabular-nums drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                  00:{formatShowcaseTime(showcaseTime)} <span className="text-zinc-500 font-normal">/ 00:02:34:00</span>
+                  {formatShowcaseTimecode(showcaseTime)} <span className="text-zinc-500 font-normal">/ 00:02:34:00</span>
                 </span>
               </div>
             </div>
@@ -637,7 +646,7 @@ export const AudioPortfolio: React.FC<AudioPortfolioProps> = ({ onOpenInquiry })
                     />
                   </div>
                   <span className="text-xs font-mono text-zinc-200 font-semibold tabular-nums drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                    00:{formatShowcaseTime(showcaseTime)} <span className="text-zinc-500 font-normal">/ 00:02:34:00</span>
+                    {formatShowcaseTime(showcaseTime)} / {formatShowcaseTime(showcaseDuration)}
                   </span>
                 </div>
 

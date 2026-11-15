@@ -114,9 +114,19 @@ export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquir
   };
 
   const formatTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return '00:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatTimecode = (seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return '00:00:00:00';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    const f = Math.floor((seconds % 1) * 30);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `00:${pad(m)}:${pad(s)}:${pad(f)}`;
   };
 
   const pillars = [
@@ -214,7 +224,7 @@ export const MarketingSection: React.FC<MarketingSectionProps> = ({ onOpenInquir
               <div className="flex items-center gap-4">
                 <span className="hidden sm:inline text-zinc-400 font-medium tracking-wider notranslate" translate="no">CODEC: H.264 / PRORES</span>
                 <span className="text-zinc-100 font-bold tabular-nums drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                  00:{formatTime(showcaseTime)} <span className="text-zinc-500 font-normal">/ 00:00:30:00</span>
+                  {formatTimecode(showcaseTime)} <span className="text-zinc-500 font-normal">/ 00:00:30:00</span>
                 </span>
               </div>
             </div>
