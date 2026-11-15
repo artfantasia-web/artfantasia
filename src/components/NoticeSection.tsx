@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNotices } from '../context/NoticeContext';
 import { NoticeItem } from '../types';
-import { Pin, Search, Eye, Calendar, Share2, Check, ArrowLeft, Youtube, Image as ImageIcon, Plus, Edit2, Lock } from 'lucide-react';
+import { Pin, Search, Eye, Calendar, Share2, Check, ArrowLeft, Youtube, Image as ImageIcon, Plus, Edit2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
 import { formatNoticeContent } from '../utils/formatNotice';
 
 export const NoticeSection: React.FC = () => {
-  const { notices, isAdmin, openAdminModal, deleteNotice, incrementViews } = useNotices();
+  const { notices, isLoading, error, refreshNotices, isAdmin, openAdminModal, incrementViews } = useNotices();
   const [selectedCategory, setSelectedCategory] = useState<'all' | '소식' | '정보'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeNoticeId, setActiveNoticeId] = useState<string | null>(() => {
@@ -383,7 +383,27 @@ export const NoticeSection: React.FC = () => {
               </div>
 
               <div className="divide-y divide-zinc-800/60">
-                {filteredNotices.length === 0 ? (
+                {isLoading && notices.length === 0 ? (
+                  <div className="p-12 flex flex-col items-center justify-center gap-3 text-zinc-400 text-xs font-mono">
+                    <Loader2 className="w-5 h-5 text-amber-400 animate-spin" />
+                    <span>공지사항을 불러오는 중입니다...</span>
+                  </div>
+                ) : error && notices.length === 0 ? (
+                  <div className="p-12 flex flex-col items-center justify-center gap-3 text-zinc-400 text-xs">
+                    <div className="flex items-center gap-2 text-rose-300">
+                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => refreshNotices()}
+                      className="px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+                      <span>다시 불러오기</span>
+                    </button>
+                  </div>
+                ) : filteredNotices.length === 0 ? (
                   <div className="p-12 text-center text-zinc-500 text-xs font-mono">
                     선택하신 조건에 일치하는 게시물이 없습니다.
                   </div>

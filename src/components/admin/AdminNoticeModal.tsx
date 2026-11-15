@@ -21,12 +21,15 @@ import {
   AlertCircle,
   ArrowLeft,
   Youtube,
-  Minus
+  Minus,
+  Loader2
 } from 'lucide-react';
 
 export const AdminNoticeModal: React.FC = () => {
   const {
     notices,
+    isLoading,
+    error: noticesError,
     isAdmin,
     isAdminModalOpen,
     editingNotice,
@@ -57,8 +60,11 @@ export const AdminNoticeModal: React.FC = () => {
   const [formYoutubeId, setFormYoutubeId] = useState('');
   const [formContent, setFormContent] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   // Link dialog prompt state
   const [showLinkDialog, setShowLinkDialog] = useState(false);
@@ -171,13 +177,16 @@ export const AdminNoticeModal: React.FC = () => {
   };
 
   // Save Notice Submit (Create or Update)
-  const handleSaveNotice = (e: React.FormEvent) => {
+  const handleSaveNotice = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!formTitle.trim()) {
       setFormError('제목을 입력해주세요.');
       return;
     }
     setFormError('');
+    setSaveSuccess(false);
+    setIsSubmitting(true);
 
     // Split content by double newlines or single newlines into paragraphs
     const paragraphs = formContent
@@ -195,23 +204,47 @@ export const AdminNoticeModal: React.FC = () => {
       author: '아트판타지아 관리자',
     };
 
-    if (editingNotice) {
-      updateNotice(editingNotice.id, noticePayload);
-    } else {
-      addNotice(noticePayload);
-    }
+    try {
+      const result = editingNotice
+        ? await updateNotice(editingNotice.id, noticePayload)
+        : await addNotice(noticePayload);
 
-    setSaveSuccess(true);
-    setTimeout(() => {
-      setSaveSuccess(false);
-      setEditingNotice(null);
-      resetForm();
-      setViewMode('list');
-    }, 600);
+      if (!result.success) {
+        setFormError(result.error || '게시글 저장 중 오류가 발생했습니다.');
+        return;
+      }
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setEditingNotice(null);
+        resetForm();
+        setViewMode('list');
+      }, 600);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDeleteNotice = (id: string, title: string) => {
+    setDeleteError('');
     setDeleteTarget({ id, title });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget || isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError('');
+    try {
+      const result = await deleteNotice(deleteTarget.id);
+      if (!result.success) {
+        setDeleteError(result.error || '게시글 삭제에 실패했습니다.');
+        return;
+      }
+      setDeleteTarget(null);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -373,9 +406,21 @@ export const AdminNoticeModal: React.FC = () => {
                 </button>
               </div>
 
+              {noticesError && (
+                <div className="p-3 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{noticesError}</span>
+                </div>
+              )}
+
               {/* Table / List */}
               <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 divide-y divide-zinc-800/80 overflow-hidden">
-                {notices.length === 0 ? (
+                {isLoading && notices.length === 0 ? (
+                  <div className="p-8 flex items-center justify-center gap-2 text-zinc-400 text-xs">
+                    <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
+                    <span>게시글 목록을 불러오는 중입니다...</span>
+                  </div>
+                ) : notices.length === 0 ? (
                   <div className="p-8 text-center text-zinc-500 text-xs">
                     등록된 게시글이 없습니다. [새 글 쓰기]를 눌러 첫 글을 등록해보세요.
                   </div>
@@ -721,10 +766,21 @@ export const AdminNoticeModal: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 text-xs sm:text-sm font-extrabold transition-all shadow-md shadow-amber-400/20 active:scale-[0.99] cursor-pointer flex items-center gap-1.5"
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-60 disabled:cursor-not-allowed text-zinc-950 text-xs sm:text-sm font-extrabold transition-all shadow-md shadow-amber-400/20 active:scale-[0.99] cursor-pointer flex items-center gap-1.5"
                   >
-                    <Check className="w-4 h-4" />
-                    <span>{editingNotice ? '수정 완료' : '게시글 등록하기'}</span>
+                    {isSubmitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
+                    <span>
+                      {isSubmitting
+                        ? '저장 중...'
+                        : editingNotice
+                          ? '수정 완료'
+                          : '게시글 등록하기'}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -815,24 +871,33 @@ export const AdminNoticeModal: React.FC = () => {
               <p className="text-[11px] text-rose-400 mt-1 font-medium">
                 삭제된 글은 복구할 수 없습니다.
               </p>
+              {deleteError && (
+                <div className="p-2.5 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2 text-left">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{deleteError}</span>
+                </div>
+              )}
             </div>
             <div className="flex gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => setDeleteTarget(null)}
-                className="flex-1 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-300 transition-colors cursor-pointer"
+                disabled={isDeleting}
+                onClick={() => {
+                  setDeleteTarget(null);
+                  setDeleteError('');
+                }}
+                className="flex-1 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 disabled:opacity-60 text-xs font-semibold text-zinc-300 transition-colors cursor-pointer"
               >
                 취소
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  deleteNotice(deleteTarget.id);
-                  setDeleteTarget(null);
-                }}
-                className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition-colors cursor-pointer shadow-md"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-60 disabled:cursor-not-allowed text-xs font-bold text-white transition-colors cursor-pointer shadow-md flex items-center justify-center gap-1.5"
               >
-                삭제하기
+                {isDeleting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{isDeleting ? '삭제 중...' : '삭제하기'}</span>
               </button>
             </div>
           </div>
