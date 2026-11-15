@@ -55,10 +55,270 @@ import {
   Highlighter,
   Palette,
   Upload,
+  Columns2,
+  Columns3,
+  LayoutGrid,
+  SlidersHorizontal,
+  ArrowRight,
 } from 'lucide-react';
 
 type EditorMode = 'compose' | 'html';
 type HeadingLevel = 'p' | 'h1' | 'h2' | 'h3' | 'h4';
+type ImageAlignOption = 'left' | 'center' | 'right' | 'float-left' | 'float-right';
+type ImageLayoutMode = ImageAlignOption | 'grid-2' | 'grid-3';
+type ImageAspectOption = 'auto' | '1/1' | '4/3' | '16/9';
+type ImageGapOption = 6 | 12 | 18;
+
+interface PendingImageSlot {
+  id: string;
+  src: string;
+  alt: string;
+}
+
+interface SelectedImageState {
+  widthPercent: number;
+  align: ImageAlignOption;
+  inGrid: boolean;
+  gridCols: 2 | 3;
+  aspect: ImageAspectOption;
+  gap: ImageGapOption;
+  slotIndex: number;
+  totalInGrid: number;
+  src: string;
+  alt: string;
+}
+
+function createEmptyImageSlot(): PendingImageSlot {
+  return {
+    id: `slot-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    src: '',
+    alt: '',
+  };
+}
+
+function escapeHtmlAttr(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function buildSingleImageFigureStyle(widthPercent: number, align: ImageAlignOption): string {
+  const w = Math.min(100, Math.max(15, Math.round(widthPercent)));
+  if (align === 'left') {
+    return `width: ${w}%; max-width: 100%; margin: 16px auto 16px 0; text-align: left;`;
+  }
+  if (align === 'right') {
+    return `width: ${w}%; max-width: 100%; margin: 16px 0 16px auto; text-align: right;`;
+  }
+  if (align === 'float-left') {
+    return `width: ${w}%; max-width: 100%; float: left; margin: 6px 20px 14px 0;`;
+  }
+  if (align === 'float-right') {
+    return `width: ${w}%; max-width: 100%; float: right; margin: 6px 0 14px 20px;`;
+  }
+  return `width: ${w}%; max-width: 100%; margin: 16px auto; text-align: center;`;
+}
+
+function buildSingleImageHtml(
+  src: string,
+  alt: string,
+  widthPercent: number,
+  align: ImageAlignOption
+): string {
+  const w = Math.min(100, Math.max(15, Math.round(widthPercent)));
+  const safeSrc = escapeHtmlAttr(src);
+  const safeAlt = escapeHtmlAttr(alt);
+  const figStyle = buildSingleImageFigureStyle(w, align);
+  return `<figure data-image-block="single" data-align="${align}" data-width="${w}" style="${figStyle}"><img src="${safeSrc}" alt="${safeAlt}" style="width: 100%; height: auto; display: block; border-radius: 10px;" /></figure>`;
+}
+
+function buildImageGridStyle(
+  cols: 2 | 3,
+  widthPercent: number,
+  gap: ImageGapOption,
+  align: ImageAlignOption
+): string {
+  const w = Math.min(100, Math.max(30, Math.round(widthPercent)));
+  const margin =
+    align === 'left'
+      ? 'margin: 16px auto 16px 0;'
+      : align === 'right'
+        ? 'margin: 16px 0 16px auto;'
+        : 'margin: 16px auto;';
+  return `display: grid; grid-template-columns: repeat(${cols}, minmax(0, 1fr)); gap: ${gap}px; width: ${w}%; max-width: 100%; ${margin}`;
+}
+
+function buildGridImgStyle(aspect: ImageAspectOption): string {
+  if (aspect === 'auto') {
+    return 'width: 100%; height: auto; display: block; border-radius: 10px;';
+  }
+  return `width: 100%; aspect-ratio: ${aspect}; object-fit: cover; display: block; border-radius: 10px;`;
+}
+
+function buildGridSlotFigureHtml(src: string, alt: string, aspect: ImageAspectOption): string {
+  const safeSrc = escapeHtmlAttr(src);
+  const safeAlt = escapeHtmlAttr(alt);
+  return `<figure style="margin: 0; overflow: hidden; border-radius: 10px;"><img src="${safeSrc}" alt="${safeAlt}" style="${buildGridImgStyle(aspect)}" /></figure>`;
+}
+
+function buildImageGridHtml(
+  items: { src: string; alt: string }[],
+  cols: 2 | 3,
+  widthPercent: number,
+  aspect: ImageAspectOption,
+  gap: ImageGapOption,
+  fallbackAlt: string,
+  align: ImageAlignOption = 'center'
+): string {
+  const w = Math.min(100, Math.max(30, Math.round(widthPercent)));
+  const gridAlign: ImageAlignOption = align === 'left' || align === 'right' ? align : 'center';
+  const gridStyle = buildImageGridStyle(cols, w, gap, gridAlign);
+  const figures = items
+    .map((item, idx) =>
+      buildGridSlotFigureHtml(item.src, item.alt.trim() || `${fallbackAlt} ${idx + 1}`, aspect)
+    )
+    .join('');
+  return `<div data-image-grid="${cols}" data-grid-width="${w}" data-aspect="${aspect}" data-gap="${gap}" data-align="${gridAlign}" style="${gridStyle}">${figures}</div>`;
+}
+
+async function readAndOptimizeImageFile(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('이미지 파일만 업로드할 수 있습니다.');
+  }
+  if (file.size > 12 * 1024 * 1024) {
+    throw new Error('12MB 이하의 이미지 파일을 선택해 주세요.');
+  }
+
+  const rawDataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') resolve(reader.result);
+      else reject(new Error('파일을 읽지 못했습니다.'));
+    };
+    reader.onerror = () => reject(new Error('파일 읽기 오류가 발생했습니다.'));
+    reader.readAsDataURL(file);
+  });
+
+  // Preserve GIF animation, SVG vector, or already compact images
+  if (
+    file.type === 'image/gif' ||
+    file.type === 'image/svg+xml' ||
+    file.size <= 350 * 1024
+  ) {
+    return rawDataUrl;
+  }
+
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error('이미지 디코딩 실패'));
+      el.src = rawDataUrl;
+    });
+
+    const maxDim = 1280;
+    let targetW = img.naturalWidth || img.width;
+    let targetH = img.naturalHeight || img.height;
+    if (targetW > maxDim || targetH > maxDim) {
+      const scale = Math.min(maxDim / targetW, maxDim / targetH);
+      targetW = Math.max(1, Math.round(targetW * scale));
+      targetH = Math.max(1, Math.round(targetH * scale));
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return rawDataUrl;
+
+    ctx.drawImage(img, 0, 0, targetW, targetH);
+    const preferredMime = file.type === 'image/png' ? 'image/webp' : 'image/jpeg';
+    const compressed = canvas.toDataURL(preferredMime, 0.84);
+    if (compressed && compressed.length < rawDataUrl.length) {
+      return compressed;
+    }
+    return rawDataUrl;
+  } catch {
+    return rawDataUrl;
+  }
+}
+
+function parsePercentValue(raw?: string | null, fallback = 100): number {
+  if (!raw) return fallback;
+  const match = raw.match(/(\d+(?:\.\d+)?)\s*%/);
+  if (match) return Math.min(100, Math.max(15, Math.round(Number(match[1]))));
+  if (/^\d+$/.test(raw.trim())) {
+    return Math.min(100, Math.max(15, Math.round(Number(raw.trim()))));
+  }
+  return fallback;
+}
+
+function extractSelectedImageState(imgEl: HTMLImageElement): SelectedImageState {
+  const gridEl = imgEl.closest('[data-image-grid]') as HTMLElement | null;
+  if (gridEl) {
+    const rawCols = Number(gridEl.getAttribute('data-image-grid'));
+    const gridCols: 2 | 3 = rawCols === 2 ? 2 : 3;
+    const widthPercent = parsePercentValue(
+      gridEl.getAttribute('data-grid-width') || gridEl.style.width,
+      100
+    );
+    const rawAspect = gridEl.getAttribute('data-aspect') || imgEl.style.aspectRatio || 'auto';
+    const aspect: ImageAspectOption =
+      rawAspect === '1/1' || rawAspect === '4/3' || rawAspect === '16/9' ? rawAspect : 'auto';
+    const rawGap = Number(gridEl.getAttribute('data-gap'));
+    const gap: ImageGapOption = rawGap === 6 ? 6 : rawGap === 18 ? 18 : 12;
+    const rawAlign = gridEl.getAttribute('data-align');
+    const align: ImageAlignOption =
+      rawAlign === 'left' || rawAlign === 'right' ? rawAlign : 'center';
+    const gridImgs = Array.from(gridEl.querySelectorAll('img'));
+    const slotIndex = Math.max(0, gridImgs.indexOf(imgEl));
+    return {
+      widthPercent,
+      align,
+      inGrid: true,
+      gridCols,
+      aspect,
+      gap,
+      slotIndex,
+      totalInGrid: gridImgs.length,
+      src: imgEl.getAttribute('src') || '',
+      alt: imgEl.getAttribute('alt') || '',
+    };
+  }
+
+  const figEl = imgEl.closest('figure') as HTMLElement | null;
+  const widthPercent = parsePercentValue(
+    figEl?.getAttribute('data-width') || figEl?.style.width || imgEl.style.width,
+    100
+  );
+  const rawAlign = figEl?.getAttribute('data-align');
+  let align: ImageAlignOption = 'center';
+  if (
+    rawAlign === 'left' ||
+    rawAlign === 'center' ||
+    rawAlign === 'right' ||
+    rawAlign === 'float-left' ||
+    rawAlign === 'float-right'
+  ) {
+    align = rawAlign;
+  } else if (figEl) {
+    if (figEl.style.cssFloat === 'left') align = 'float-left';
+    else if (figEl.style.cssFloat === 'right') align = 'float-right';
+    else if (figEl.style.textAlign === 'left') align = 'left';
+    else if (figEl.style.textAlign === 'right') align = 'right';
+  }
+
+  return {
+    widthPercent,
+    align,
+    inGrid: false,
+    gridCols: 3,
+    aspect: 'auto',
+    gap: 12,
+    slotIndex: 0,
+    totalInGrid: 1,
+    src: imgEl.getAttribute('src') || '',
+    alt: imgEl.getAttribute('alt') || '',
+  };
+}
 
 const TEXT_COLOR_SWATCHES = [
   { label: '기본 흰색', value: '#f4f4f5' },
@@ -226,9 +486,20 @@ export const AdminNoticeModal: React.FC = () => {
 
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [imageTab, setImageTab] = useState<'upload' | 'url'>('upload');
-  const [imageUrl, setImageUrl] = useState('');
-  const [imageAlt, setImageAlt] = useState('');
+  const [imageLayoutMode, setImageLayoutMode] = useState<ImageLayoutMode>('center');
+  const [imageWidthPercent, setImageWidthPercent] = useState<number>(100);
+  const [imageAspect, setImageAspect] = useState<ImageAspectOption>('4/3');
+  const [imageGap, setImageGap] = useState<ImageGapOption>(12);
+  const [imageGridAlign, setImageGridAlign] = useState<'left' | 'center' | 'right'>('center');
+  const [imageSlots, setImageSlots] = useState<PendingImageSlot[]>([createEmptyImageSlot()]);
+  const [activeSlotIndex, setActiveSlotIndex] = useState<number>(0);
+  const [showBulkUrlBox, setShowBulkUrlBox] = useState(false);
+  const [bulkUrlInput, setBulkUrlInput] = useState('');
   const [imageError, setImageError] = useState('');
+  const [isProcessingImages, setIsProcessingImages] = useState(false);
+
+  // Selected image inside Compose editor (contextual resize/position/grid bar)
+  const [selectedImgState, setSelectedImgState] = useState<SelectedImageState | null>(null);
 
   const [showVideoDialog, setShowVideoDialog] = useState(false);
   const [videoInput, setVideoInput] = useState('');
@@ -240,6 +511,10 @@ export const AdminNoticeModal: React.FC = () => {
   const htmlTextareaRef = useRef<HTMLTextAreaElement>(null);
   const savedRangeRef = useRef<Range | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const slotFileInputRef = useRef<HTMLInputElement>(null);
+  const slotUploadTargetIdxRef = useRef<number>(0);
+  const selectedImgElRef = useRef<HTMLImageElement | null>(null);
+  const appendGridTargetElRef = useRef<HTMLElement | null>(null);
 
   const getTodayFormatted = () => {
     const today = new Date();
@@ -260,6 +535,8 @@ export const AdminNoticeModal: React.FC = () => {
     setShowPreview(false);
     setEditorMode('compose');
     setOpenDropdown(null);
+    selectedImgElRef.current = null;
+    setSelectedImgState(null);
     setComposeSeedVersion((v) => v + 1);
     if (editorRef.current) {
       editorRef.current.innerHTML = '';
@@ -414,6 +691,8 @@ export const AdminNoticeModal: React.FC = () => {
   const handleSwitchEditorMode = (nextMode: EditorMode) => {
     setOpenDropdown(null);
     if (nextMode === editorMode) return;
+    selectedImgElRef.current = null;
+    setSelectedImgState(null);
     if (editorMode === 'compose' && editorRef.current) {
       setFormHtmlContent(editorRef.current.innerHTML);
     }
@@ -477,50 +756,544 @@ export const AdminNoticeModal: React.FC = () => {
     setShowLinkDialog(false);
   };
 
-  // Open Image Dialog (Blogger style: upload from PC or URL)
-  const handleOpenImageDialog = () => {
+  // Open Image Dialog (Supports single resize/align + 2/3-column row grid + upload/URL)
+  const openImageModalWithConfig = (
+    targetGridEl: HTMLElement | null = null,
+    presetLayout: ImageLayoutMode = 'center'
+  ) => {
     setOpenDropdown(null);
     saveSelection();
-    setImageUrl('');
-    setImageAlt('');
+    appendGridTargetElRef.current = targetGridEl;
+
+    if (targetGridEl) {
+      const cols = Number(targetGridEl.getAttribute('data-image-grid')) === 2 ? 2 : 3;
+      const existingWidth = parsePercentValue(
+        targetGridEl.getAttribute('data-grid-width') || targetGridEl.style.width,
+        100
+      );
+      const rawAspect = targetGridEl.getAttribute('data-aspect') || '4/3';
+      const aspect: ImageAspectOption =
+        rawAspect === '1/1' || rawAspect === '4/3' || rawAspect === '16/9' || rawAspect === 'auto'
+          ? rawAspect
+          : '4/3';
+      const rawGap = Number(targetGridEl.getAttribute('data-gap'));
+      const gap: ImageGapOption = rawGap === 6 ? 6 : rawGap === 18 ? 18 : 12;
+      const existingCount = targetGridEl.querySelectorAll('img').length;
+      const neededSlots = Math.max(1, cols - existingCount);
+
+      setImageLayoutMode(cols === 2 ? 'grid-2' : 'grid-3');
+      setImageWidthPercent(existingWidth);
+      setImageAspect(aspect);
+      setImageGap(gap);
+      setImageGridAlign('center');
+      setImageSlots(Array.from({ length: neededSlots }, () => createEmptyImageSlot()));
+    } else {
+      setImageLayoutMode(presetLayout);
+      setImageWidthPercent(presetLayout === 'float-left' || presetLayout === 'float-right' ? 45 : 100);
+      setImageAspect('4/3');
+      setImageGap(12);
+      setImageGridAlign('center');
+      const slotCount = presetLayout === 'grid-3' ? 3 : presetLayout === 'grid-2' ? 2 : 1;
+      setImageSlots(Array.from({ length: slotCount }, () => createEmptyImageSlot()));
+    }
+
+    setActiveSlotIndex(0);
+    setShowBulkUrlBox(false);
+    setBulkUrlInput('');
     setImageError('');
     setImageTab('upload');
     setShowImageDialog(true);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setImageError('이미지 파일만 업로드할 수 있습니다.');
-      return;
+  const handleOpenImageDialog = () => {
+    openImageModalWithConfig(null, 'center');
+  };
+
+  const handleChangeImageLayoutMode = (nextMode: ImageLayoutMode) => {
+    setImageLayoutMode(nextMode);
+    setImageError('');
+    if (nextMode === 'float-left' || nextMode === 'float-right') {
+      if (imageWidthPercent > 75) setImageWidthPercent(45);
     }
-    if (file.size > 1.5 * 1024 * 1024) {
-      setImageError('1.5MB 이하의 이미지를 선택하거나 이미지 URL을 입력해 주세요.');
+    const minSlots = nextMode === 'grid-3' ? 3 : nextMode === 'grid-2' ? 2 : 1;
+    setImageSlots((prev) => {
+      if (prev.length >= minSlots) return prev;
+      return [
+        ...prev,
+        ...Array.from({ length: minSlots - prev.length }, () => createEmptyImageSlot()),
+      ];
+    });
+  };
+
+  const handleMultipleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (files.length === 0) return;
+
+    setImageError('');
+    setIsProcessingImages(true);
+    try {
+      const processed: { src: string; alt: string }[] = [];
+      for (const file of files) {
+        const dataUrl = await readAndOptimizeImageFile(file);
+        const cleanName = file.name.replace(/\.[^.]+$/, '');
+        processed.push({ src: dataUrl, alt: cleanName });
+      }
+
+      if (!appendGridTargetElRef.current) {
+        if (processed.length === 2 && !imageLayoutMode.startsWith('grid-')) {
+          setImageLayoutMode('grid-2');
+        } else if (processed.length >= 3 && !imageLayoutMode.startsWith('grid-')) {
+          setImageLayoutMode('grid-3');
+        }
+      }
+
+      setImageSlots((prev) => {
+        const next = [...prev];
+        let cursor = 0;
+        // Fill empty slots first
+        for (let i = 0; i < next.length && cursor < processed.length; i++) {
+          if (!next[i].src.trim()) {
+            next[i] = {
+              ...next[i],
+              src: processed[cursor].src,
+              alt: next[i].alt || processed[cursor].alt,
+            };
+            cursor++;
+          }
+        }
+        // Append any extra files as new slots
+        while (cursor < processed.length) {
+          next.push({
+            id: `slot-${Date.now()}-${cursor}-${Math.random().toString(36).slice(2, 6)}`,
+            src: processed[cursor].src,
+            alt: processed[cursor].alt,
+          });
+          cursor++;
+        }
+        return next;
+      });
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : '이미지 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsProcessingImages(false);
+    }
+  };
+
+  const handleSingleSlotFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    const targetIdx = slotUploadTargetIdxRef.current;
+    setImageError('');
+    setIsProcessingImages(true);
+    try {
+      const dataUrl = await readAndOptimizeImageFile(file);
+      const cleanName = file.name.replace(/\.[^.]+$/, '');
+      setImageSlots((prev) =>
+        prev.map((slot, idx) =>
+          idx === targetIdx
+            ? { ...slot, src: dataUrl, alt: slot.alt || cleanName }
+            : slot
+        )
+      );
+      setActiveSlotIndex(targetIdx);
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : '이미지 업로드에 실패했습니다.');
+    } finally {
+      setIsProcessingImages(false);
+    }
+  };
+
+  const handleApplyBulkUrls = () => {
+    const urls = bulkUrlInput
+      .split(/\n+/)
+      .map((u) => u.trim())
+      .filter((u) => /^https?:\/\//i.test(u) || u.startsWith('data:image/'));
+    if (urls.length === 0) {
+      setImageError('올바른 이미지 URL(https://...)을 한 줄에 하나씩 입력해주세요.');
       return;
     }
     setImageError('');
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setImageUrl(reader.result);
+
+    if (!appendGridTargetElRef.current) {
+      if (urls.length === 2 && !imageLayoutMode.startsWith('grid-')) {
+        setImageLayoutMode('grid-2');
+      } else if (urls.length >= 3 && !imageLayoutMode.startsWith('grid-')) {
+        setImageLayoutMode('grid-3');
       }
-    };
-    reader.readAsDataURL(file);
+    }
+
+    setImageSlots((prev) => {
+      const next = [...prev];
+      let cursor = 0;
+      for (let i = 0; i < next.length && cursor < urls.length; i++) {
+        if (!next[i].src.trim()) {
+          next[i] = { ...next[i], src: urls[cursor] };
+          cursor++;
+        }
+      }
+      while (cursor < urls.length) {
+        next.push({
+          id: `slot-${Date.now()}-${cursor}-${Math.random().toString(36).slice(2, 6)}`,
+          src: urls[cursor],
+          alt: '',
+        });
+        cursor++;
+      }
+      return next;
+    });
+    setBulkUrlInput('');
+    setShowBulkUrlBox(false);
+  };
+
+  const handleMoveImageSlot = (index: number, delta: -1 | 1) => {
+    const target = index + delta;
+    setImageSlots((prev) => {
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      const temp = next[index];
+      next[index] = next[target];
+      next[target] = temp;
+      return next;
+    });
   };
 
   const handleConfirmImage = () => {
-    const cleanSrc = imageUrl.trim();
-    if (!cleanSrc) {
-      setImageError('이미지를 선택하거나 URL을 입력해주세요.');
+    const validItems = imageSlots
+      .map((slot) => ({ src: slot.src.trim(), alt: slot.alt.trim() }))
+      .filter((slot) => slot.src.length > 0);
+
+    if (validItems.length === 0) {
+      setImageError('최소 1개 이상의 이미지를 업로드하거나 URL을 입력해주세요.');
       return;
     }
-    const safeAlt = (imageAlt.trim() || formTitle.trim() || '공지 이미지').replace(/"/g, '&quot;');
-    const safeSrc = cleanSrc.replace(/"/g, '&quot;');
-    insertHtmlAtCursor(
-      `<figure style="margin: 16px 0; text-align: center;"><img src="${safeSrc}" alt="${safeAlt}" style="max-width: 100%; border-radius: 10px;" /></figure><p><br></p>`
-    );
+
+    const fallbackAlt = formTitle.trim() || '공지 이미지';
+
+    // Case A: Appending new images directly into an existing grid row in Compose editor
+    if (
+      appendGridTargetElRef.current &&
+      editorRef.current &&
+      editorRef.current.contains(appendGridTargetElRef.current)
+    ) {
+      const gridEl = appendGridTargetElRef.current;
+      const rawAspect = gridEl.getAttribute('data-aspect') || imageAspect;
+      const aspect: ImageAspectOption =
+        rawAspect === '1/1' || rawAspect === '4/3' || rawAspect === '16/9' || rawAspect === 'auto'
+          ? rawAspect
+          : '4/3';
+      const existingCount = gridEl.querySelectorAll('img').length;
+      validItems.forEach((item, idx) => {
+        const temp = document.createElement('div');
+        temp.innerHTML = buildGridSlotFigureHtml(
+          item.src,
+          item.alt || `${fallbackAlt} ${existingCount + idx + 1}`,
+          aspect
+        );
+        const newFig = temp.firstElementChild;
+        if (newFig) gridEl.appendChild(newFig);
+      });
+      syncHtmlFromCompose();
+      if (selectedImgElRef.current && gridEl.contains(selectedImgElRef.current)) {
+        setSelectedImgState(extractSelectedImageState(selectedImgElRef.current));
+      }
+      appendGridTargetElRef.current = null;
+      setShowImageDialog(false);
+      return;
+    }
+
+    // Case B: Inserting fresh single or multi-column grid images
+    let htmlToInsert = '';
+    if (imageLayoutMode === 'grid-2' || imageLayoutMode === 'grid-3') {
+      const cols: 2 | 3 = imageLayoutMode === 'grid-2' ? 2 : 3;
+      htmlToInsert =
+        buildImageGridHtml(
+          validItems,
+          cols,
+          imageWidthPercent,
+          imageAspect,
+          imageGap,
+          fallbackAlt,
+          imageGridAlign
+        ) + '<p><br></p>';
+    } else if (validItems.length === 1) {
+      htmlToInsert =
+        buildSingleImageHtml(
+          validItems[0].src,
+          validItems[0].alt || fallbackAlt,
+          imageWidthPercent,
+          imageLayoutMode
+        ) + '<p><br></p>';
+    } else {
+      // Multiple images provided while in single layout -> stack cleanly with chosen width & alignment
+      htmlToInsert =
+        validItems
+          .map((item, idx) =>
+            buildSingleImageHtml(
+              item.src,
+              item.alt || `${fallbackAlt} ${idx + 1}`,
+              imageWidthPercent,
+              imageLayoutMode
+            )
+          )
+          .join('') + '<p><br></p>';
+    }
+
+    insertHtmlAtCursor(htmlToInsert);
+    appendGridTargetElRef.current = null;
     setShowImageDialog(false);
+  };
+
+  // Interactive Compose Image Selection & Contextual Editing Handlers
+  const handleComposeClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement | null;
+    if (target && target.tagName === 'IMG') {
+      const imgEl = target as HTMLImageElement;
+      selectedImgElRef.current = imgEl;
+      setSelectedImgState(extractSelectedImageState(imgEl));
+      return;
+    }
+    if (selectedImgElRef.current) {
+      selectedImgElRef.current = null;
+      setSelectedImgState(null);
+    }
+  };
+
+  const ensureWrappedSingleFigure = (imgEl: HTMLImageElement): HTMLElement => {
+    const existingFig = imgEl.closest('figure') as HTMLElement | null;
+    if (existingFig) {
+      if (!existingFig.getAttribute('data-image-block')) {
+        existingFig.setAttribute('data-image-block', 'single');
+      }
+      return existingFig;
+    }
+    const fig = document.createElement('figure');
+    fig.setAttribute('data-image-block', 'single');
+    fig.setAttribute('data-align', 'center');
+    fig.setAttribute('data-width', '100');
+    fig.setAttribute('style', buildSingleImageFigureStyle(100, 'center'));
+    imgEl.parentNode?.insertBefore(fig, imgEl);
+    fig.appendChild(imgEl);
+    imgEl.style.width = '100%';
+    imgEl.style.height = 'auto';
+    imgEl.style.display = 'block';
+    imgEl.style.borderRadius = '10px';
+    return fig;
+  };
+
+  const applySelectedImageWidth = (nextWidth: number) => {
+    const imgEl = selectedImgElRef.current;
+    if (!imgEl || !editorRef.current?.contains(imgEl)) return;
+    const w = Math.min(100, Math.max(15, Math.round(nextWidth)));
+    const gridEl = imgEl.closest('[data-image-grid]') as HTMLElement | null;
+
+    if (gridEl) {
+      const cols: 2 | 3 = Number(gridEl.getAttribute('data-image-grid')) === 2 ? 2 : 3;
+      const gap = Number(gridEl.getAttribute('data-gap')) === 6 ? 6 : Number(gridEl.getAttribute('data-gap')) === 18 ? 18 : 12;
+      const rawAlign = gridEl.getAttribute('data-align');
+      const align: ImageAlignOption = rawAlign === 'left' || rawAlign === 'right' ? rawAlign : 'center';
+      gridEl.setAttribute('data-grid-width', String(w));
+      gridEl.setAttribute('style', buildImageGridStyle(cols, w, gap as ImageGapOption, align));
+    } else {
+      const figEl = ensureWrappedSingleFigure(imgEl);
+      const current = extractSelectedImageState(imgEl);
+      figEl.setAttribute('data-width', String(w));
+      figEl.setAttribute('data-align', current.align);
+      figEl.setAttribute('style', buildSingleImageFigureStyle(w, current.align));
+      imgEl.style.width = '100%';
+      imgEl.style.height = 'auto';
+      imgEl.style.display = 'block';
+      imgEl.style.borderRadius = '10px';
+    }
+
+    syncHtmlFromCompose();
+    setSelectedImgState(extractSelectedImageState(imgEl));
+  };
+
+  const applySelectedImageAlign = (nextAlign: ImageAlignOption) => {
+    const imgEl = selectedImgElRef.current;
+    if (!imgEl || !editorRef.current?.contains(imgEl)) return;
+    const gridEl = imgEl.closest('[data-image-grid]') as HTMLElement | null;
+
+    if (gridEl) {
+      const gridAlign: ImageAlignOption =
+        nextAlign === 'left' || nextAlign === 'right' ? nextAlign : 'center';
+      const cols: 2 | 3 = Number(gridEl.getAttribute('data-image-grid')) === 2 ? 2 : 3;
+      const w = parsePercentValue(gridEl.getAttribute('data-grid-width') || gridEl.style.width, 100);
+      const rawGap = Number(gridEl.getAttribute('data-gap'));
+      const gap: ImageGapOption = rawGap === 6 ? 6 : rawGap === 18 ? 18 : 12;
+      gridEl.setAttribute('data-align', gridAlign);
+      gridEl.setAttribute('style', buildImageGridStyle(cols, w, gap, gridAlign));
+    } else {
+      const figEl = ensureWrappedSingleFigure(imgEl);
+      const current = extractSelectedImageState(imgEl);
+      let nextW = current.widthPercent;
+      if ((nextAlign === 'float-left' || nextAlign === 'float-right') && nextW >= 85) {
+        nextW = 45;
+      }
+      figEl.setAttribute('data-align', nextAlign);
+      figEl.setAttribute('data-width', String(nextW));
+      figEl.setAttribute('style', buildSingleImageFigureStyle(nextW, nextAlign));
+      imgEl.style.width = '100%';
+      imgEl.style.height = 'auto';
+      imgEl.style.display = 'block';
+      imgEl.style.borderRadius = '10px';
+    }
+
+    syncHtmlFromCompose();
+    setSelectedImgState(extractSelectedImageState(imgEl));
+  };
+
+  const convertSelectedImageLayout = (target: 'single' | 2 | 3) => {
+    const imgEl = selectedImgElRef.current;
+    if (!imgEl || !editorRef.current?.contains(imgEl)) return;
+    const currentGrid = imgEl.closest('[data-image-grid]') as HTMLElement | null;
+
+    if (target === 'single') {
+      if (!currentGrid) return;
+      const allFigures = Array.from(currentGrid.querySelectorAll('figure'));
+      allFigures.forEach((fig) => {
+        const innerImg = fig.querySelector('img') as HTMLImageElement | null;
+        if (!innerImg) return;
+        fig.setAttribute('data-image-block', 'single');
+        fig.setAttribute('data-align', 'center');
+        fig.setAttribute('data-width', '100');
+        fig.setAttribute('style', buildSingleImageFigureStyle(100, 'center'));
+        innerImg.style.width = '100%';
+        innerImg.style.height = 'auto';
+        innerImg.style.aspectRatio = '';
+        innerImg.style.objectFit = '';
+        innerImg.style.display = 'block';
+        innerImg.style.borderRadius = '10px';
+        currentGrid.parentNode?.insertBefore(fig, currentGrid);
+      });
+      currentGrid.remove();
+      syncHtmlFromCompose();
+      setSelectedImgState(extractSelectedImageState(imgEl));
+      return;
+    }
+
+    if (currentGrid) {
+      const w = parsePercentValue(
+        currentGrid.getAttribute('data-grid-width') || currentGrid.style.width,
+        100
+      );
+      const rawGap = Number(currentGrid.getAttribute('data-gap'));
+      const gap: ImageGapOption = rawGap === 6 ? 6 : rawGap === 18 ? 18 : 12;
+      const rawAlign = currentGrid.getAttribute('data-align');
+      const align: ImageAlignOption =
+        rawAlign === 'left' || rawAlign === 'right' ? rawAlign : 'center';
+      currentGrid.setAttribute('data-image-grid', String(target));
+      currentGrid.setAttribute('style', buildImageGridStyle(target, w, gap, align));
+      syncHtmlFromCompose();
+      setSelectedImgState(extractSelectedImageState(imgEl));
+      return;
+    }
+
+    // Wrap single figure into a 2-col or 3-col grid and pull immediately adjacent standalone image figures if present
+    const figEl = ensureWrappedSingleFigure(imgEl);
+    const gridDiv = document.createElement('div');
+    gridDiv.setAttribute('data-image-grid', String(target));
+    gridDiv.setAttribute('data-grid-width', '100');
+    gridDiv.setAttribute('data-aspect', '4/3');
+    gridDiv.setAttribute('data-gap', '12');
+    gridDiv.setAttribute('data-align', 'center');
+    gridDiv.setAttribute('style', buildImageGridStyle(target, 100, 12, 'center'));
+
+    const siblingsToMove: HTMLElement[] = [figEl];
+    let probe = figEl.nextElementSibling as HTMLElement | null;
+    while (probe && siblingsToMove.length < target) {
+      if (probe.tagName === 'FIGURE' && probe.querySelector('img')) {
+        siblingsToMove.push(probe);
+        probe = probe.nextElementSibling as HTMLElement | null;
+      } else {
+        break;
+      }
+    }
+
+    figEl.parentNode?.insertBefore(gridDiv, figEl);
+    siblingsToMove.forEach((slotFig) => {
+      slotFig.removeAttribute('data-image-block');
+      slotFig.removeAttribute('data-align');
+      slotFig.removeAttribute('data-width');
+      slotFig.setAttribute('style', 'margin: 0; overflow: hidden; border-radius: 10px;');
+      const slotImg = slotFig.querySelector('img') as HTMLImageElement | null;
+      if (slotImg) {
+        slotImg.setAttribute('style', buildGridImgStyle('4/3'));
+      }
+      gridDiv.appendChild(slotFig);
+    });
+
+    syncHtmlFromCompose();
+    setSelectedImgState(extractSelectedImageState(imgEl));
+  };
+
+  const applySelectedGridAspect = (aspect: ImageAspectOption) => {
+    const imgEl = selectedImgElRef.current;
+    if (!imgEl || !editorRef.current?.contains(imgEl)) return;
+    const gridEl = imgEl.closest('[data-image-grid]') as HTMLElement | null;
+    if (!gridEl) return;
+    gridEl.setAttribute('data-aspect', aspect);
+    gridEl.querySelectorAll('img').forEach((childImg) => {
+      (childImg as HTMLImageElement).setAttribute('style', buildGridImgStyle(aspect));
+    });
+    syncHtmlFromCompose();
+    setSelectedImgState(extractSelectedImageState(imgEl));
+  };
+
+  const applySelectedGridGap = (gap: ImageGapOption) => {
+    const imgEl = selectedImgElRef.current;
+    if (!imgEl || !editorRef.current?.contains(imgEl)) return;
+    const gridEl = imgEl.closest('[data-image-grid]') as HTMLElement | null;
+    if (!gridEl) return;
+    const cols: 2 | 3 = Number(gridEl.getAttribute('data-image-grid')) === 2 ? 2 : 3;
+    const w = parsePercentValue(gridEl.getAttribute('data-grid-width') || gridEl.style.width, 100);
+    const rawAlign = gridEl.getAttribute('data-align');
+    const align: ImageAlignOption = rawAlign === 'left' || rawAlign === 'right' ? rawAlign : 'center';
+    gridEl.setAttribute('data-gap', String(gap));
+    gridEl.setAttribute('style', buildImageGridStyle(cols, w, gap, align));
+    syncHtmlFromCompose();
+    setSelectedImgState(extractSelectedImageState(imgEl));
+  };
+
+  const moveSelectedGridSlot = (delta: -1 | 1) => {
+    const imgEl = selectedImgElRef.current;
+    if (!imgEl || !editorRef.current?.contains(imgEl)) return;
+    const gridEl = imgEl.closest('[data-image-grid]') as HTMLElement | null;
+    const slotFig = imgEl.closest('figure') as HTMLElement | null;
+    if (!gridEl || !slotFig) return;
+
+    if (delta === -1 && slotFig.previousElementSibling) {
+      gridEl.insertBefore(slotFig, slotFig.previousElementSibling);
+    } else if (delta === 1 && slotFig.nextElementSibling) {
+      gridEl.insertBefore(slotFig.nextElementSibling, slotFig);
+    }
+    syncHtmlFromCompose();
+    setSelectedImgState(extractSelectedImageState(imgEl));
+  };
+
+  const removeSelectedImage = () => {
+    const imgEl = selectedImgElRef.current;
+    if (!imgEl || !editorRef.current?.contains(imgEl)) return;
+    const gridEl = imgEl.closest('[data-image-grid]') as HTMLElement | null;
+    const figEl = imgEl.closest('figure') as HTMLElement | null;
+
+    if (gridEl && figEl) {
+      figEl.remove();
+      if (gridEl.querySelectorAll('img').length === 0) {
+        gridEl.remove();
+      }
+    } else if (figEl) {
+      figEl.remove();
+    } else {
+      imgEl.remove();
+    }
+
+    selectedImgElRef.current = null;
+    setSelectedImgState(null);
+    syncHtmlFromCompose();
   };
 
   // Open Video Dialog (Toolbar button: multi-YouTube embed into post body)
@@ -1691,24 +2464,293 @@ export const AdminNoticeModal: React.FC = () => {
                         dangerouslySetInnerHTML={{
                           __html: formatNoticeContent(liveHtmlForPreview),
                         }}
-                        className="space-y-3 text-sm sm:text-base text-zinc-200 leading-relaxed [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_strong]:text-white [&_b]:text-white [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:italic [&_img]:max-w-full [&_img]:rounded-lg [&_hr]:border-zinc-800 [&_hr]:my-4 [&_s]:line-through [&_iframe]:w-[80%] [&_iframe]:max-w-[720px] [&_iframe]:mx-auto [&_iframe]:block [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-3 [&_[data-youtube-embed]]:!w-[80%] [&_[data-youtube-embed]]:!max-w-[720px] [&_[data-youtube-embed]]:!mx-auto [&_[data-youtube-embed]]:!h-auto [&_[data-youtube-embed]]:!pb-0 [&_[data-youtube-embed]]:aspect-video [&_[data-youtube-embed]_iframe]:!static [&_[data-youtube-embed]_iframe]:!w-full [&_[data-youtube-embed]_iframe]:!h-full [&_[data-youtube-embed]_iframe]:!my-0"
+                        className="space-y-3 text-sm sm:text-base text-zinc-200 leading-relaxed after:content-[''] after:block after:clear-both [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_strong]:text-white [&_b]:text-white [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:italic [&_img]:max-w-full [&_img]:rounded-lg [&_[data-image-block]]:max-w-full [&_[data-image-block]_img]:!my-0 [&_[data-image-block]_img]:w-full [&_[data-image-grid]]:max-w-full [&_[data-image-grid]_figure]:!m-0 [&_[data-image-grid]_img]:!my-0 [&_[data-image-grid]_img]:w-full [&_hr]:border-zinc-800 [&_hr]:my-4 [&_s]:line-through [&_iframe]:w-[80%] [&_iframe]:max-w-[720px] [&_iframe]:mx-auto [&_iframe]:block [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-3 [&_[data-youtube-embed]]:!w-[80%] [&_[data-youtube-embed]]:!max-w-[720px] [&_[data-youtube-embed]]:!mx-auto [&_[data-youtube-embed]]:!h-auto [&_[data-youtube-embed]]:!pb-0 [&_[data-youtube-embed]]:aspect-video [&_[data-youtube-embed]_iframe]:!static [&_[data-youtube-embed]_iframe]:!w-full [&_[data-youtube-embed]_iframe]:!h-full [&_[data-youtube-embed]_iframe]:!my-0"
                       />
                     </div>
                   ) : editorMode === 'compose' ? (
                     /* Blogger Compose View (WYSIWYG Rich Text Sheet) */
-                    <div className="max-w-3xl mx-auto rounded-xl bg-zinc-950 border border-zinc-800/90 shadow-lg min-h-[380px] p-5 sm:p-8">
-                      <div
-                        ref={editorRef}
-                        contentEditable
-                        suppressContentEditableWarning
-                        onInput={syncHtmlFromCompose}
-                        onPaste={handleComposePaste}
-                        onKeyUp={refreshFormatState}
-                        onMouseUp={refreshFormatState}
-                        onBlur={saveSelection}
-                        data-placeholder="여기에 내용을 입력하세요. 유튜브 링크를 붙여넣거나 위 동영상 버튼으로 여러 개의 유튜브 영상을 바로 삽입할 수 있습니다."
-                        className="min-h-[320px] outline-none text-sm sm:text-base text-zinc-100 leading-relaxed font-sans space-y-3 empty:before:content-[attr(data-placeholder)] empty:before:text-zinc-500 empty:before:pointer-events-none [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-3 [&_hr]:border-zinc-700 [&_hr]:my-4 [&_s]:line-through [&_iframe]:w-[80%] [&_iframe]:max-w-[720px] [&_iframe]:mx-auto [&_iframe]:block [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-3 [&_[data-youtube-embed]]:!w-[80%] [&_[data-youtube-embed]]:!max-w-[720px] [&_[data-youtube-embed]]:!mx-auto [&_[data-youtube-embed]]:!h-auto [&_[data-youtube-embed]]:!pb-0 [&_[data-youtube-embed]]:aspect-video [&_[data-youtube-embed]_iframe]:!static [&_[data-youtube-embed]_iframe]:!w-full [&_[data-youtube-embed]_iframe]:!h-full [&_[data-youtube-embed]_iframe]:!my-0"
-                      />
+                    <div className="max-w-3xl mx-auto space-y-3">
+                      {/* Contextual Selected Image Toolbar */}
+                      {selectedImgState && (
+                        <div className="sticky top-0 z-20 rounded-xl bg-zinc-900/95 backdrop-blur-md border border-amber-400/50 p-3 shadow-2xl space-y-2.5 text-xs">
+                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-zinc-800">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <img
+                                src={selectedImgState.src}
+                                alt={selectedImgState.alt || '선택 이미지'}
+                                className="w-8 h-8 rounded object-cover border border-zinc-700 shrink-0 bg-black"
+                              />
+                              <div className="min-w-0">
+                                <div className="font-bold text-amber-300 flex items-center gap-1.5">
+                                  <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
+                                  <span>
+                                    {selectedImgState.inGrid
+                                      ? `한 줄 ${selectedImgState.gridCols}개 행 편집 (${selectedImgState.slotIndex + 1}/${selectedImgState.totalInGrid})`
+                                      : '선택된 이미지 크기 · 위치 설정'}
+                                  </span>
+                                </div>
+                                <div className="text-[10.5px] text-zinc-400">
+                                  너비 {selectedImgState.widthPercent}% ·{' '}
+                                  {selectedImgState.align === 'left'
+                                    ? '왼쪽 정렬'
+                                    : selectedImgState.align === 'right'
+                                      ? '오른쪽 정렬'
+                                      : selectedImgState.align === 'float-left'
+                                        ? '글 왼쪽 감싸기'
+                                        : selectedImgState.align === 'float-right'
+                                          ? '글 오른쪽 감싸기'
+                                          : '가운데 정렬'}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              {selectedImgState.inGrid && selectedImgElRef.current && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const gridEl = selectedImgElRef.current?.closest(
+                                      '[data-image-grid]'
+                                    ) as HTMLElement | null;
+                                    if (gridEl) openImageModalWithConfig(gridEl);
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  <span>이 줄에 그림 추가</span>
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={removeSelectedImage}
+                                className="px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 font-semibold flex items-center gap-1 cursor-pointer"
+                                title="이미지 삭제"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>삭제</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  selectedImgElRef.current = null;
+                                  setSelectedImgState(null);
+                                }}
+                                className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer"
+                                title="닫기"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Row 1: Size Controls + Position/Alignment */}
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-semibold text-zinc-400 shrink-0">
+                                크기
+                              </span>
+                              {[25, 50, 75, 100].map((pct) => (
+                                <button
+                                  key={pct}
+                                  type="button"
+                                  onClick={() => applySelectedImageWidth(pct)}
+                                  className={`px-2 py-1 rounded-md font-mono text-[11px] font-semibold border cursor-pointer transition-colors ${
+                                    selectedImgState.widthPercent === pct
+                                      ? 'bg-amber-400 text-zinc-950 border-amber-300'
+                                      : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                                  }`}
+                                >
+                                  {pct}%
+                                </button>
+                              ))}
+                              <input
+                                type="range"
+                                min={selectedImgState.inGrid ? 30 : 15}
+                                max={100}
+                                step={5}
+                                value={selectedImgState.widthPercent}
+                                onChange={(e) => applySelectedImageWidth(Number(e.target.value))}
+                                className="w-20 accent-amber-400 cursor-pointer"
+                                title="세밀 크기 조절"
+                              />
+                            </div>
+
+                            <div className="w-px h-4 bg-zinc-800 hidden sm:block" />
+
+                            <div className="flex flex-wrap items-center gap-1">
+                              <span className="text-[11px] font-semibold text-zinc-400 mr-0.5">
+                                위치
+                              </span>
+                              {(
+                                [
+                                  { id: 'left', label: '왼쪽' },
+                                  { id: 'center', label: '가운데' },
+                                  { id: 'right', label: '오른쪽' },
+                                  ...(!selectedImgState.inGrid
+                                    ? [
+                                        { id: 'float-left', label: '글 좌측' },
+                                        { id: 'float-right', label: '글 우측' },
+                                      ]
+                                    : []),
+                                ] as { id: ImageAlignOption; label: string }[]
+                              ).map((opt) => (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => applySelectedImageAlign(opt.id)}
+                                  className={`px-2 py-1 rounded-md text-[11px] font-semibold border cursor-pointer transition-colors ${
+                                    selectedImgState.align === opt.id
+                                      ? 'bg-amber-400 text-zinc-950 border-amber-300'
+                                      : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                                  }`}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Row 2: Multi-Image Row Switcher + Aspect Ratio + Gap + Reorder */}
+                          <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-zinc-800/80">
+                            <div className="flex items-center gap-1">
+                              <span className="text-[11px] font-semibold text-zinc-400 mr-0.5">
+                                한 줄 배치
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => convertSelectedImageLayout('single')}
+                                className={`px-2 py-1 rounded-md text-[11px] font-semibold border cursor-pointer ${
+                                  !selectedImgState.inGrid
+                                    ? 'bg-sky-400 text-zinc-950 border-sky-300'
+                                    : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                                }`}
+                              >
+                                단독
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => convertSelectedImageLayout(2)}
+                                className={`px-2 py-1 rounded-md text-[11px] font-semibold border cursor-pointer flex items-center gap-1 ${
+                                  selectedImgState.inGrid && selectedImgState.gridCols === 2
+                                    ? 'bg-sky-400 text-zinc-950 border-sky-300'
+                                    : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                                }`}
+                              >
+                                <Columns2 className="w-3 h-3" />
+                                <span>한 줄 2개</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => convertSelectedImageLayout(3)}
+                                className={`px-2 py-1 rounded-md text-[11px] font-semibold border cursor-pointer flex items-center gap-1 ${
+                                  selectedImgState.inGrid && selectedImgState.gridCols === 3
+                                    ? 'bg-sky-400 text-zinc-950 border-sky-300'
+                                    : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                                }`}
+                              >
+                                <Columns3 className="w-3 h-3" />
+                                <span>한 줄 3개</span>
+                              </button>
+                            </div>
+
+                            {selectedImgState.inGrid && (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[11px] font-semibold text-zinc-400 mr-0.5">
+                                    비율
+                                  </span>
+                                  {(
+                                    [
+                                      { id: 'auto', label: '원본' },
+                                      { id: '1/1', label: '1:1' },
+                                      { id: '4/3', label: '4:3' },
+                                      { id: '16/9', label: '16:9' },
+                                    ] as { id: ImageAspectOption; label: string }[]
+                                  ).map((r) => (
+                                    <button
+                                      key={r.id}
+                                      type="button"
+                                      onClick={() => applySelectedGridAspect(r.id)}
+                                      className={`px-2 py-1 rounded-md text-[11px] font-semibold border cursor-pointer ${
+                                        selectedImgState.aspect === r.id
+                                          ? 'bg-amber-400 text-zinc-950 border-amber-300'
+                                          : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                                      }`}
+                                    >
+                                      {r.label}
+                                    </button>
+                                  ))}
+                                </div>
+
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[11px] font-semibold text-zinc-400 mr-0.5">
+                                    간격
+                                  </span>
+                                  {([6, 12, 18] as ImageGapOption[]).map((g) => (
+                                    <button
+                                      key={g}
+                                      type="button"
+                                      onClick={() => applySelectedGridGap(g)}
+                                      className={`px-1.5 py-1 rounded-md font-mono text-[10.5px] font-semibold border cursor-pointer ${
+                                        selectedImgState.gap === g
+                                          ? 'bg-amber-400 text-zinc-950 border-amber-300'
+                                          : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                                      }`}
+                                    >
+                                      {g}px
+                                    </button>
+                                  ))}
+                                </div>
+
+                                {selectedImgState.totalInGrid > 1 && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[11px] font-semibold text-zinc-400 mr-0.5">
+                                      순서
+                                    </span>
+                                    <button
+                                      type="button"
+                                      disabled={selectedImgState.slotIndex === 0}
+                                      onClick={() => moveSelectedGridSlot(-1)}
+                                      className="p-1 rounded bg-zinc-950 border border-zinc-800 disabled:opacity-40 text-zinc-300 hover:text-white cursor-pointer"
+                                      title="앞으로 이동"
+                                    >
+                                      <ArrowLeft className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={
+                                        selectedImgState.slotIndex >=
+                                        selectedImgState.totalInGrid - 1
+                                      }
+                                      onClick={() => moveSelectedGridSlot(1)}
+                                      className="p-1 rounded bg-zinc-950 border border-zinc-800 disabled:opacity-40 text-zinc-300 hover:text-white cursor-pointer"
+                                      title="뒤로 이동"
+                                    >
+                                      <ArrowRight className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="rounded-xl bg-zinc-950 border border-zinc-800/90 shadow-lg min-h-[380px] p-5 sm:p-8">
+                        <div
+                          ref={editorRef}
+                          contentEditable
+                          suppressContentEditableWarning
+                          onClick={handleComposeClick}
+                          onInput={syncHtmlFromCompose}
+                          onPaste={handleComposePaste}
+                          onKeyUp={refreshFormatState}
+                          onMouseUp={refreshFormatState}
+                          onBlur={saveSelection}
+                          data-placeholder="여기에 내용을 입력하세요. 이미지를 클릭하면 크기 조절·위치 변경·한 줄 3개 배치를 바로 설정할 수 있습니다."
+                          className="min-h-[320px] outline-none text-sm sm:text-base text-zinc-100 leading-relaxed font-sans space-y-3 after:content-[''] after:block after:clear-both empty:before:content-[attr(data-placeholder)] empty:before:text-zinc-500 empty:before:pointer-events-none [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-3 [&_img]:cursor-pointer hover:[&_img]:ring-2 hover:[&_img]:ring-amber-400/60 [&_[data-image-block]]:max-w-full [&_[data-image-block]_img]:!my-0 [&_[data-image-block]_img]:w-full [&_[data-image-grid]]:max-w-full [&_[data-image-grid]_figure]:!m-0 [&_[data-image-grid]_img]:!my-0 [&_[data-image-grid]_img]:w-full [&_hr]:border-zinc-700 [&_hr]:my-4 [&_s]:line-through [&_iframe]:w-[80%] [&_iframe]:max-w-[720px] [&_iframe]:mx-auto [&_iframe]:block [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-3 [&_[data-youtube-embed]]:!w-[80%] [&_[data-youtube-embed]]:!max-w-[720px] [&_[data-youtube-embed]]:!mx-auto [&_[data-youtube-embed]]:!h-auto [&_[data-youtube-embed]]:!pb-0 [&_[data-youtube-embed]]:aspect-video [&_[data-youtube-embed]_iframe]:!static [&_[data-youtube-embed]_iframe]:!w-full [&_[data-youtube-embed]_iframe]:!h-full [&_[data-youtube-embed]_iframe]:!my-0"
+                        />
+                      </div>
                     </div>
                   ) : (
                     /* Blogger HTML View */
@@ -2064,132 +3106,605 @@ export const AdminNoticeModal: React.FC = () => {
         </div>
       )}
 
-      {/* Blogger Image Insert Dialog Modal */}
+      {/* Blogger Image Insert Dialog Modal (Size, Position, 1-3 Column Row Layout, Upload & URL) */}
       {showImageDialog && (
         <div
-          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs"
-          onClick={() => setShowImageDialog(false)}
+          className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs"
+          onClick={() => {
+            appendGridTargetElRef.current = null;
+            setShowImageDialog(false);
+          }}
         >
           <div
-            className="w-full max-w-md rounded-xl bg-zinc-900 border border-zinc-700 p-5 shadow-2xl space-y-4 text-zinc-100"
+            className="w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-zinc-900 border border-zinc-700 shadow-2xl text-zinc-100 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
-              <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
+            {/* Dialog Header */}
+            <div className="px-5 py-3.5 flex items-center justify-between border-b border-zinc-800 shrink-0">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
                 <ImagePlus className="w-4 h-4 text-amber-400" />
-                <span>이미지 삽입</span>
+                <span>
+                  {appendGridTargetElRef.current
+                    ? '현재 이미지 줄에 사진 추가'
+                    : '이미지 삽입 · 크기 및 위치 배치'}
+                </span>
               </h4>
               <button
                 type="button"
-                onClick={() => setShowImageDialog(false)}
+                onClick={() => {
+                  appendGridTargetElRef.current = null;
+                  setShowImageDialog(false);
+                }}
                 className="text-zinc-400 hover:text-white p-1 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 p-1 rounded-lg bg-zinc-950 border border-zinc-800 text-xs">
-              <button
-                type="button"
-                onClick={() => setImageTab('upload')}
-                className={`py-1.5 rounded-md font-bold cursor-pointer transition-colors ${
-                  imageTab === 'upload'
-                    ? 'bg-amber-400 text-zinc-950'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                컴퓨터에서 업로드
-              </button>
-              <button
-                type="button"
-                onClick={() => setImageTab('url')}
-                className={`py-1.5 rounded-md font-bold cursor-pointer transition-colors ${
-                  imageTab === 'url'
-                    ? 'bg-amber-400 text-zinc-950'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                URL로 추가
-              </button>
-            </div>
-
-            {imageError && (
-              <div className="p-2.5 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>{imageError}</span>
-              </div>
-            )}
-
-            <div className="space-y-3 text-xs">
-              {imageTab === 'upload' ? (
-                <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-6 rounded-xl border border-dashed border-zinc-700 hover:border-amber-400 bg-zinc-950 flex flex-col items-center justify-center gap-2 text-zinc-300 hover:text-amber-300 transition-colors cursor-pointer"
-                  >
-                    <Upload className="w-5 h-5" />
-                    <span className="font-semibold">파일 선택 (최대 1.5MB)</span>
-                  </button>
-                  {imageUrl && (
-                    <div className="mt-2 p-2 rounded-lg bg-zinc-950 border border-zinc-800">
-                      <img
-                        src={imageUrl}
-                        alt="미리보기"
-                        className="max-h-32 mx-auto rounded object-contain"
-                      />
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">이미지 URL</label>
-                  <input
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://example.com/image.jpg"
-                    className="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-amber-400 font-mono"
-                  />
+            {/* Dialog Scrollable Body */}
+            <div className="p-5 overflow-y-auto space-y-4 text-xs">
+              {imageError && (
+                <div className="p-2.5 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{imageError}</span>
                 </div>
               )}
 
-              <div>
-                <label className="block text-zinc-300 font-semibold mb-1">
-                  이미지 설명 (선택 - SEO alt 텍스트)
-                </label>
-                <input
-                  type="text"
-                  value={imageAlt}
-                  onChange={(e) => setImageAlt(e.target.value)}
-                  placeholder="이미지를 설명하는 문구"
-                  className="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-amber-400"
-                />
+              {/* Step 1: Layout & Position Configuration (hidden only when appending into existing row) */}
+              {!appendGridTargetElRef.current && (
+                <div className="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-zinc-200 flex items-center gap-1.5">
+                      <LayoutGrid className="w-3.5 h-3.5 text-amber-400" />
+                      <span>1. 이미지 위치 및 한 줄 배치</span>
+                    </span>
+                    <span className="text-[11px] text-zinc-400">
+                      {imageLayoutMode === 'grid-3'
+                        ? '한 줄에 3개 나란히 배치'
+                        : imageLayoutMode === 'grid-2'
+                          ? '한 줄에 2개 나란히 배치'
+                          : imageLayoutMode === 'float-left'
+                            ? '왼쪽 배치 · 본문 글 감싸기'
+                            : imageLayoutMode === 'float-right'
+                              ? '오른쪽 배치 · 본문 글 감싸기'
+                              : imageLayoutMode === 'left'
+                                ? '단독 왼쪽 정렬'
+                                : imageLayoutMode === 'right'
+                                  ? '단독 오른쪽 정렬'
+                                  : '단독 가운데 정렬'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {(
+                      [
+                        { id: 'left', label: '왼쪽 정렬', Icon: AlignLeft },
+                        { id: 'center', label: '가운데 정렬', Icon: AlignCenter },
+                        { id: 'right', label: '오른쪽 정렬', Icon: AlignRight },
+                        { id: 'float-left', label: '글 좌측 배치', Icon: AlignLeft },
+                        { id: 'float-right', label: '글 우측 배치', Icon: AlignRight },
+                        { id: 'grid-2', label: '한 줄에 2개', Icon: Columns2 },
+                        { id: 'grid-3', label: '한 줄에 3개', Icon: Columns3 },
+                      ] as { id: ImageLayoutMode; label: string; Icon: React.ElementType }[]
+                    ).map(({ id, label, Icon }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => handleChangeImageLayoutMode(id)}
+                        className={`px-2.5 py-2 rounded-lg border font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                          imageLayoutMode === id
+                            ? id.startsWith('grid-')
+                              ? 'bg-sky-400 text-zinc-950 border-sky-300 shadow-sm'
+                              : 'bg-amber-400 text-zinc-950 border-amber-300 shadow-sm'
+                            : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:text-white'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5 shrink-0" />
+                        <span>{label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Size Slider & Presets */}
+                  <div className="pt-2 border-t border-zinc-800/80 flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-zinc-400 font-semibold shrink-0">
+                        {imageLayoutMode.startsWith('grid-') ? '행 전체 너비' : '그림 크기'}
+                      </span>
+                      {(imageLayoutMode.startsWith('grid-')
+                        ? [60, 80, 90, 100]
+                        : [25, 50, 75, 100]
+                      ).map((pct) => (
+                        <button
+                          key={pct}
+                          type="button"
+                          onClick={() => setImageWidthPercent(pct)}
+                          className={`px-2 py-1 rounded-md font-mono text-[11px] font-bold border cursor-pointer ${
+                            imageWidthPercent === pct
+                              ? 'bg-amber-400 text-zinc-950 border-amber-300'
+                              : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                          }`}
+                        >
+                          {pct}%
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-1 min-w-[140px]">
+                      <input
+                        type="range"
+                        min={imageLayoutMode.startsWith('grid-') ? 40 : 15}
+                        max={100}
+                        step={5}
+                        value={imageWidthPercent}
+                        onChange={(e) => setImageWidthPercent(Number(e.target.value))}
+                        className="w-full accent-amber-400 cursor-pointer"
+                      />
+                      <span className="font-mono font-bold text-amber-300 w-10 text-right">
+                        {imageWidthPercent}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Extra Row Settings for 2-Column / 3-Column Grids */}
+                  {imageLayoutMode.startsWith('grid-') && (
+                    <div className="pt-2 border-t border-zinc-800/80 flex flex-wrap items-center gap-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-zinc-400 font-semibold">이미지 비율</span>
+                        {(
+                          [
+                            { id: 'auto', label: '원본' },
+                            { id: '1/1', label: '1:1' },
+                            { id: '4/3', label: '4:3' },
+                            { id: '16/9', label: '16:9' },
+                          ] as { id: ImageAspectOption; label: string }[]
+                        ).map((opt) => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setImageAspect(opt.id)}
+                            className={`px-2 py-1 rounded-md font-semibold border cursor-pointer ${
+                              imageAspect === opt.id
+                                ? 'bg-sky-400 text-zinc-950 border-sky-300'
+                                : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-zinc-400 font-semibold">간격</span>
+                        {([6, 12, 18] as ImageGapOption[]).map((g) => (
+                          <button
+                            key={g}
+                            type="button"
+                            onClick={() => setImageGap(g)}
+                            className={`px-2 py-1 rounded-md font-mono font-semibold border cursor-pointer ${
+                              imageGap === g
+                                ? 'bg-sky-400 text-zinc-950 border-sky-300'
+                                : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:border-zinc-600'
+                            }`}
+                          >
+                            {g === 6 ? '좁게' : g === 12 ? '보통' : '넓게'}
+                          </button>
+                        ))}
+                      </div>
+
+                      {imageWidthPercent < 100 && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-zinc-400 font-semibold">행 위치</span>
+                          {(
+                            [
+                              { id: 'left', label: '좌' },
+                              { id: 'center', label: '중앙' },
+                              { id: 'right', label: '우' },
+                            ] as { id: 'left' | 'center' | 'right'; label: string }[]
+                          ).map((al) => (
+                            <button
+                              key={al.id}
+                              type="button"
+                              onClick={() => setImageGridAlign(al.id)}
+                              className={`px-2 py-1 rounded-md font-semibold border cursor-pointer ${
+                                imageGridAlign === al.id
+                                  ? 'bg-amber-400 text-zinc-950 border-amber-300'
+                                  : 'bg-zinc-900 text-zinc-300 border-zinc-800'
+                              }`}
+                            >
+                              {al.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Step 2: Upload Multiple Files OR Paste URLs */}
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="grid grid-cols-2 gap-1.5 p-1 rounded-lg bg-zinc-950 border border-zinc-800">
+                    <button
+                      type="button"
+                      onClick={() => setImageTab('upload')}
+                      className={`px-3 py-1.5 rounded-md font-bold cursor-pointer transition-colors ${
+                        imageTab === 'upload'
+                          ? 'bg-amber-400 text-zinc-950'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      컴퓨터에서 업로드
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageTab('url')}
+                      className={`px-3 py-1.5 rounded-md font-bold cursor-pointer transition-colors ${
+                        imageTab === 'url'
+                          ? 'bg-amber-400 text-zinc-950'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      URL로 추가
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleMultipleFileSelect}
+                      className="hidden"
+                    />
+                    <input
+                      ref={slotFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleSingleSlotFileSelect}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      disabled={isProcessingImages}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100 font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {isProcessingImages ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                      ) : (
+                        <Upload className="w-3.5 h-3.5 text-amber-400" />
+                      )}
+                      <span>여러 파일 한 번에 선택</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowBulkUrlBox((v) => !v)}
+                      className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 font-semibold cursor-pointer"
+                    >
+                      URL 일괄 입력
+                    </button>
+                  </div>
+                </div>
+
+                {showBulkUrlBox && (
+                  <div className="p-3 rounded-xl bg-zinc-950 border border-amber-400/40 space-y-2">
+                    <label className="block text-[11px] font-semibold text-amber-300">
+                      이미지 URL을 줄바꿈으로 여러 개 입력하세요 (예: 3개 입력 시 한 줄에 3개로 자동 채움)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={bulkUrlInput}
+                      onChange={(e) => setBulkUrlInput(e.target.value)}
+                      placeholder={`https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg\nhttps://example.com/photo3.jpg`}
+                      className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowBulkUrlBox(false)}
+                        className="px-2.5 py-1 rounded bg-zinc-800 text-zinc-300 text-[11px] cursor-pointer"
+                      >
+                        닫기
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleApplyBulkUrls}
+                        className="px-3 py-1 rounded bg-amber-400 text-zinc-950 font-bold text-[11px] cursor-pointer"
+                      >
+                        슬롯에 채우기
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slot Cards */}
+                <div className="space-y-2.5">
+                  {imageSlots.map((slot, idx) => (
+                    <div
+                      key={slot.id}
+                      onClick={() => setActiveSlotIndex(idx)}
+                      className={`p-3 rounded-xl border transition-colors space-y-2.5 ${
+                        activeSlotIndex === idx
+                          ? 'bg-zinc-950 border-amber-400/60'
+                          : 'bg-zinc-950/70 border-zinc-800'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-zinc-200 flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-amber-300 font-mono text-[10.5px]">
+                            #{idx + 1}
+                          </span>
+                          <span>이미지 {idx + 1}</span>
+                          {slot.src && (
+                            <span className="text-[10.5px] text-emerald-400 font-medium">
+                              (준비됨)
+                            </span>
+                          )}
+                        </span>
+
+                        <div className="flex items-center gap-1">
+                          {imageSlots.length > 1 && (
+                            <>
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMoveImageSlot(idx, -1);
+                                }}
+                                className="p-1 rounded bg-zinc-900 border border-zinc-800 disabled:opacity-35 text-zinc-300 hover:text-white cursor-pointer"
+                                title="위로"
+                              >
+                                <ArrowLeft className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === imageSlots.length - 1}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMoveImageSlot(idx, 1);
+                                }}
+                                className="p-1 rounded bg-zinc-900 border border-zinc-800 disabled:opacity-35 text-zinc-300 hover:text-white cursor-pointer"
+                                title="아래로"
+                              >
+                                <ArrowRight className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setImageSlots((prev) =>
+                                    prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
+                                  );
+                                }}
+                                className="p-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-rose-400 cursor-pointer"
+                                title="슬롯 삭제"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-3 items-start">
+                        {/* Thumbnail / Quick File Picker */}
+                        <div className="w-full sm:w-28 shrink-0">
+                          {slot.src ? (
+                            <div className="relative group rounded-lg overflow-hidden border border-zinc-700 bg-black h-20 flex items-center justify-center">
+                              <img
+                                src={slot.src}
+                                alt={`슬롯 ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setImageSlots((prev) =>
+                                    prev.map((s, i) => (i === idx ? { ...s, src: '' } : s))
+                                  );
+                                }}
+                                className="absolute top-1 right-1 p-1 rounded bg-black/75 text-zinc-200 hover:text-rose-400 cursor-pointer"
+                                title="이미지 비우기"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                slotUploadTargetIdxRef.current = idx;
+                                slotFileInputRef.current?.click();
+                              }}
+                              className="w-full h-20 rounded-lg border border-dashed border-zinc-700 hover:border-amber-400 bg-zinc-900/70 flex flex-col items-center justify-center gap-1 text-zinc-400 hover:text-amber-300 transition-colors cursor-pointer"
+                            >
+                              <Upload className="w-4 h-4" />
+                              <span className="text-[11px] font-semibold">파일 선택</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* URL + Alt Inputs (Always accessible regardless of tab) */}
+                        <div className="flex-1 w-full space-y-2">
+                          <div className="flex gap-1.5">
+                            <input
+                              type="url"
+                              value={slot.src.startsWith('data:image/') ? '' : slot.src}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setImageSlots((prev) =>
+                                  prev.map((s, i) => (i === idx ? { ...s, src: val } : s))
+                                );
+                              }}
+                              placeholder={
+                                slot.src.startsWith('data:image/')
+                                  ? '업로드된 이미지 파일이 적용되었습니다 (교체하려면 새 URL 입력)'
+                                  : '이미지 URL 입력 (https://example.com/image.jpg)'
+                              }
+                              className="flex-1 px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono text-[11.5px]"
+                            />
+                            {imageTab === 'upload' && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  slotUploadTargetIdxRef.current = idx;
+                                  slotFileInputRef.current?.click();
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-semibold shrink-0 cursor-pointer"
+                              >
+                                파일
+                              </button>
+                            )}
+                          </div>
+                          <input
+                            type="text"
+                            value={slot.alt}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setImageSlots((prev) =>
+                                prev.map((s, i) => (i === idx ? { ...s, alt: val } : s))
+                              );
+                            }}
+                            placeholder="이미지 설명 (선택 - SEO alt 텍스트)"
+                            className="w-full px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 text-[11.5px]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setImageSlots((prev) => [...prev, createEmptyImageSlot()])}
+                  className="w-full py-2 rounded-xl border border-dashed border-zinc-700 hover:border-amber-400/70 text-zinc-300 hover:text-amber-300 font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>이미지 슬롯 추가</span>
+                </button>
               </div>
+
+              {/* Step 3: Live Layout Preview */}
+              {!appendGridTargetElRef.current &&
+                imageSlots.some((s) => s.src.trim().length > 0) && (
+                  <div className="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
+                    <div className="text-[11px] font-bold text-zinc-400">
+                      삽입 형태 미리보기
+                    </div>
+                    <div className="p-3 rounded-lg bg-zinc-900/70 border border-zinc-800/80 overflow-hidden">
+                      {imageLayoutMode === 'grid-2' || imageLayoutMode === 'grid-3' ? (
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: `repeat(${imageLayoutMode === 'grid-2' ? 2 : 3}, minmax(0, 1fr))`,
+                            gap: `${imageGap}px`,
+                            width: `${imageWidthPercent}%`,
+                            margin:
+                              imageGridAlign === 'left'
+                                ? '0 auto 0 0'
+                                : imageGridAlign === 'right'
+                                  ? '0 0 0 auto'
+                                  : '0 auto',
+                          }}
+                        >
+                          {imageSlots
+                            .filter((s) => s.src.trim())
+                            .map((s) => (
+                              <img
+                                key={s.id}
+                                src={s.src}
+                                alt={s.alt || '미리보기'}
+                                style={{
+                                  width: '100%',
+                                  aspectRatio: imageAspect === 'auto' ? undefined : imageAspect,
+                                  objectFit: imageAspect === 'auto' ? undefined : 'cover',
+                                  borderRadius: '8px',
+                                  display: 'block',
+                                }}
+                              />
+                            ))}
+                        </div>
+                      ) : (
+                        <div className="after:content-[''] after:block after:clear-both">
+                          {imageSlots
+                            .filter((s) => s.src.trim())
+                            .slice(0, 1)
+                            .map((s) => (
+                              <div
+                                key={s.id}
+                                style={{
+                                  width: `${imageWidthPercent}%`,
+                                  float:
+                                    imageLayoutMode === 'float-left'
+                                      ? 'left'
+                                      : imageLayoutMode === 'float-right'
+                                        ? 'right'
+                                        : 'none',
+                                  margin:
+                                    imageLayoutMode === 'left'
+                                      ? '0 auto 0 0'
+                                      : imageLayoutMode === 'right'
+                                        ? '0 0 0 auto'
+                                        : imageLayoutMode === 'float-left'
+                                          ? '0 12px 8px 0'
+                                          : imageLayoutMode === 'float-right'
+                                            ? '0 0 8px 12px'
+                                            : '0 auto',
+                                }}
+                              >
+                                <img
+                                  src={s.src}
+                                  alt={s.alt || '미리보기'}
+                                  className="w-full h-auto rounded-lg block"
+                                />
+                              </div>
+                            ))}
+                          {(imageLayoutMode === 'float-left' ||
+                            imageLayoutMode === 'float-right') && (
+                            <p className="text-[11px] text-zinc-400 leading-relaxed">
+                              글과 이미지가 나란히 자연스럽게 흐르도록 배치됩니다. 본문 내용이
+                              이미지 옆 공간을 따라 이어서 표시됩니다.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
             </div>
 
-            <div className="pt-2 flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setShowImageDialog(false)}
-                className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmImage}
-                className="px-4 py-1.5 rounded-lg bg-amber-400 text-zinc-950 hover:bg-amber-300 text-xs font-bold cursor-pointer"
-              >
-                선택
-              </button>
+            {/* Dialog Footer */}
+            <div className="px-5 py-3.5 border-t border-zinc-800 flex items-center justify-between gap-2 shrink-0 bg-zinc-900">
+              <span className="text-[11px] text-zinc-400">
+                삽입 후 본문에서 그림을 클릭해도 크기·위치를 수정할 수 있습니다.
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    appendGridTargetElRef.current = null;
+                    setShowImageDialog(false);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold cursor-pointer"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  disabled={isProcessingImages}
+                  onClick={handleConfirmImage}
+                  className="px-4 py-1.5 rounded-lg bg-amber-400 text-zinc-950 hover:bg-amber-300 disabled:opacity-50 text-xs font-bold cursor-pointer"
+                >
+                  본문에 삽입
+                </button>
+              </div>
             </div>
           </div>
         </div>

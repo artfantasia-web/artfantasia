@@ -3,7 +3,7 @@ import { useNotices } from '../context/NoticeContext';
 import { NoticeItem } from '../types';
 import { Pin, Search, Eye, Calendar, Share2, Check, ArrowLeft, Youtube, Image as ImageIcon, Plus, Edit2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
-import { formatNoticeContent, extractEmbeddedYoutubeIds } from '../utils/formatNotice';
+import { formatNoticeContent, extractEmbeddedYoutubeIds, extractYoutubeVideoId } from '../utils/formatNotice';
 import { applyNoticeDetailSeo, formatNoticeSlug } from '../utils/seo';
 
 interface NoticeSectionProps {
@@ -17,6 +17,67 @@ function matchesNoticeId(itemId: string, targetId: string): boolean {
     return Number(itemId) === Number(targetId);
   }
   return false;
+}
+
+function extractNoticeImagesFromContent(content: string[]): string[] {
+  const joined = (content || []).join('\n');
+  const urls: string[] = [];
+  const imgRegex = /<img\b[^>]*?\bsrc\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s>]+))/gi;
+  let match: RegExpExecArray | null;
+  while ((match = imgRegex.exec(joined)) !== null) {
+    const raw = (match[1] || match[2] || match[3] || '').replace(/&amp;/g, '&').trim();
+    if (raw && !urls.includes(raw)) {
+      urls.push(raw);
+    }
+  }
+  return urls;
+}
+
+function extractNoticeThumbnail(
+  item: NoticeItem
+): { src: string; isVideoFallback: boolean; imageCount: number } | null {
+  const legacyImages = (item.images || []).filter(Boolean);
+  const inlineImages = extractNoticeImagesFromContent(item.content || []);
+  const combinedImages = Array.from(new Set([...legacyImages, ...inlineImages]));
+
+  if (combinedImages.length > 0) {
+    return {
+      src: combinedImages[0],
+      isVideoFallback: false,
+      imageCount: combinedImages.length,
+    };
+  }
+
+  const embeddedIds = extractEmbeddedYoutubeIds(item.content || []);
+  const legacyYtId = extractYoutubeVideoId(item.youtubeId);
+  const firstYtId = embeddedIds[0] || legacyYtId;
+  if (firstYtId) {
+    return {
+      src: `https://img.youtube.com/vi/${firstYtId}/mqdefault.jpg`,
+      isVideoFallback: true,
+      imageCount: 0,
+    };
+  }
+
+  return null;
+}
+
+function extractNoticeExcerpt(content: string[]): string {
+  const joined = (content || []).join(' ');
+  const plain = joined
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/https?:\/\/(?:www\.|m\.)?(?:youtube\.com|youtu\.be)\/\S+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return plain;
 }
 
 export const NoticeSection: React.FC<NoticeSectionProps> = ({
@@ -478,13 +539,13 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
               {/* Main Content Paragraphs (Supports Text & HTML) */}
               <div
                 itemProp="articleBody"
-                className="py-4 space-y-4 text-sm sm:text-base text-zinc-200 leading-relaxed font-sans"
+                className="py-4 space-y-4 text-sm sm:text-base text-zinc-200 leading-relaxed font-sans after:content-[''] after:block after:clear-both"
               >
                 {activeNotice.content.map((paragraph, idx) => (
                   <div
                     key={idx}
                     dangerouslySetInnerHTML={{ __html: formatNoticeContent(paragraph) }}
-                    className="space-y-3 leading-relaxed font-['Pretendard','Noto_Sans_KR',sans-serif] [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_strong]:text-white [&_b]:text-white [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4 [&_hr]:border-zinc-800 [&_hr]:my-6 [&_s]:line-through [&_iframe]:w-[80%] [&_iframe]:max-w-[720px] [&_iframe]:mx-auto [&_iframe]:block [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-4 [&_[data-youtube-embed]]:!w-[80%] [&_[data-youtube-embed]]:!max-w-[720px] [&_[data-youtube-embed]]:!mx-auto [&_[data-youtube-embed]]:!h-auto [&_[data-youtube-embed]]:!pb-0 [&_[data-youtube-embed]]:aspect-video [&_[data-youtube-embed]_iframe]:!static [&_[data-youtube-embed]_iframe]:!w-full [&_[data-youtube-embed]_iframe]:!h-full [&_[data-youtube-embed]_iframe]:!my-0"
+                    className="space-y-3 leading-relaxed font-['Pretendard','Noto_Sans_KR',sans-serif] after:content-[''] after:block after:clear-both [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_strong]:text-white [&_b]:text-white [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4 [&_[data-image-block]]:max-w-full [&_[data-image-block]_img]:!my-0 [&_[data-image-block]_img]:w-full [&_[data-image-grid]]:max-w-full [&_[data-image-grid]_figure]:!m-0 [&_[data-image-grid]_img]:!my-0 [&_[data-image-grid]_img]:w-full [&_hr]:border-zinc-800 [&_hr]:my-6 [&_s]:line-through [&_iframe]:w-[80%] [&_iframe]:max-w-[720px] [&_iframe]:mx-auto [&_iframe]:block [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-4 [&_[data-youtube-embed]]:!w-[80%] [&_[data-youtube-embed]]:!max-w-[720px] [&_[data-youtube-embed]]:!mx-auto [&_[data-youtube-embed]]:!h-auto [&_[data-youtube-embed]]:!pb-0 [&_[data-youtube-embed]]:aspect-video [&_[data-youtube-embed]_iframe]:!static [&_[data-youtube-embed]_iframe]:!w-full [&_[data-youtube-embed]_iframe]:!h-full [&_[data-youtube-embed]_iframe]:!my-0"
                   />
                 ))}
               </div>
@@ -526,12 +587,11 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
           /* Notice List View */
           <>
 
-            {/* Notice List Table */}
+            {/* Notice List Card Container */}
             <div className="mt-6 rounded-lg bg-zinc-950 border border-zinc-800/80 overflow-hidden">
-              <div className="hidden sm:grid grid-cols-12 gap-4 px-6 py-3 bg-zinc-900/60 border-b border-zinc-800 text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
-                <div className="col-span-9">제목</div>
-                <div className="col-span-2 text-right">등록일</div>
-                <div className="col-span-1 text-right">조회</div>
+              <div className="flex items-center justify-between px-4 sm:px-6 py-3 bg-zinc-900/60 border-b border-zinc-800 text-[11px] font-mono text-zinc-400 tracking-wider">
+                <span>게시글 ({filteredNotices.length})</span>
+                <span className="hidden sm:inline">제목 · 대표 이미지</span>
               </div>
 
               <div className="divide-y divide-zinc-800/60">
@@ -560,91 +620,126 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                     선택하신 조건에 일치하는 게시물이 없습니다.
                   </div>
                 ) : (
-                  filteredNotices.map((item) => (
-                    <div
-                      key={item.id}
-                      onClick={() => handleOpenNotice(item)}
-                      className="group cursor-pointer p-4 sm:px-6 sm:py-4 flex flex-col sm:grid sm:grid-cols-12 gap-2 sm:gap-4 items-start sm:items-center hover:bg-zinc-900/40 transition-colors"
-                    >
-                      {/* Title & Pin & Category Badge & Attachments */}
-                      <div className="sm:col-span-9 flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                        {item.pinned && (
-                          <span className="p-1 rounded bg-amber-400/10 text-amber-400 shrink-0">
-                            <Pin className="w-3 h-3 rotate-45" />
-                          </span>
-                        )}
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10.5px] font-bold shrink-0 border ${
-                            item.category === '정보'
-                              ? 'bg-sky-400/15 text-sky-300 border-sky-400/30'
-                              : 'bg-amber-400/15 text-amber-300 border-amber-400/30'
-                          }`}
-                        >
-                          {item.category === '정보' ? '정보' : '소식'}
-                        </span>
-                        <a
-                          href={`/notice/${encodeURIComponent(formatNoticeSlug(item.id))}`}
-                          onClick={(e) => {
-                            if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleOpenNotice(item);
-                            } else {
-                              e.stopPropagation();
-                            }
-                          }}
-                          className="text-sm font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-1"
-                        >
-                          {item.title}
-                        </a>
-                        {(() => {
-                          const embeddedIds = extractEmbeddedYoutubeIds(item.content);
-                          const totalVideos =
-                            embeddedIds.length +
-                            (item.youtubeId && !embeddedIds.includes(item.youtubeId) ? 1 : 0);
-                          if (totalVideos === 0) return null;
-                          return (
-                            <span className="text-[10px] text-red-400 bg-red-400/10 border border-red-400/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
-                              <Youtube className="w-2.5 h-2.5" />
-                              <span>{totalVideos > 1 ? `영상 ${totalVideos}` : '영상'}</span>
+                  filteredNotices.map((item) => {
+                    const thumbnail = extractNoticeThumbnail(item);
+                    const excerpt = extractNoticeExcerpt(item.content || []);
+                    const embeddedIds = extractEmbeddedYoutubeIds(item.content || []);
+                    const totalVideos =
+                      embeddedIds.length +
+                      (item.youtubeId && !embeddedIds.includes(item.youtubeId) ? 1 : 0);
+                    const totalImages = thumbnail ? thumbnail.imageCount : 0;
+
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => handleOpenNotice(item)}
+                        className="group cursor-pointer p-4 sm:px-6 sm:py-5 flex items-center justify-between gap-4 sm:gap-6 hover:bg-zinc-900/40 transition-colors"
+                      >
+                        {/* Left Side: Badges, Title, Excerpt & Meta */}
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {item.pinned && (
+                              <span className="px-1.5 py-0.5 rounded bg-amber-400/15 text-amber-400 border border-amber-400/30 text-[10px] font-bold flex items-center gap-1 shrink-0">
+                                <Pin className="w-2.5 h-2.5 rotate-45" />
+                                <span>고정</span>
+                              </span>
+                            )}
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10.5px] font-bold shrink-0 border ${
+                                item.category === '정보'
+                                  ? 'bg-sky-400/15 text-sky-300 border-sky-400/30'
+                                  : 'bg-amber-400/15 text-amber-300 border-amber-400/30'
+                              }`}
+                            >
+                              {item.category === '정보' ? '정보' : '소식'}
                             </span>
-                          );
-                        })()}
-                        {item.images && item.images.length > 0 && (
-                          <span className="text-[10px] text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
-                            <ImageIcon className="w-2.5 h-2.5" />
-                            <span>{item.images.length}</span>
-                          </span>
-                        )}
-                        {isAdmin && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openAdminModal(item);
-                            }}
-                            className="p-1 px-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-300 text-[10px] font-bold border border-zinc-700 flex items-center gap-1 shrink-0 ml-1.5 transition-colors"
-                            title="이 글 수정 (관리자)"
-                          >
-                            <Edit2 className="w-2.5 h-2.5 text-amber-400" />
-                            <span>수정</span>
-                          </button>
-                        )}
-                      </div>
+                            {totalVideos > 0 && (
+                              <span className="text-[10px] text-red-400 bg-red-400/10 border border-red-400/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                                <Youtube className="w-2.5 h-2.5" />
+                                <span>{totalVideos > 1 ? `영상 ${totalVideos}` : '영상'}</span>
+                              </span>
+                            )}
+                            {totalImages > 0 && (
+                              <span className="text-[10px] text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                                <ImageIcon className="w-2.5 h-2.5" />
+                                <span>{totalImages}</span>
+                              </span>
+                            )}
+                            {isAdmin && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openAdminModal(item);
+                                }}
+                                className="p-1 px-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-300 text-[10px] font-bold border border-zinc-700 flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                                title="이 글 수정 (관리자)"
+                              >
+                                <Edit2 className="w-2.5 h-2.5 text-amber-400" />
+                                <span>수정</span>
+                              </button>
+                            )}
+                          </div>
 
-                      {/* Date */}
-                      <div className="sm:col-span-2 sm:text-right text-xs font-mono text-zinc-500 flex items-center sm:justify-end gap-1">
-                        <Calendar className="w-3 h-3 text-zinc-600 sm:hidden" />
-                        <span>{item.date}</span>
-                      </div>
+                          {/* Post Title */}
+                          <div>
+                            <a
+                              href={`/notice/${encodeURIComponent(formatNoticeSlug(item.id))}`}
+                              onClick={(e) => {
+                                if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleOpenNotice(item);
+                                } else {
+                                  e.stopPropagation();
+                                }
+                              }}
+                              className="block text-base sm:text-lg font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-2 leading-snug"
+                            >
+                              {item.title}
+                            </a>
+                          </div>
 
-                      {/* Views */}
-                      <div className="sm:col-span-1 sm:text-right text-xs font-mono text-zinc-500 flex items-center sm:justify-end gap-1">
-                        <Eye className="w-3 h-3 text-zinc-600 sm:hidden" />
-                        <span>{item.views}</span>
+                          {/* Short Excerpt */}
+                          {excerpt && (
+                            <p className="text-xs sm:text-sm text-zinc-400 line-clamp-1 sm:line-clamp-2 leading-relaxed">
+                              {excerpt}
+                            </p>
+                          )}
+
+                          {/* Date & Views */}
+                          <div className="flex items-center gap-3.5 text-[11px] font-mono text-zinc-500 pt-0.5">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3 text-zinc-600" />
+                              <span>{item.date}</span>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Eye className="w-3 h-3 text-zinc-600" />
+                              <span>조회 {item.views}</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Right Side: Representative Image Thumbnail */}
+                        {thumbnail && (
+                          <div className="w-24 h-20 sm:w-40 sm:h-28 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shrink-0 relative shadow-md">
+                            <img
+                              src={thumbnail.src}
+                              alt={item.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                            {thumbnail.isVideoFallback && (
+                              <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/75 border border-red-500/40 text-red-400 text-[9.5px] font-bold flex items-center gap-1">
+                                <Youtube className="w-2.5 h-2.5" />
+                                <span>영상</span>
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
