@@ -13,6 +13,7 @@
 /notice/355 / 301
 /notice/118 / 301
 /notice/388 / 301
+/notice/* /index.html 200
 
 # Redirect all old numeric post URLs (10~399) to home
 /1* / 301

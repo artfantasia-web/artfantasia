@@ -21,6 +21,7 @@ interface NoticeContextType {
   closeAdminModal: () => void;
   setEditingNotice: (item: NoticeItem | null) => void;
   refreshNotices: () => Promise<void>;
+  fetchNoticeById: (id: string) => Promise<NoticeItem | null>;
   addNotice: (item: Omit<NoticeItem, 'id' | 'views'>) => Promise<NoticeMutationResult>;
   updateNotice: (id: string, updated: Partial<NoticeItem>) => Promise<NoticeMutationResult>;
   deleteNotice: (id: string) => Promise<NoticeMutationResult>;
@@ -113,10 +114,16 @@ function mapRowToNoticeItem(row: NoticeRow, sessionViewBonus: number = 0): Notic
     }
   }
 
-  const paragraphs = cleanBody
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean);
+  const hasHtmlBlocks = /<(p|div|h[1-6]|blockquote|ul|ol|table|section|figure|img|hr|iframe)[\s>/]/i.test(
+    cleanBody
+  );
+
+  const paragraphs = hasHtmlBlocks
+    ? [cleanBody.trim()].filter(Boolean)
+    : cleanBody
+        .split(/\n{2,}/)
+        .map((p) => p.trim())
+        .filter(Boolean);
 
   return {
     id: String(row.id),
@@ -189,6 +196,42 @@ export const NoticeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     refreshNotices();
   }, [refreshNotices]);
+
+  const fetchNoticeById = useCallback(async (id: string): Promise<NoticeItem | null> => {
+    if (!isSupabaseConfigured || !supabase) {
+      return null;
+    }
+
+    const numericId = Number(id);
+    if (!Number.isFinite(numericId)) {
+      return null;
+    }
+
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('notices')
+        .select('id, title, content, is_pinned, created_at')
+        .eq('id', numericId)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error(`Failed to fetch notice #${id} from Supabase:`, fetchError);
+        return null;
+      }
+
+      if (!data) {
+        return null;
+      }
+
+      return mapRowToNoticeItem(
+        data as NoticeRow,
+        sessionViewsRef.current[String((data as NoticeRow).id)] ?? 0
+      );
+    } catch (err) {
+      console.error(`Unexpected error fetching notice #${id}:`, err);
+      return null;
+    }
+  }, []);
 
   const loginAdmin = (id: string, pw: string): boolean => {
     // Exact requested credentials: id = admin, pw = qhtm0920!
@@ -402,6 +445,7 @@ export const NoticeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         closeAdminModal,
         setEditingNotice,
         refreshNotices,
+        fetchNoticeById,
         addNotice,
         updateNotice,
         deleteNotice,

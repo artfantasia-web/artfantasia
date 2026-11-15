@@ -1,28 +1,115 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNotices } from '../context/NoticeContext';
 import { NoticeItem } from '../types';
 import { Pin, Search, Eye, Calendar, Share2, Check, ArrowLeft, Youtube, Image as ImageIcon, Plus, Edit2, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { StandardSectionHeader } from './StandardSectionHeader';
-import { formatNoticeContent } from '../utils/formatNotice';
+import { formatNoticeContent, extractEmbeddedYoutubeIds } from '../utils/formatNotice';
+import { applyNoticeDetailSeo, formatNoticeSlug } from '../utils/seo';
 
-export const NoticeSection: React.FC = () => {
-  const { notices, isLoading, error, refreshNotices, isAdmin, openAdminModal, incrementViews } = useNotices();
+interface NoticeSectionProps {
+  noticeId?: string | null;
+  onSelectNotice?: (id: string | null) => void;
+}
+
+function matchesNoticeId(itemId: string, targetId: string): boolean {
+  if (itemId === targetId) return true;
+  if (/^\d+$/.test(itemId) && /^\d+$/.test(targetId)) {
+    return Number(itemId) === Number(targetId);
+  }
+  return false;
+}
+
+export const NoticeSection: React.FC<NoticeSectionProps> = ({
+  noticeId: controlledNoticeId,
+  onSelectNotice,
+}) => {
+  const {
+    notices,
+    isLoading,
+    error,
+    refreshNotices,
+    fetchNoticeById,
+    isAdmin,
+    openAdminModal,
+    incrementViews,
+  } = useNotices();
   const [selectedCategory, setSelectedCategory] = useState<'all' | '소식' | '정보'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeNoticeId, setActiveNoticeId] = useState<string | null>(() => {
-    const hash = typeof window !== 'undefined' ? window.location.hash : '';
-    if (hash && hash.startsWith('#notice-')) {
-      return hash.replace(/^#notice-/, '').trim() || null;
-    }
+  const [internalNoticeId, setInternalNoticeId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const pathMatch = window.location.pathname.match(/^\/notice\/([^/]+)\/?$/i);
+    if (pathMatch && pathMatch[1]) return decodeURIComponent(pathMatch[1]).trim() || null;
+    const hashMatch = window.location.hash.match(/^#\/?notice-(.+)$/i);
+    if (hashMatch && hashMatch[1]) return decodeURIComponent(hashMatch[1]).trim() || null;
     return null;
   });
+  const activeNoticeId =
+    controlledNoticeId !== undefined ? controlledNoticeId : internalNoticeId;
+
+  const [directNotice, setDirectNotice] = useState<NoticeItem | null>(null);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
   const [copied, setCopied] = useState(false);
   const lastCountedIdRef = React.useRef<string | null>(null);
 
-  const activeNotice = React.useMemo(
-    () => (activeNoticeId ? notices.find((n) => n.id === activeNoticeId) || null : null),
+  const listMatch = useMemo(
+    () =>
+      activeNoticeId
+        ? notices.find((n) => matchesNoticeId(n.id, activeNoticeId)) || null
+        : null,
     [notices, activeNoticeId]
   );
+
+  // Fetch directly from Supabase when visiting /notice/:id directly
+  useEffect(() => {
+    if (!activeNoticeId) {
+      setDirectNotice(null);
+      setIsFetchingDetail(false);
+      return;
+    }
+
+    if (listMatch) {
+      setDirectNotice(null);
+      setIsFetchingDetail(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsFetchingDetail(true);
+
+    fetchNoticeById(activeNoticeId)
+      .then((fetched) => {
+        if (!cancelled) {
+          setDirectNotice(fetched);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsFetchingDetail(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeNoticeId, listMatch, fetchNoticeById]);
+
+  const activeNotice = activeNoticeId ? listMatch || directNotice : null;
+
+  // Dynamically update document.title, description, og:title, og:description, og:url on detail view
+  // and normalize non-padded direct paths (e.g., /notice/1 -> /notice/0001)
+  useEffect(() => {
+    if (activeNotice) {
+      applyNoticeDetailSeo(activeNotice);
+      const canonicalPath = `/notice/${encodeURIComponent(formatNoticeSlug(activeNotice.id))}`;
+      if (
+        typeof window !== 'undefined' &&
+        window.location.pathname.toLowerCase().startsWith('/notice/') &&
+        window.location.pathname !== canonicalPath
+      ) {
+        window.history.replaceState(null, '', canonicalPath);
+      }
+    }
+  }, [activeNotice]);
 
   const filteredNotices = notices.filter((item) => {
     const itemCat = item.category === '정보' ? '정보' : '소식';
@@ -36,67 +123,85 @@ export const NoticeSection: React.FC = () => {
     return matchesCategory && matchesSearch;
   });
 
-  // Sync activeNoticeId with browser hash without triggering view count loops
-  React.useEffect(() => {
-    const handleHashCheck = () => {
-      const hash = window.location.hash;
-      if (hash && hash.startsWith('#notice-')) {
-        const targetId = hash.replace(/^#notice-/, '').trim();
-        setActiveNoticeId(targetId || null);
-      } else {
-        setActiveNoticeId(null);
+  // Sync internal fallback state if NoticeSection is mounted without controlled prop
+  useEffect(() => {
+    if (controlledNoticeId !== undefined) return;
+    const handleRouteSync = () => {
+      const pathMatch = window.location.pathname.match(/^\/notice\/([^/]+)\/?$/i);
+      if (pathMatch && pathMatch[1]) {
+        setInternalNoticeId(decodeURIComponent(pathMatch[1]).trim() || null);
+        return;
       }
+      const hashMatch = window.location.hash.match(/^#\/?notice-(.+)$/i);
+      if (hashMatch && hashMatch[1]) {
+        setInternalNoticeId(decodeURIComponent(hashMatch[1]).trim() || null);
+        return;
+      }
+      setInternalNoticeId(null);
     };
 
-    handleHashCheck();
-    window.addEventListener('hashchange', handleHashCheck);
-    return () => window.removeEventListener('hashchange', handleHashCheck);
-  }, []);
+    handleRouteSync();
+    window.addEventListener('hashchange', handleRouteSync);
+    window.addEventListener('popstate', handleRouteSync);
+    return () => {
+      window.removeEventListener('hashchange', handleRouteSync);
+      window.removeEventListener('popstate', handleRouteSync);
+    };
+  }, [controlledNoticeId]);
 
   // Increment view count safely at most once per browser session when viewing a notice (skip when admin is managing)
-  React.useEffect(() => {
-    if (!activeNoticeId) {
-      lastCountedIdRef.current = null;
+  useEffect(() => {
+    if (!activeNotice) {
+      if (!activeNoticeId) {
+        lastCountedIdRef.current = null;
+      }
       return;
     }
 
     if (isAdmin) return;
-    if (lastCountedIdRef.current === activeNoticeId) return;
+    if (lastCountedIdRef.current === activeNotice.id) return;
 
-    const exists = notices.some((n) => n.id === activeNoticeId);
-    if (!exists) return;
-
-    lastCountedIdRef.current = activeNoticeId;
+    lastCountedIdRef.current = activeNotice.id;
 
     try {
-      const viewedKey = `artfantasia_viewed_${activeNoticeId}`;
+      const viewedKey = `artfantasia_viewed_${activeNotice.id}`;
       if (!sessionStorage.getItem(viewedKey)) {
         sessionStorage.setItem(viewedKey, '1');
-        incrementViews(activeNoticeId);
+        incrementViews(activeNotice.id);
       }
     } catch {
-      incrementViews(activeNoticeId);
+      incrementViews(activeNotice.id);
     }
-  }, [activeNoticeId, notices, isAdmin, incrementViews]);
+  }, [activeNotice, activeNoticeId, isAdmin, incrementViews]);
 
   const handleOpenNotice = (item: NoticeItem) => {
-    setActiveNoticeId(item.id);
-    window.location.hash = `notice-${item.id}`;
+    const slug = formatNoticeSlug(item.id);
+    if (onSelectNotice) {
+      onSelectNotice(slug);
+      return;
+    }
+    setInternalNoticeId(slug);
+    window.history.pushState(null, '', `/notice/${encodeURIComponent(slug)}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCloseNotice = () => {
-    setActiveNoticeId(null);
-    if (window.location.hash && window.location.hash.startsWith('#notice-')) {
-      history.pushState(null, '', '#notice');
+    if (onSelectNotice) {
+      onSelectNotice(null);
+      return;
     }
+    setInternalNoticeId(null);
+    window.history.pushState(null, '', '/notice');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleShare = (item: NoticeItem) => {
-    const shareUrl = `${window.location.origin}/#notice-${item.id}`;
+    const targetPath = `/notice/${encodeURIComponent(formatNoticeSlug(item.id))}`;
+    const shareUrl = `${window.location.origin}${targetPath}`;
     navigator.clipboard.writeText(shareUrl);
-    window.location.hash = `notice-${item.id}`;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -104,8 +209,9 @@ export const NoticeSection: React.FC = () => {
   return (
     <section id="notice" className="pt-6 sm:pt-8 pb-16 sm:pb-24 border-b border-zinc-800 bg-[#09090b]">
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
-        {/* Section Header */}
+        {/* Section Header (uses h2 when viewing a detail article so the article's h1 is primary) */}
         <StandardSectionHeader
+          as={activeNoticeId ? 'h2' : 'h1'}
           title="소식 & 공지사항"
           subtitle={
             <>
@@ -249,48 +355,91 @@ export const NoticeSection: React.FC = () => {
           </div>
         </div>
 
-        {activeNotice ? (
+        {activeNoticeId && !activeNotice ? (
+          /* Direct /notice/:id loading or not-found state */
+          <div className="mt-6">
+            <div className="rounded-xl bg-zinc-950 border border-zinc-800/80 p-10 sm:p-14 text-center space-y-4">
+              {isLoading || isFetchingDetail ? (
+                <div className="flex flex-col items-center justify-center gap-3 text-zinc-400 text-xs font-mono">
+                  <Loader2 className="w-6 h-6 text-amber-400 animate-spin" />
+                  <span>공지사항을 불러오는 중입니다...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-center gap-2 text-zinc-300 text-sm font-semibold">
+                    <AlertCircle className="w-4 h-4 text-amber-400" />
+                    <span>요청하신 공지사항을 찾을 수 없습니다.</span>
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    삭제되었거나 잘못된 경로일 수 있습니다.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleCloseNotice}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-semibold text-zinc-100 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4 text-amber-400" />
+                    <span>공지사항 목록으로</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        ) : activeNotice ? (
           /* In-Page Article Detail View (Directly Below Category & Search Bar) */
           <div className="mt-6 space-y-6">
-            {/* Article Content Card */}
-            <article className="rounded-xl bg-zinc-950 border border-zinc-800/80 p-6 sm:p-10 shadow-2xl space-y-6">
-              {/* Category & Meta Information */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-zinc-800/80">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-2.5 py-0.5 rounded text-xs font-bold ${
-                      activeNotice.category === '정보'
-                        ? 'bg-sky-400/20 text-sky-300 border border-sky-400/40'
-                        : 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
-                    }`}
-                  >
-                    {activeNotice.category === '정보' ? '정보' : '소식'}
-                  </span>
-                  {activeNotice.pinned && (
-                    <span className="px-2 py-0.5 rounded text-xs font-semibold bg-amber-400 text-zinc-950 flex items-center gap-1">
-                      <Pin className="w-3 h-3 rotate-45" /> 상단 고정
+            {/* Semantic Article Content Card */}
+            <article
+              itemScope
+              itemType="https://schema.org/Article"
+              className="rounded-xl bg-zinc-950 border border-zinc-800/80 p-6 sm:p-10 shadow-2xl space-y-6"
+            >
+              <header className="space-y-4">
+                {/* Category & Meta Information */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-zinc-800/80">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-2.5 py-0.5 rounded text-xs font-bold ${
+                        activeNotice.category === '정보'
+                          ? 'bg-sky-400/20 text-sky-300 border border-sky-400/40'
+                          : 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
+                      }`}
+                    >
+                      {activeNotice.category === '정보' ? '정보' : '소식'}
                     </span>
-                  )}
+                    {activeNotice.pinned && (
+                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-amber-400 text-zinc-950 flex items-center gap-1">
+                        <Pin className="w-3 h-3 rotate-45" /> 상단 고정
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-4 text-xs font-mono text-zinc-400">
+                    <time
+                      dateTime={activeNotice.date.replace(/\./g, '-')}
+                      itemProp="datePublished"
+                      className="flex items-center gap-1.5"
+                    >
+                      <Calendar className="w-3.5 h-3.5 text-zinc-500" />
+                      {activeNotice.date}
+                    </time>
+                    <span className="flex items-center gap-1.5">
+                      <Eye className="w-3.5 h-3.5 text-zinc-500" />
+                      조회 {activeNotice.views}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-4 text-xs font-mono text-zinc-400">
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-zinc-500" />
-                    {activeNotice.date}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Eye className="w-3.5 h-3.5 text-zinc-500" />
-                    조회 {activeNotice.views}
-                  </span>
+                {/* Title (Semantic <h1> for search indexing) */}
+                <div>
+                  <h1
+                    itemProp="headline"
+                    className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-snug tracking-tight font-sans"
+                  >
+                    {activeNotice.title}
+                  </h1>
                 </div>
-              </div>
-
-              {/* Title */}
-              <div>
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-snug tracking-tight font-sans">
-                  {activeNotice.title}
-                </h3>
-              </div>
+              </header>
 
               {/* Embedded YouTube Video if present */}
               {activeNotice.youtubeId && (
@@ -327,12 +476,15 @@ export const NoticeSection: React.FC = () => {
               )}
 
               {/* Main Content Paragraphs (Supports Text & HTML) */}
-              <div className="py-4 space-y-4 text-sm sm:text-base text-zinc-200 leading-relaxed font-sans">
+              <div
+                itemProp="articleBody"
+                className="py-4 space-y-4 text-sm sm:text-base text-zinc-200 leading-relaxed font-sans"
+              >
                 {activeNotice.content.map((paragraph, idx) => (
                   <div
                     key={idx}
                     dangerouslySetInnerHTML={{ __html: formatNoticeContent(paragraph) }}
-                    className="space-y-3 leading-relaxed font-['Pretendard','Noto_Sans_KR',sans-serif] [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h1,&_h2,&_h3]:font-bold [&_h1,&_h2,&_h3]:text-white [&_strong]:text-white [&_b]:text-white [&_p]:leading-relaxed"
+                    className="space-y-3 leading-relaxed font-['Pretendard','Noto_Sans_KR',sans-serif] [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_strong]:text-white [&_b]:text-white [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4 [&_hr]:border-zinc-800 [&_hr]:my-6 [&_s]:line-through [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-4"
                   />
                 ))}
               </div>
@@ -430,15 +582,34 @@ export const NoticeSection: React.FC = () => {
                         >
                           {item.category === '정보' ? '정보' : '소식'}
                         </span>
-                        <h4 className="text-sm font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-1">
+                        <a
+                          href={`/notice/${encodeURIComponent(formatNoticeSlug(item.id))}`}
+                          onClick={(e) => {
+                            if (!e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleOpenNotice(item);
+                            } else {
+                              e.stopPropagation();
+                            }
+                          }}
+                          className="text-sm font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-1"
+                        >
                           {item.title}
-                        </h4>
-                        {item.youtubeId && (
-                          <span className="text-[10px] text-red-400 bg-red-400/10 border border-red-400/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
-                            <Youtube className="w-2.5 h-2.5" />
-                            <span>영상</span>
-                          </span>
-                        )}
+                        </a>
+                        {(() => {
+                          const embeddedIds = extractEmbeddedYoutubeIds(item.content);
+                          const totalVideos =
+                            embeddedIds.length +
+                            (item.youtubeId && !embeddedIds.includes(item.youtubeId) ? 1 : 0);
+                          if (totalVideos === 0) return null;
+                          return (
+                            <span className="text-[10px] text-red-400 bg-red-400/10 border border-red-400/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                              <Youtube className="w-2.5 h-2.5" />
+                              <span>{totalVideos > 1 ? `영상 ${totalVideos}` : '영상'}</span>
+                            </span>
+                          );
+                        })()}
                         {item.images && item.images.length > 0 && (
                           <span className="text-[10px] text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
                             <ImageIcon className="w-2.5 h-2.5" />

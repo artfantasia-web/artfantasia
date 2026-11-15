@@ -6,6 +6,7 @@ import { Footer } from './components/Footer';
 import { NoticeProvider } from './context/NoticeContext';
 import { AdminNoticeModal } from './components/admin/AdminNoticeModal';
 import { Loader2 } from 'lucide-react';
+import { applyPageSeo, clearNoticeDetailJsonLd, formatNoticeSlug } from './utils/seo';
 
 // Code-split heavy page views for ultra-fast initial bundle & performance
 const AboutSection = lazy(() => import('./components/AboutSection').then((m) => ({ default: m.AboutSection })));
@@ -48,6 +49,30 @@ const getSectionFromUrl = (): NavCategory => {
   if (pathname.startsWith('about')) return 'about';
 
   return 'home';
+};
+
+const getNoticeIdFromUrl = (): string | null => {
+  if (typeof window === 'undefined') return null;
+
+  const pathMatch = window.location.pathname.match(/^\/notice\/([^/]+)\/?$/i);
+  if (pathMatch && pathMatch[1]) {
+    try {
+      return decodeURIComponent(pathMatch[1]).trim() || null;
+    } catch {
+      return pathMatch[1].trim() || null;
+    }
+  }
+
+  const hashMatch = window.location.hash.match(/^#\/?notice-(.+)$/i);
+  if (hashMatch && hashMatch[1]) {
+    try {
+      return decodeURIComponent(hashMatch[1]).trim() || null;
+    } catch {
+      return hashMatch[1].trim() || null;
+    }
+  }
+
+  return null;
 };
 
 const PAGE_SEO_MAP: Record<NavCategory, { title: string; desc: string; path: string; image: string }> = {
@@ -103,11 +128,14 @@ const PAGE_SEO_MAP: Record<NavCategory, { title: string; desc: string; path: str
 
 function AppContent() {
   const [activeSection, setActiveSection] = useState<NavCategory>(() => getSectionFromUrl());
+  const [activeNoticeId, setActiveNoticeId] = useState<string | null>(() => getNoticeIdFromUrl());
 
   useEffect(() => {
     const handleUrlChange = () => {
       const section = getSectionFromUrl();
+      const noticeId = getNoticeIdFromUrl();
       setActiveSection(section);
+      setActiveNoticeId(section === 'notice' ? noticeId : null);
     };
 
     window.addEventListener('hashchange', handleUrlChange);
@@ -119,34 +147,41 @@ function AppContent() {
   }, []);
 
   // Synchronize document title, meta description, canonical link, and OpenGraph preview images with active page
+  // Notice detail pages (/notice/:id) manage their own dynamic SEO metadata once loaded from Supabase.
   useEffect(() => {
+    if (activeSection === 'notice' && activeNoticeId) {
+      return;
+    }
+
+    clearNoticeDetailJsonLd();
     const seo = PAGE_SEO_MAP[activeSection] || PAGE_SEO_MAP.home;
-    document.title = seo.title;
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', seo.desc);
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute('content', seo.title);
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute('content', seo.desc);
-    const ogUrl = document.querySelector('meta[property="og:url"]');
-    if (ogUrl) ogUrl.setAttribute('content', `https://artfantasia.co.kr${seo.path === '/' ? '/' : seo.path}`);
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) canonical.setAttribute('href', `https://artfantasia.co.kr${seo.path === '/' ? '/' : seo.path}`);
-    
-    // Update Open Graph and Twitter card preview images to representative screen
-    const ogImg = document.querySelector('meta[property="og:image"]');
-    if (ogImg) ogImg.setAttribute('content', seo.image);
-    const ogImgSecure = document.querySelector('meta[property="og:image:secure_url"]');
-    if (ogImgSecure) ogImgSecure.setAttribute('content', seo.image);
-    const twitterImg = document.querySelector('meta[name="twitter:image"]');
-    if (twitterImg) twitterImg.setAttribute('content', seo.image);
-  }, [activeSection]);
+    applyPageSeo({
+      title: seo.title,
+      description: seo.desc,
+      url: `https://artfantasia.co.kr${seo.path === '/' ? '/' : seo.path}`,
+      image: seo.image,
+      type: 'website',
+    });
+  }, [activeSection, activeNoticeId]);
 
   // Switch to dedicated page view and update browser URL
   const handleNavigate = (section: NavCategory) => {
     setActiveSection(section);
+    setActiveNoticeId(null);
     const targetPath = section === 'home' ? '/' : `/${section}`;
-    if (window.location.pathname !== targetPath) {
+    if (window.location.pathname !== targetPath || window.location.hash) {
+      window.history.pushState(null, '', targetPath);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Navigate to an individual notice detail route (/notice/0001) or back to /notice list
+  const handleSelectNotice = (noticeId: string | null) => {
+    setActiveSection('notice');
+    const slug = noticeId ? formatNoticeSlug(noticeId) : null;
+    setActiveNoticeId(slug);
+    const targetPath = slug ? `/notice/${encodeURIComponent(slug)}` : '/notice';
+    if (window.location.pathname !== targetPath || window.location.hash) {
       window.history.pushState(null, '', targetPath);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -194,7 +229,10 @@ function AppContent() {
           )}
 
           {activeSection === 'notice' && (
-            <NoticeSection />
+            <NoticeSection
+              noticeId={activeNoticeId}
+              onSelectNotice={handleSelectNotice}
+            />
           )}
 
           {activeSection === 'inquiry' && (
