@@ -159,10 +159,16 @@ export const InquirySection: React.FC<InquirySectionProps> = ({ isModal = false,
               {/* Image filling DIV completely with 75% opacity & Grayscale */}
               <div className="relative z-10 w-full h-full overflow-hidden flex items-center justify-center">
                 <img
-                  src="https://raw.githubusercontent.com/artfantasia-web/new1/main/B1.png"
+                  src="/assets/aistudio/build1_023228e9.webp"
                   alt="아트판타지아 콘텐츠제작센터"
-                  className="w-full h-full object-cover object-center opacity-75 grayscale"
-                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover object-top opacity-80 grayscale"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement;
+                    if (!img.dataset.fallbackApplied) {
+                      img.dataset.fallbackApplied = 'true';
+                      img.src = '/assets/aistudio/build1_023228e9.png';
+                    }
+                  }}
                 />
 
                 {/* Subtle Continuous Research & Innovation R&D HUD Overlay with Apple font */}
