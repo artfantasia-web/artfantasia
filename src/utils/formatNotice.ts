@@ -41,7 +41,7 @@ export function extractYoutubeVideoId(raw?: string | null): string | null {
  */
 export function buildYoutubeEmbedHtml(videoId: string): string {
   const safeId = videoId.replace(/[^A-Za-z0-9_-]/g, '');
-  return `<div data-youtube-embed="${safeId}" contenteditable="false" style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin: 16px 0; background: #000000; border: 1px solid #27272a;"><iframe src="https://www.youtube.com/embed/${safeId}" title="YouTube video (${safeId})" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+  return `<div data-youtube-embed="${safeId}" contenteditable="false" style="width: 80%; max-width: 720px; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 12px; margin: 16px auto; background: #000000; border: 1px solid #27272a;"><iframe src="https://www.youtube.com/embed/${safeId}" title="YouTube video (${safeId})" style="width: 100%; height: 100%; border: 0; display: block;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
 }
 
 /**

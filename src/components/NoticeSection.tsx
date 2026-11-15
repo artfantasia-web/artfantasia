@@ -444,7 +444,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
               {/* Embedded YouTube Video if present */}
               {activeNotice.youtubeId && (
                 <div className="my-6">
-                  <div className="w-full aspect-video rounded-xl overflow-hidden bg-black border border-zinc-800 shadow-2xl">
+                  <div className="w-[80%] max-w-[720px] mx-auto aspect-video rounded-xl overflow-hidden bg-black border border-zinc-800 shadow-2xl">
                     <iframe
                       src={`https://www.youtube.com/embed/${activeNotice.youtubeId}`}
                       title={activeNotice.title}
@@ -484,7 +484,7 @@ export const NoticeSection: React.FC<NoticeSectionProps> = ({
                   <div
                     key={idx}
                     dangerouslySetInnerHTML={{ __html: formatNoticeContent(paragraph) }}
-                    className="space-y-3 leading-relaxed font-['Pretendard','Noto_Sans_KR',sans-serif] [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_strong]:text-white [&_b]:text-white [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4 [&_hr]:border-zinc-800 [&_hr]:my-6 [&_s]:line-through [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-4"
+                    className="space-y-3 leading-relaxed font-['Pretendard','Noto_Sans_KR',sans-serif] [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_strong]:text-white [&_b]:text-white [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-4 [&_hr]:border-zinc-800 [&_hr]:my-6 [&_s]:line-through [&_iframe]:w-[80%] [&_iframe]:max-w-[720px] [&_iframe]:mx-auto [&_iframe]:block [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-4 [&_[data-youtube-embed]]:!w-[80%] [&_[data-youtube-embed]]:!max-w-[720px] [&_[data-youtube-embed]]:!mx-auto [&_[data-youtube-embed]]:!h-auto [&_[data-youtube-embed]]:!pb-0 [&_[data-youtube-embed]]:aspect-video [&_[data-youtube-embed]_iframe]:!static [&_[data-youtube-embed]_iframe]:!w-full [&_[data-youtube-embed]_iframe]:!h-full [&_[data-youtube-embed]_iframe]:!my-0"
                   />
                 ))}
               </div>

@@ -209,8 +209,8 @@ export const AdminNoticeModal: React.FC = () => {
   const [formCategory, setFormCategory] = useState<NoticeCategory>('소식');
   const [formDate, setFormDate] = useState('');
   const [formPinned, setFormPinned] = useState(false);
-  const [formYoutubeId, setFormYoutubeId] = useState('');
   const [formHtmlContent, setFormHtmlContent] = useState('');
+  const [composeSeedVersion, setComposeSeedVersion] = useState(0);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -254,13 +254,13 @@ export const AdminNoticeModal: React.FC = () => {
     setFormCategory('소식');
     setFormDate(getTodayFormatted());
     setFormPinned(false);
-    setFormYoutubeId('');
     setFormHtmlContent('');
     setSaveSuccess(false);
     setFormError('');
     setShowPreview(false);
     setEditorMode('compose');
     setOpenDropdown(null);
+    setComposeSeedVersion((v) => v + 1);
     if (editorRef.current) {
       editorRef.current.innerHTML = '';
     }
@@ -283,27 +283,27 @@ export const AdminNoticeModal: React.FC = () => {
       setFormCategory(editingNotice.category === '정보' ? '정보' : '소식');
       setFormDate(editingNotice.date || getTodayFormatted());
       setFormPinned(!!editingNotice.pinned);
-      setFormYoutubeId('');
       setFormHtmlContent(initialHtml);
       setSaveSuccess(false);
       setFormError('');
       setShowPreview(false);
       setEditorMode('compose');
       setViewMode('editor');
+      setComposeSeedVersion((v) => v + 1);
     } else {
       resetForm();
       setViewMode('list');
     }
   }, [editingNotice, isAdminModalOpen, resetForm]);
 
-  // Populate contentEditable DOM whenever entering compose mode or opening editor
+  // Populate contentEditable DOM whenever seeded, switching back from HTML/Preview, or opening editor
   useEffect(() => {
     if (viewMode === 'editor' && editorMode === 'compose' && !showPreview && editorRef.current) {
       if (editorRef.current.innerHTML !== formHtmlContent) {
         editorRef.current.innerHTML = formHtmlContent;
       }
     }
-  }, [viewMode, editorMode, showPreview, editingNotice]);
+  }, [composeSeedVersion, viewMode, editorMode, showPreview]);
 
   // Close dropdowns on Escape
   useEffect(() => {
@@ -579,6 +579,7 @@ export const AdminNoticeModal: React.FC = () => {
 
     const nextHtml = doc.body.innerHTML;
     setFormHtmlContent(nextHtml);
+    setComposeSeedVersion((v) => v + 1);
     if (editorMode === 'compose' && editorRef.current) {
       editorRef.current.innerHTML = nextHtml;
     }
@@ -1690,7 +1691,7 @@ export const AdminNoticeModal: React.FC = () => {
                         dangerouslySetInnerHTML={{
                           __html: formatNoticeContent(liveHtmlForPreview),
                         }}
-                        className="space-y-3 text-sm sm:text-base text-zinc-200 leading-relaxed [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_strong]:text-white [&_b]:text-white [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:italic [&_img]:max-w-full [&_img]:rounded-lg [&_hr]:border-zinc-800 [&_hr]:my-4 [&_s]:line-through [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-xl"
+                        className="space-y-3 text-sm sm:text-base text-zinc-200 leading-relaxed [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_strong]:text-white [&_b]:text-white [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:italic [&_img]:max-w-full [&_img]:rounded-lg [&_hr]:border-zinc-800 [&_hr]:my-4 [&_s]:line-through [&_iframe]:w-[80%] [&_iframe]:max-w-[720px] [&_iframe]:mx-auto [&_iframe]:block [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-3 [&_[data-youtube-embed]]:!w-[80%] [&_[data-youtube-embed]]:!max-w-[720px] [&_[data-youtube-embed]]:!mx-auto [&_[data-youtube-embed]]:!h-auto [&_[data-youtube-embed]]:!pb-0 [&_[data-youtube-embed]]:aspect-video [&_[data-youtube-embed]_iframe]:!static [&_[data-youtube-embed]_iframe]:!w-full [&_[data-youtube-embed]_iframe]:!h-full [&_[data-youtube-embed]_iframe]:!my-0"
                       />
                     </div>
                   ) : editorMode === 'compose' ? (
@@ -1706,7 +1707,7 @@ export const AdminNoticeModal: React.FC = () => {
                         onMouseUp={refreshFormatState}
                         onBlur={saveSelection}
                         data-placeholder="여기에 내용을 입력하세요. 유튜브 링크를 붙여넣거나 위 동영상 버튼으로 여러 개의 유튜브 영상을 바로 삽입할 수 있습니다."
-                        className="min-h-[320px] outline-none text-sm sm:text-base text-zinc-100 leading-relaxed font-sans space-y-3 empty:before:content-[attr(data-placeholder)] empty:before:text-zinc-500 empty:before:pointer-events-none [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-3 [&_hr]:border-zinc-700 [&_hr]:my-4 [&_s]:line-through [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-3"
+                        className="min-h-[320px] outline-none text-sm sm:text-base text-zinc-100 leading-relaxed font-sans space-y-3 empty:before:content-[attr(data-placeholder)] empty:before:text-zinc-500 empty:before:pointer-events-none [&_a]:text-amber-400 [&_a]:underline [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_h4]:text-base [&_h1,&_h2,&_h3,&_h4]:font-bold [&_h1,&_h2,&_h3,&_h4]:text-white [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-amber-400 [&_blockquote]:pl-4 [&_blockquote]:py-1 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_img]:max-w-full [&_img]:rounded-lg [&_img]:my-3 [&_hr]:border-zinc-700 [&_hr]:my-4 [&_s]:line-through [&_iframe]:w-[80%] [&_iframe]:max-w-[720px] [&_iframe]:mx-auto [&_iframe]:block [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-3 [&_[data-youtube-embed]]:!w-[80%] [&_[data-youtube-embed]]:!max-w-[720px] [&_[data-youtube-embed]]:!mx-auto [&_[data-youtube-embed]]:!h-auto [&_[data-youtube-embed]]:!pb-0 [&_[data-youtube-embed]]:aspect-video [&_[data-youtube-embed]_iframe]:!static [&_[data-youtube-embed]_iframe]:!w-full [&_[data-youtube-embed]_iframe]:!h-full [&_[data-youtube-embed]_iframe]:!my-0"
                       />
                     </div>
                   ) : (
