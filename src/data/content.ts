@@ -6,7 +6,7 @@ export const COMPANY_INFO = {
   nameKo: '아트판타지아',
   nameEn: 'ArtFantasia',
   title: '아트판타지아 | ArtFantasia - 홍보영상 · 광고영상 · AI영상제작 · 미디어파사드 · 음악라디오 · 종합마케팅',
-  businessDescription: '크리에이티브 프로덕션, 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 여성기업 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 마케팅',
+  businessDescription: '당신의 영상과 음악은 특별해야 합니다 - 광고영상, AI영상, 공공기관·기업·교육기관 홍보영상, 여성기업 영상제작사, 미디어파사드, 음악·라디오제작사, 데이터 기반 마케팅',
   maritimeExpertise: {
     title: '해양·조선·바다 특화 영상제작 기술',
     summary: '선박 시운전, 대형 조선소 중공업 공정, 해양플랜트, 해양환경, 해상 드론 및 특수촬영 특화 역량',

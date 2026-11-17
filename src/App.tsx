@@ -78,7 +78,7 @@ const getNoticeIdFromUrl = (): string | null => {
 const PAGE_SEO_MAP: Record<NavCategory, { title: string; desc: string; path: string; image: string }> = {
   home: {
     title: '아트판타지아 | ArtFantasia - 홍보영상 · 광고영상 · AI영상제작 · 미디어파사드 · 음악라디오 · 종합마케팅',
-    desc: '크리에이티브 프로덕션, 광고영상제작, AI 영상제작, 공공기관·기업·교육기관 홍보영상제작, 여성기업 영상제작사, 브랜드필름, 미디어파사드, 음악·라디오제작, 데이터 기반 마케팅',
+    desc: '당신의 영상과 음악은 특별해야 합니다 - 광고영상, AI영상, 공공기관·기업·교육기관 홍보영상, 여성기업 영상제작사, 미디어파사드, 음악·라디오제작사, 데이터 기반 마케팅',
     path: '/',
     image: 'https://artfantasia.co.kr/og-main.jpg',
   },
